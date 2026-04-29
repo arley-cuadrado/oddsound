@@ -12,19 +12,29 @@ export async function Footer() {
   const navItems = footerData?.navItems || []
 
   return (
-    <footer className="mt-auto border-t border-border bg-black dark:bg-card text-white">
-      <div className="container py-8 gap-8 flex flex-col md:flex-row md:justify-between">
-        <Link className="flex items-center" href="/">
-          <Logo />
-        </Link>
-
-        <div className="flex flex-col-reverse items-start md:flex-row gap-4 md:items-center">
-          <ThemeSelector />
-          <nav className="flex flex-col md:flex-row gap-4">
-            {navItems.map(({ link }, i) => {
-              return <CMSLink className="text-white" key={i} {...link} />
-            })}
-          </nav>
+    <footer className="mt-auto bg-white dark:bg-card text-dark">
+      {/* border-t border-border */}
+      <div className="container py-8 gap-8 flex flex-col md:flex-col items-center">
+        <div>
+          <div className="flex flex-col-reverse">
+            <ThemeSelector />
+            {/*
+            <nav className="flex flex-col md:flex-row gap-4">
+              {navItems.map(({ link }, i) => {
+                return <CMSLink className="text-white" key={i} {...link} />
+              })}
+            </nav>
+            */}
+          </div>
+        </div>
+        <div>
+          <Link href="https://www.instagram.com/arlo_cuadrado/" target="_blank">
+            <p>
+              © 2026 | <span className="text-red">@arlo_cuadrado</span>
+            </p>
+            {/*<Logo />*/}
+          </Link>
+          <p>Made with love and lots of Coffee</p>
         </div>
       </div>
     </footer>
