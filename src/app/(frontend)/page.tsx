@@ -43,8 +43,8 @@ export default function HomePage() {
         <div className='container flex flex-row gap-4'><SliderHeader /></div>
       </div>
       <main className="text-sm container">{/* justify-center w-auto h-screen  */} 
-        <div className='flex flex-row'>
-          <section className="pt-4 pb-4 w-150">
+        <div className='flex justify-between'>
+          <section className="pt-4 pb-4 w-120">
             <div className='w-auto'>{/* mx-auto max-w-5xl */}
               <ReleasesHome artists={mockArtists} />
             </div>
