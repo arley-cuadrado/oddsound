@@ -35,6 +35,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           />
 
           <Header />
+          {/* static home and dynamic pages for artists*/}
           {children}
           <Footer />
         </Providers>
