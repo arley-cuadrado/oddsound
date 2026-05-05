@@ -8,13 +8,13 @@ export async function Footer() {
   const navItems = footerData?.navItems || []
 
   return (
-    <footer className="mt-auto bg-white dark:bg-card text-dark">
+    <footer className="mt-auto bg-white dark:bg-card text-dark text-xs">
       {/* border-t border-border */}
-      <div className="container gap-8 flex flex-col md:flex-col items-center pt-8">
+      <div className="container gap-8 flex flex-col md:flex-col items-center">
         <div>
           <Link href="https://www.instagram.com/arlo_cuadrado/" target="_blank">
             <p>
-            © {currentYear} | Made with love and lots of Coffee</p>
+            © {currentYear} | Made with love and lots of Coffee</p> 
           </Link>
         </div>
       </div>

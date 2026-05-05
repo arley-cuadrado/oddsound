@@ -24,13 +24,13 @@ export default function AsideHome() {
               </div>
               <Link href={'/about-us'}>
                 <div className="group relative grow">
-                  <h3 className="mt-3 text-lg/6 font-semibold text-slate-700 dark:text-white">
+                  <h3 className="mt-3 font-semibold text-slate-700 dark:text-white">
                     {/*<a href={'/about-us'}>*/}
                     <span className="absolute inset-0"></span>
                     Por qué Oddsound?
                     {/*</a>*/}
                   </h3>
-                  <p className="mt-5 line-clamp-3 text-sm/6 text-slate-600 dark:text-gray-400">
+                  <p className="mt-5 line-clamp-3 text-slate-600 dark:text-gray-400">
                     Illo sint voluptas. Error voluptates culpa eligendi. Hic vel totam vitae illo.
                     Non aliquid explicabo necessitatibus unde. Sed exercitationem placeat
                     consectetur nulla deserunt vel. Iusto corrupti dicta.
@@ -38,7 +38,7 @@ export default function AsideHome() {
                 </div>
               </Link>
               <Link href="https://www.instagram.com/arlo_cuadrado/" target="_blank">
-                <div className="relative mt-8 flex items-center gap-x-4 justify-self-end">
+                <div className="relative mt-8 flex items-center gap-x-4 justify-self-end pb-8">
                   <Image
                     src="/home-images/arlo_cuadrado.png"
                     alt="Arlo Cuadrado"
