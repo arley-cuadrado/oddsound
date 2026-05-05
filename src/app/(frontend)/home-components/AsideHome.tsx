@@ -5,7 +5,7 @@ export default function AsideHome() {
     return (
         <>
             <Link href={'/about-us'}>
-                <aside className="gap-6 mb-7 border-l border-gray-100">
+                <aside className="gap-6 mb-7 border-l border-gray-100 my-16">
                     <div className="pb-24 sm:pb-32">
                         <div className="w-100 px-6">
                             <div>

@@ -7,9 +7,24 @@ const mockArtists: Artist[] = [
   {
   id: 1,
     name: 'Juan Perez',
-    description: 'test right here',
+    description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
     musicGenre: 'Indi Rock',
     slug: 'juanPerez',
+    photo: {
+      url: '/home-images/hero.jpeg',
+      formats: {
+        thumbnail: { url: '/home-images/hero.jpeg' },
+        small: { url: '/home-images/hero.jpeg' },
+        medium: { url: '/home-images/hero.jpeg' },
+      },
+    },
+  },
+  {
+  id: 2,
+    name: 'Carlos Martínez',
+    description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
+    musicGenre: 'Hip Hop',
+    slug: 'carlosMartinez',
     photo: {
       url: '/home-images/hero.jpeg',
       formats: {
@@ -25,7 +40,7 @@ export default function HomePage() {
   return (
     <>
       <HeaderHome />
-      <main className="flex h-screen flex-row items-center justify-center">
+      <main className="flex flex-row items-center justify-center">{/* h-screen  */}
         <section className="px-6 py-16 md:px-10 lg:px-16">
           <div className="mx-auto max-w-5xl">
             <ReleasesHome artists={mockArtists} />
