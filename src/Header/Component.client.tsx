@@ -34,7 +34,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
     <header className="container relative z-20   " {...(theme ? { 'data-theme': theme } : {})}>
       {/* static route of oddsound home */}
       <div className="py-8 flex justify-between">
-        <Link href="/">
+        <Link href="/" className='title'>
           {/*<Logo loading="eager" priority="high" className="invert dark:invert-0" />*/}oddssound
         </Link>
         <div className='flex flex-row'>

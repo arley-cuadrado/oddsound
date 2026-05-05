@@ -28,7 +28,7 @@ export async function Footer() {
         <div>
           <Link href="https://www.instagram.com/arlo_cuadrado/" target="_blank">
             <p>
-              © 2026 | <span className="text-red">@arlo_cuadrado</span>
+              © 2026 | <span className="text-red title">@arlo_cuadrado</span>
             </p>
             {/*<Logo />*/}
           </Link>
