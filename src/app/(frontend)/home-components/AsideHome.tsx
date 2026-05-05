@@ -1,13 +1,13 @@
 import Link from "next/link"
 import Image from "next/image"
+import { Footer } from "@/Footer/Component"
 
 export default function AsideHome() {
     return (
         <>
+            <aside className="gap-6 mb-7 pt-4 pb-4">
             <Link href={'/about-us'}>
-                <aside className="gap-6 mb-7 border-l border-gray-100 my-16">
-                    <div className="pb-24 sm:pb-32">
-                        <div className="w-100 px-6">
+                        <div className="w-70 px-6">
                             <div>
                                 <h2 className="font-semibold tracking-tight text-pretty text-slate-700 dark:text-white">Binevenid@!</h2>
                                 <p className="mt-2 text-slate-600 dark:text-gray-400">Esta es una versión temprana del sitio, un espacio donde encontrarás artistas independientes.</p>
@@ -48,9 +48,8 @@ export default function AsideHome() {
                                 </article>
                             </div>
                         </div>
-                    </div>
-                </aside>
             </Link>
-
+            <Footer />
+            </aside>
         </>)
 }

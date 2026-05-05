@@ -1,5 +1,5 @@
 import AsideHome from './home-components/AsideHome'
-import HeaderHome from './home-components/HeaderHome'
+import SliderHeader from './home-components/HeaderHome'
 import ReleasesHome from './home-components/ReleasesHome'
 import type { Artist } from './home-components/types'
 
@@ -38,16 +38,20 @@ const mockArtists: Artist[] = [
 
 export default function HomePage() {
   return (
-    <>
-      <HeaderHome />
-      <main className="flex flex-row items-center justify-center">{/* h-screen  */}
-        <section className="px-6 py-16 md:px-10 lg:px-16">
-          <div className="mx-auto max-w-5xl">
-            <ReleasesHome artists={mockArtists} />
-          </div>
-        </section>
-        <AsideHome />
+    <div className='mx-auto max-w-4xl'>
+      <div className='flex justify-center items-center h-auto'>
+        <div className='container flex flex-row gap-4'><SliderHeader /></div>
+      </div>
+      <main className="text-sm container">{/* justify-center w-auto h-screen  */} 
+        <div className='flex flex-row'>
+          <section className="pt-4 pb-4 w-150">
+            <div className='w-auto'>{/* mx-auto max-w-5xl */}
+              <ReleasesHome artists={mockArtists} />
+            </div>
+          </section>
+          <AsideHome />
+        </div>
       </main>
-    </>
+    </div>
   )
 }

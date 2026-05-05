@@ -240,3 +240,15 @@ html[data-theme='light'] {
     background-position: 0%;
   }
 }
+
+@keyframes header-home-progress {
+  from {
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+
+  to {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+}

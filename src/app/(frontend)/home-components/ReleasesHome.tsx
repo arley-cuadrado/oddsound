@@ -35,21 +35,21 @@ export default function ReleasesHome({ artists }: { artists: Artist[] }) {
           artist.photo.url
 
         return (
-          <article key={artist.id} className="hover:font-bold transition-all duration-300 gap-10 w-auto md:w-auto lg:w-200 border-b border-solid border-gray-200">
+          <article key={artist.id} className="hover:font-bold transition-all duration-300 gap-10 w-auto md:w-130 lg:w-130 ">
             <Link href={`/artists/${artist.slug}`}>
-              <section className="flex justify-between pt-4 pb-4 items-center w-auto md:w-auto">
-                <div className="pr-8 xs:w-100 sm:w-100 md:w-170 lg:w-200">
-                  <p className="text-1xl md:text-2xl lg:text-3xl font-bold mb-2 text-slate-700 dark:text-white">{artist.name}</p>
-                  <p className="text-sm line-clamp-3 mb-5 text-slate-500 dark:text-gray-400">{artist.description}</p>
+              <section className="flex flex-col-reverse justify-between pt-4 pb-4 items-center w-auto md:w-auto">
+                <div className="pr-8">
+                  <p className="text-5 font-bold mb-2 text-slate-700 dark:text-white">{artist.name}</p>
+                  <p className="text-sm line-clamp-3 text-slate-500 dark:text-gray-400">{artist.description}</p>
                   <strong className="text-slate-500 dark:text-gray-400">{artist.musicGenre ? `#${artist.musicGenre}` : ''}</strong>
                 </div>
 
-                <div className="w-auto md:w-32 h-24 overflow-hidden">
+                <div className="overflow-hidden">{/* w-auto md:w-32 h-24  */}
                   <img
-                    className="w-100 md:w-32 h-full object-cover"
+                    className="w-full"
                     src={artistPhotoUrl || '/home-images/hero.jpeg'}
                     alt={artist.name}
-                  />
+                  />{/*  md:w-32 h-full object-cover */}
                 </div>
               </section>
             </Link>
