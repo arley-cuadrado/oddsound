@@ -23,9 +23,9 @@ export default function ReleasesHome({ artists }: { artists: Artist[] }) {
 
   return (
     <>
-    <h2 className="text-2xl font-semibold md:text-4xl">
+    {/*<h2 className="text-2xl font-semibold md:text-4xl">
         Releases
-    </h2>
+    </h2>*/}
 
       {visibleArtists.map((artist) => {
         const artistPhotoUrl =
@@ -35,11 +35,11 @@ export default function ReleasesHome({ artists }: { artists: Artist[] }) {
           artist.photo.url
 
         return (
-          <article key={artist.id} className="hover:font-bold transition-all duration-300 gap-10 w-auto md:w-130 lg:w-130 ">
+          <article key={artist.id}>{/* className="hover:font-bold transition-all duration-300 gap-10 w-auto md:w-130 lg:w-130 " */}
             <Link href={`/artists/${artist.slug}`}>
               <section className="flex flex-col-reverse justify-between pt-4 pb-4 items-center w-auto md:w-auto">
                 <div className="pr-8">
-                  <p className="text-5 font-bold mb-2 text-slate-700 dark:text-white">{artist.name}</p>
+                  <p className="text-5 font-bold my-2 text-slate-700 dark:text-white">{artist.name}</p>
                   <p className="text-sm line-clamp-3 text-slate-500 dark:text-gray-400">{artist.description}</p>
                   <strong className="text-slate-500 dark:text-gray-400">{artist.musicGenre ? `#${artist.musicGenre}` : ''}</strong>
                 </div>
