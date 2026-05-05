@@ -3,6 +3,7 @@ import { useHeaderTheme } from '@/providers/HeaderTheme'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import React, { useEffect, useState } from 'react'
+import { ThemeSelector } from '@/providers/Theme/ThemeSelector'
 
 import type { Header } from '@/payload-types'
 
@@ -36,7 +37,10 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
         <Link href="/">
           {/*<Logo loading="eager" priority="high" className="invert dark:invert-0" />*/}oddssound
         </Link>
-        <HeaderNav data={data} />
+        <div className='flex flex-row'>
+          <HeaderNav data={data} />
+          <ThemeSelector />
+        </div>
       </div>
     </header>
   )
