@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import { ThemeSelector } from '@/providers/Theme/ThemeSelector'
 
 import type { Header as HeaderType } from '@/payload-types'
 
@@ -12,15 +13,27 @@ export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
   const navItems = data?.navItems || []
 
   return (
-    <nav className="flex gap-3 items-center">
-      {/* dynamic routes, registered artists */}
-      {navItems.map(({ link }, i) => {
-        return <CMSLink key={i} {...link} appearance="link" />
-      })}
-      <Link href="/search">
-        <span className="sr-only">Search</span>
-        <SearchIcon className="w-5 text-primary" />
-      </Link>
+    <nav className="flex w-full justify-between">
+      <div>
+        <Link href="/" className="title">
+          {/*<Logo loading="eager" priority="high" className="invert dark:invert-0" />*/}
+          oddssound
+        </Link>
+      </div>
+      <div className="flex gap-6 items-center">
+        <Link href="/about-us" className="block md:hidden">
+          about
+        </Link>
+        <Link href="/search" className="flex">
+          <SearchIcon className="w-auto text-primary" />
+          <span className="hidden md:block">search</span>
+        </Link>
+        <ThemeSelector />
+        {/* dynamic routes, registered artists */}
+        {navItems.map(({ link }, i) => {
+          return <CMSLink key={i} {...link} appearance="link" />
+        })}
+      </div>
     </nav>
   )
 }

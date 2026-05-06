@@ -1,13 +1,10 @@
 'use client'
 import { useHeaderTheme } from '@/providers/HeaderTheme'
-import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import React, { useEffect, useState } from 'react'
-import { ThemeSelector } from '@/providers/Theme/ThemeSelector'
 
 import type { Header } from '@/payload-types'
 
-import { Logo } from '@/components/Logo/Logo'
 import { HeaderNav } from './Nav'
 
 interface HeaderClientProps {
@@ -32,15 +29,8 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
 
   return (
     <header className="container relative z-20   " {...(theme ? { 'data-theme': theme } : {})}>
-      {/* static route of oddsound home */}
-      <div className="py-8 flex justify-between">
-        <Link href="/" className='title'>
-          {/*<Logo loading="eager" priority="high" className="invert dark:invert-0" />*/}oddssound
-        </Link>
-        <div className='flex flex-row'>
-          <HeaderNav data={data} />
-          <ThemeSelector />
-        </div>
+      <div className="py-8">
+        <HeaderNav data={data} />
       </div>
     </header>
   )

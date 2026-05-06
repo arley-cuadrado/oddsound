@@ -7,7 +7,8 @@ interface DataArtist {
 }
 
 const AUTO_SCROLL_MS = 5000
-const VISIBLE_CARDS = 4
+const DESKTOP_VISIBLE_CARDS = 4
+const COMPACT_VISIBLE_CARDS = 3
 const PEEK_RATIO = 0.35
 
 const heroCards = Array.from({ length: 6 }, (_, index) => ({
@@ -18,10 +19,22 @@ const heroCards = Array.from({ length: 6 }, (_, index) => ({
 export default function SliderHeader({ artist }: DataArtist) {
   const fallbackArtist = artist || 'ARTISTA #1'
   const [activeIndex, setActiveIndex] = useState(0)
+  const [visibleCards, setVisibleCards] = useState(DESKTOP_VISIBLE_CARDS)
   const containerRef = useRef<HTMLDivElement | null>(null)
   const trackRef = useRef<HTMLDivElement | null>(null)
   const cardRefs = useRef<Array<HTMLElement | null>>([])
-  const maxStartIndex = Math.max(heroCards.length - VISIBLE_CARDS, 0)
+  const maxStartIndex = Math.max(heroCards.length - visibleCards, 0)
+
+  useEffect(() => {
+    const updateVisibleCards = () => {
+      setVisibleCards(window.innerWidth < 1024 ? COMPACT_VISIBLE_CARDS : DESKTOP_VISIBLE_CARDS)
+    }
+
+    updateVisibleCards()
+    window.addEventListener('resize', updateVisibleCards)
+
+    return () => window.removeEventListener('resize', updateVisibleCards)
+  }, [])
 
   useEffect(() => {
     const interval = window.setInterval(() => {
@@ -29,6 +42,10 @@ export default function SliderHeader({ artist }: DataArtist) {
     }, AUTO_SCROLL_MS)
 
     return () => window.clearInterval(interval)
+  }, [maxStartIndex])
+
+  useEffect(() => {
+    setActiveIndex((currentIndex) => Math.min(currentIndex, maxStartIndex))
   }, [maxStartIndex])
 
   useEffect(() => {
@@ -51,13 +68,13 @@ export default function SliderHeader({ artist }: DataArtist) {
     <section className="w-full overflow-hidden">
       <div
         ref={containerRef}
-        className="overflow-x-auto scroll-smooth [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+        className="mx-auto w-full max-w-screen-xl overflow-x-auto scroll-smooth [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
       >
         <div
           ref={trackRef}
           className="grid w-full grid-flow-col gap-4 px-4 md:px-6"
           style={{
-            gridAutoColumns: `calc((100% - 4rem) / ${VISIBLE_CARDS + PEEK_RATIO})`,
+            gridAutoColumns: `calc((100% - 4rem) / ${visibleCards + PEEK_RATIO})`,
           }}
         >
           {heroCards.map((card, index) => (

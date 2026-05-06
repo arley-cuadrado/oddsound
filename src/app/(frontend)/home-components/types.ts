@@ -3,6 +3,7 @@ export interface Artist {
   name: string
   description: string
   musicGenre: string
+  country: string
   slug: string
   photo: {
     url?: string
