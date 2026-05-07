@@ -1,16 +1,8 @@
-export interface Artist {
-  id: number
-  name: string
-  description: string
-  musicGenre: string
+export interface ReleaseItem {
+  id: string
   country: string
-  slug: string
-  photo: {
-    url?: string
-    formats?: {
-      thumbnail?: { url: string }
-      small?: { url: string }
-      medium?: { url: string }
-    }
-  }
+  creatorName: string
+  description: string
+  imageUrl: string
+  releaseSlug: string
 }

@@ -28,7 +28,21 @@ async function resolveUserProfileId(req: Parameters<CollectionBeforeChangeHook>[
     return freshUser.profile.id
   }
 
-  return null
+  const profiles = await req.payload.find({
+    collection: 'profiles',
+    depth: 0,
+    limit: 1,
+    overrideAccess: true,
+    pagination: false,
+    where: {
+      owner: {
+        equals: user.id,
+      },
+    },
+  })
+
+  return profiles.docs[0]?.id || null
+
 }
 
 export const assignOwnership: CollectionBeforeChangeHook = async ({ data, req }) => {
