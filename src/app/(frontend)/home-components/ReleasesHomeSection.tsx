@@ -37,6 +37,37 @@ function extractRichTextText(
   return values.join(' ').replace(/\s+/g, ' ').trim()
 }
 
+function extractLayoutText(page: Page) {
+  if (!Array.isArray(page.layout)) return ''
+
+  const snippets = page.layout.flatMap((block) => {
+    if (!block || typeof block !== 'object') return []
+
+    if (block.blockType === 'content' && Array.isArray(block.columns)) {
+      return block.columns
+        .map((column) => extractRichTextText(column?.richText || null))
+        .filter(Boolean)
+    }
+
+    return []
+  })
+
+  return snippets.join(' ').replace(/\s+/g, ' ').trim()
+}
+
+function removeRepeatedTitle(text: string, title: string) {
+  if (!text) return ''
+
+  const normalizedTitle = title.trim().toLowerCase()
+  const normalizedText = text.trim().toLowerCase()
+
+  if (normalizedText === normalizedTitle) return ''
+
+  const titlePattern = new RegExp(`^${title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}[:\\s-]*`, 'i')
+
+  return text.replace(titlePattern, '').trim()
+}
+
 function getMediaUrl(media: Media | null | string | undefined) {
   if (!media || typeof media === 'string') return null
 
@@ -70,11 +101,15 @@ function mapRelease(page: Page, profilesByOwnerId: Map<string, Profile>): Releas
   const heroImage = getMediaUrl(page.hero?.media as Media | null | string | undefined)
   const coverImage = getMediaUrl(profile.coverImage as Media | null | string | undefined)
   const avatarImage = getMediaUrl(profile.avatar as Media | null | string | undefined)
+  const contentDescription = removeRepeatedTitle(extractLayoutText(page), page.title)
+  const heroDescription = removeRepeatedTitle(extractRichTextText(page.hero?.richText || null), page.title)
+  const profileDescription = removeRepeatedTitle(profile.bio?.trim() || '', page.title)
   const description =
+    contentDescription ||
     page.meta?.description?.trim() ||
-    extractRichTextText(page.hero?.richText || null) ||
-    profile.bio?.trim() ||
-    page.title
+    heroDescription ||
+    profileDescription ||
+    'No description available.'
 
   return {
     id: page.id,
