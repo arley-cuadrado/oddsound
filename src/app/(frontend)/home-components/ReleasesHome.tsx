@@ -29,9 +29,9 @@ export default function ReleasesHome({ releases }: { releases: ReleaseItem[] }) 
           <article key={release.id}>
             <Link href={`/${release.releaseSlug}`}>
               <section className="flex flex-col gap-4 pt-4 pb-4 items-start w-auto md:w-auto">
-                <div className="overflow-hidden w-full">
+                <div className="overflow-hidden w-full aspect-square bg-slate-100 dark:bg-slate-900">
                   <img
-                    className="w-full"
+                    className="h-full w-full object-cover"
                     src={release.imageUrl || '/home-images/hero.jpeg'}
                     alt={release.creatorName}
                   />
