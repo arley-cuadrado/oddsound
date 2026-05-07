@@ -13,18 +13,20 @@ type ActionResult = {
 
 export async function registerCreator(input: {
   accountType: AccountType
+  country: string
   email: string
   name: string
   password: string
 }): Promise<ActionResult> {
   try {
     const payload = await getPayload({ config })
+    const country = input.country.trim()
     const email = input.email.trim().toLowerCase()
     const name = input.name.trim()
 
-    if (!email || !name || !input.password) {
+    if (!country || !email || !name || !input.password) {
       return {
-        message: 'Name, email, and password are required.',
+        message: 'Name, country, email, and password are required.',
         ok: false,
       }
     }
@@ -49,7 +51,7 @@ export async function registerCreator(input: {
       }
     }
 
-    await payload.create({
+    const createdUser = await payload.create({
       collection: 'users',
       data: {
         accountType: input.accountType,
@@ -61,6 +63,20 @@ export async function registerCreator(input: {
       draft: false,
       overrideAccess: true,
     })
+
+    const profileId =
+      typeof createdUser.profile === 'string' ? createdUser.profile : createdUser.profile?.id
+
+    if (profileId) {
+      await payload.update({
+        id: profileId,
+        collection: 'profiles',
+        data: {
+          location: country,
+        },
+        overrideAccess: true,
+      })
+    }
 
     return loginCreator({
       email,

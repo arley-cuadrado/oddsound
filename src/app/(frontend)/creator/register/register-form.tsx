@@ -40,10 +40,12 @@ export function RegisterForm() {
     const email = String(formData.get('email') || '')
     const password = String(formData.get('password') || '')
     const accountType = String(formData.get('accountType') || 'artist') as AccountType
+    const country = String(formData.get('country') || '')
 
     try {
       const result = await registerCreator({
         accountType,
+        country,
         email,
         name,
         password,
@@ -92,6 +94,20 @@ export function RegisterForm() {
           <option value="band">Band</option>
           <option value="label">Label</option>
         </select>
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-foreground" htmlFor="country">
+          Country
+        </label>
+        <input
+          className="h-12 w-full border border-border bg-background px-4 text-sm text-foreground outline-none"
+          id="country"
+          name="country"
+          placeholder="Colombia"
+          required
+          type="text"
+        />
       </div>
 
       <div className="space-y-2">
