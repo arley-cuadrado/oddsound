@@ -9,22 +9,19 @@ export default async function CreatorRegisterPage() {
   }).catch(() => null)
 
   return (
-    <main className="container py-16">
-      <div className="mx-auto max-w-md border border-border bg-card p-8">
+    <main className="px-6 py-16">
+      <div className="mx-auto max-w-[30rem]">
         <div className="mb-8">
-          <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">ODDSOUND creators</p>
-          <h1 className="mt-2 text-3xl font-semibold">Create your account</h1>
-          <p className="mt-3 text-sm text-muted-foreground">
-            Register as an artist, band, or label. After creating your account, you will
-            continue into ODDSOUND Admin with creator-only permissions.
+          <p className="text-sm text-foreground/80">
+            Welcome to <strong>oddsound</strong> space, create your account here.
           </p>
         </div>
 
         <RegisterForm />
 
-        <p className="mt-6 text-sm text-muted-foreground">
+        <p className="mt-8 text-sm text-foreground/80">
           Already registered?{' '}
-          <Link className="font-medium text-foreground underline" href="/admin/login">
+          <Link className="text-foreground underline underline-offset-2" href="/admin/login">
             Log in
           </Link>
         </p>

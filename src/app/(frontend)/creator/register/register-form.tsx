@@ -63,13 +63,13 @@ export function RegisterForm() {
   }
 
   return (
-    <form className="space-y-4" onSubmit={handleSubmit}>
+    <form className="space-y-6" onSubmit={handleSubmit}>
       <div className="space-y-2">
-        <label className="text-sm font-medium" htmlFor="name">
+        <label className="text-sm font-medium text-foreground" htmlFor="name">
           Name
         </label>
         <input
-          className="w-full border border-border bg-background px-4 py-3 text-sm"
+          className="h-12 w-full border border-border bg-background px-4 text-sm text-foreground outline-none"
           id="name"
           name="name"
           placeholder="Your artist, band, or label name"
@@ -79,11 +79,11 @@ export function RegisterForm() {
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-medium" htmlFor="accountType">
+        <label className="text-sm font-medium text-foreground" htmlFor="accountType">
           Account type
         </label>
         <select
-          className="w-full border border-border bg-background px-4 py-3 text-sm"
+          className="h-12 w-full border border-border bg-background px-4 text-sm text-foreground outline-none"
           defaultValue="artist"
           id="accountType"
           name="accountType"
@@ -95,11 +95,11 @@ export function RegisterForm() {
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-medium" htmlFor="email">
+        <label className="text-sm font-medium text-foreground" htmlFor="email">
           Email
         </label>
         <input
-          className="w-full border border-border bg-background px-4 py-3 text-sm"
+          className="h-12 w-full border border-border bg-background px-4 text-sm text-foreground outline-none"
           id="email"
           name="email"
           placeholder="name@example.com"
@@ -109,11 +109,11 @@ export function RegisterForm() {
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-medium" htmlFor="password">
+        <label className="text-sm font-medium text-foreground" htmlFor="password">
           Password
         </label>
         <input
-          className="w-full border border-border bg-background px-4 py-3 text-sm"
+          className="h-12 w-full border border-border bg-background px-4 text-sm text-foreground outline-none"
           id="password"
           minLength={8}
           name="password"
@@ -123,10 +123,12 @@ export function RegisterForm() {
         />
       </div>
 
-      {error && <p className="border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}
+      {error && (
+        <p className="border border-red-200 bg-red-50 px-4 py-3 text-[14px] text-red-700">{error}</p>
+      )}
 
       <button
-        className="w-full bg-foreground px-4 py-3 text-sm font-medium text-background disabled:cursor-not-allowed disabled:opacity-60"
+        className="mt-2 h-12 w-full bg-[#312e2e] px-4 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60"
         disabled={isSubmitting}
         type="submit"
       >
