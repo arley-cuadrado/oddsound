@@ -71,7 +71,14 @@ function removeRepeatedTitle(text: string, title: string) {
 function getMediaUrl(media: Media | null | string | undefined) {
   if (!media || typeof media === 'string') return null
 
+  const buildPublicMediaUrl = (filename: null | string | undefined) =>
+    filename ? `/media/${filename}` : null
+
   return (
+    buildPublicMediaUrl(media.sizes?.medium?.filename) ||
+    buildPublicMediaUrl(media.sizes?.small?.filename) ||
+    buildPublicMediaUrl(media.sizes?.thumbnail?.filename) ||
+    buildPublicMediaUrl(media.filename) ||
     media.sizes?.medium?.url ||
     media.sizes?.small?.url ||
     media.sizes?.thumbnail?.url ||
