@@ -82,6 +82,7 @@ function mapRelease(page: Page, profilesByOwnerId: Map<string, Profile>): Releas
     creatorName: profile.displayName || page.title,
     description,
     imageUrl: pageImage || heroImage || coverImage || avatarImage || FALLBACK_RELEASE_IMAGE,
+    releaseTitle: page.title,
     releaseSlug: page.slug,
   }
 }

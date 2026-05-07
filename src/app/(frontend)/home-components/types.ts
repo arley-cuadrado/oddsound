@@ -4,5 +4,6 @@ export interface ReleaseItem {
   creatorName: string
   description: string
   imageUrl: string
+  releaseTitle: string
   releaseSlug: string
 }
