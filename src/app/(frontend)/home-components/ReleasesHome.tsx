@@ -26,10 +26,10 @@ export default function ReleasesHome({ releases }: { releases: ReleaseItem[] }) 
     <>
       {visibleReleases.map((release) => {
         return (
-          <article key={release.id}>
+          <article key={release.id} className="w-full max-w-[28rem]">
             <Link href={`/${release.releaseSlug}`}>
-              <section className="flex flex-col gap-3 pt-4 pb-4 items-start w-auto md:w-auto">
-                <div className="relative overflow-hidden w-full aspect-square bg-slate-100 dark:bg-slate-900">
+              <section className="flex h-[36rem] w-full flex-col gap-3 pt-4 pb-4 items-start">
+                <div className="relative h-[28rem] w-full overflow-hidden bg-slate-100 dark:bg-slate-900">
                   <img
                     className="h-full w-full object-cover"
                     src={release.imageUrl || '/home-images/hero.jpeg'}
@@ -40,7 +40,7 @@ export default function ReleasesHome({ releases }: { releases: ReleaseItem[] }) 
                     <p className="text-sm">{release.country || 'Pais'}</p>
                   </div>
                 </div>
-                <div className="pr-8">
+                <div className="flex h-[8rem] w-full flex-col pr-2">
                   <h3 className="text-2xl font-semibold leading-tight text-slate-800 dark:text-white">
                     {release.releaseTitle}
                   </h3>
