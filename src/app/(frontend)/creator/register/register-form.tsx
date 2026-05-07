@@ -41,12 +41,15 @@ export function RegisterForm() {
     const password = String(formData.get('password') || '')
     const accountType = String(formData.get('accountType') || 'artist') as AccountType
     const country = String(formData.get('country') || '')
+    // Genre is collected at signup so releases can later be searched by musical style.
+    const genre = String(formData.get('genre') || '')
 
     try {
       const result = await registerCreator({
         accountType,
         country,
         email,
+        genre,
         name,
         password,
       })
@@ -68,7 +71,7 @@ export function RegisterForm() {
     <form className="space-y-6" onSubmit={handleSubmit}>
       <div className="space-y-2">
         <label className="text-sm font-medium text-foreground" htmlFor="name">
-          Name
+          What is your Name dude?
         </label>
         <input
           className="h-12 w-full border border-border bg-background px-4 text-sm text-foreground outline-none"
@@ -82,7 +85,7 @@ export function RegisterForm() {
 
       <div className="space-y-2">
         <label className="text-sm font-medium text-foreground" htmlFor="accountType">
-          Account type
+          Pick your account type
         </label>
         <select
           className="h-12 w-full border border-border bg-background px-4 text-sm text-foreground outline-none"
@@ -98,13 +101,27 @@ export function RegisterForm() {
 
       <div className="space-y-2">
         <label className="text-sm font-medium text-foreground" htmlFor="country">
-          Country
+          Enter your country
         </label>
         <input
           className="h-12 w-full border border-border bg-background px-4 text-sm text-foreground outline-none"
           id="country"
           name="country"
-          placeholder="Colombia"
+          placeholder="Colombia, Mexico, USA, etc..."
+          required
+          type="text"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-foreground" htmlFor="genre">
+          Now your music genre
+        </label>
+        <input
+          className="h-12 w-full border border-border bg-background px-4 text-sm text-foreground outline-none"
+          id="genre"
+          name="genre"
+          placeholder="Indie Rock, Aafrobeats, Champeta, Reggaeton, etc..."
           required
           type="text"
         />
@@ -112,7 +129,7 @@ export function RegisterForm() {
 
       <div className="space-y-2">
         <label className="text-sm font-medium text-foreground" htmlFor="email">
-          Email
+          Your email here
         </label>
         <input
           className="h-12 w-full border border-border bg-background px-4 text-sm text-foreground outline-none"
@@ -126,7 +143,7 @@ export function RegisterForm() {
 
       <div className="space-y-2">
         <label className="text-sm font-medium text-foreground" htmlFor="password">
-          Password
+          And your password
         </label>
         <input
           className="h-12 w-full border border-border bg-background px-4 text-sm text-foreground outline-none"
@@ -140,7 +157,9 @@ export function RegisterForm() {
       </div>
 
       {error && (
-        <p className="border border-red-200 bg-red-50 px-4 py-3 text-[14px] text-red-700">{error}</p>
+        <p className="border border-red-200 bg-red-50 px-4 py-3 text-[14px] text-red-700">
+          {error}
+        </p>
       )}
 
       <button

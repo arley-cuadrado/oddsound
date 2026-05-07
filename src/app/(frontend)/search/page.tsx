@@ -19,6 +19,7 @@ type SearchRelease = {
   country: string
   creatorName: string
   description: string
+  genre: string
   imageUrl: string
   slug: string
   title: string
@@ -50,7 +51,14 @@ function getOwnerId(page: Page) {
 function getMediaUrl(media: Media | null | string | undefined) {
   if (!media || typeof media === 'string') return null
 
+  const buildPublicMediaUrl = (filename: null | string | undefined) =>
+    filename ? `/media/${filename}` : null
+
   return (
+    buildPublicMediaUrl(media.sizes?.medium?.filename) ||
+    buildPublicMediaUrl(media.sizes?.small?.filename) ||
+    buildPublicMediaUrl(media.sizes?.thumbnail?.filename) ||
+    buildPublicMediaUrl(media.filename) ||
     media.sizes?.medium?.url ||
     media.sizes?.small?.url ||
     media.sizes?.thumbnail?.url ||
@@ -113,6 +121,8 @@ function mapSearchRelease(
       extractRichTextText(page.hero?.richText || null) ||
       profile.bio?.trim() ||
       page.title,
+    // Search cards inherit the creator genre from the profile created at signup.
+    genre: profile.genre?.trim() || '',
     imageUrl,
     slug: page.slug,
     title: page.title,
@@ -162,8 +172,8 @@ export default async function Page({ searchParams: searchParamsPromise }: Args) 
     .filter((release) => {
       if (!query) return true
 
-      // Search only by release title and creator country.
-      return [release.title, release.country].some((value) =>
+      // Search by release title, creator country, and the genre captured at creator signup.
+      return [release.title, release.country, release.genre].some((value) =>
         normalizeSearchValue(value).includes(query),
       )
     })
