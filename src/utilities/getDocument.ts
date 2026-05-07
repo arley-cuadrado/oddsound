@@ -9,17 +9,31 @@ type Collection = keyof Config['collections']
 async function getDocument(collection: Collection, slug: string, depth = 0) {
   const payload = await getPayload({ config: configPromise })
 
-  const page = await payload.find({
-    collection,
-    depth,
-    where: {
-      slug: {
-        equals: slug,
-      },
-    },
-  })
+  try {
+    const document = await payload.findByID({
+      collection,
+      id: slug,
+      depth,
+      overrideAccess: true,
+    })
 
-  return page.docs[0]
+    return document
+  } catch {
+    const result = await payload.find({
+      collection,
+      depth,
+      limit: 1,
+      overrideAccess: true,
+      pagination: false,
+      where: {
+        slug: {
+          equals: slug,
+        },
+      },
+    })
+
+    return result.docs[0]
+  }
 }
 
 /**

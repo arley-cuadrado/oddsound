@@ -10,13 +10,15 @@ import {
 } from '@payloadcms/richtext-lexical'
 
 import { authenticated } from '../../access/authenticated'
-import { authenticatedOrPublished } from '../../access/authenticatedOrPublished'
 import { Banner } from '../../blocks/Banner/config'
 import { Code } from '../../blocks/Code/config'
 import { MediaBlock } from '../../blocks/MediaBlock/config'
 import { generatePreviewPath } from '../../utilities/generatePreviewPath'
 import { populateAuthors } from './hooks/populateAuthors'
 import { revalidateDelete, revalidatePost } from './hooks/revalidatePost'
+import { assignOwnership } from '@/hooks/assignOwnership'
+import { generateCreatorContentSlug } from '@/hooks/generateCreatorContentSlug'
+import { isAdminUser } from '@/utilities/isAdminUser'
 
 import {
   MetaDescriptionField,
@@ -30,10 +32,44 @@ import { slugField } from 'payload'
 export const Posts: CollectionConfig<'posts'> = {
   slug: 'posts',
   access: {
+    admin: authenticated,
     create: authenticated,
-    delete: authenticated,
-    read: authenticatedOrPublished,
-    update: authenticated,
+    delete: ({ req: { user } }) => {
+      if (!user) return false
+      if (isAdminUser(user)) return true
+
+      return {
+        owner: {
+          equals: user.id,
+        },
+      }
+    },
+    read: ({ req: { user } }) => {
+      if (!user) {
+        return {
+          _status: {
+            equals: 'published',
+          },
+        } as any
+      }
+      if (isAdminUser(user)) return true
+
+      return {
+        owner: {
+          equals: user.id,
+        },
+      } as any
+    },
+    update: ({ req: { user } }) => {
+      if (!user) return false
+      if (isAdminUser(user)) return true
+
+      return {
+        owner: {
+          equals: user.id,
+        },
+      }
+    },
   },
   // This config controls what's populated by default when a post is referenced
   // https://payloadcms.com/docs/queries/select#defaultpopulate-collection-config-property
@@ -66,6 +102,34 @@ export const Posts: CollectionConfig<'posts'> = {
     useAsTitle: 'title',
   },
   fields: [
+    {
+      name: 'owner',
+      type: 'relationship',
+      relationTo: 'users',
+      access: {
+        create: ({ req: { user } }) => isAdminUser(user),
+        read: ({ req: { user } }) => isAdminUser(user),
+        update: ({ req: { user } }) => isAdminUser(user),
+      },
+      admin: {
+        hidden: true,
+        position: 'sidebar',
+      },
+    },
+    {
+      name: 'profile',
+      type: 'relationship',
+      relationTo: 'profiles',
+      access: {
+        create: ({ req: { user } }) => isAdminUser(user),
+        read: ({ req: { user } }) => isAdminUser(user),
+        update: ({ req: { user } }) => isAdminUser(user),
+      },
+      admin: {
+        hidden: true,
+        position: 'sidebar',
+      },
+    },
     {
       name: 'title',
       type: 'text',
@@ -217,6 +281,7 @@ export const Posts: CollectionConfig<'posts'> = {
     slugField(),
   ],
   hooks: {
+    beforeChange: [assignOwnership, generateCreatorContentSlug('posts')],
     afterChange: [revalidatePost],
     afterRead: [populateAuthors],
     afterDelete: [revalidateDelete],

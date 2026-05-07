@@ -8,8 +8,9 @@ import {
 import path from 'path'
 import { fileURLToPath } from 'url'
 
-import { anyone } from '../access/anyone'
 import { authenticated } from '../access/authenticated'
+import { assignOwnership } from '@/hooks/assignOwnership'
+import { isAdminUser } from '@/utilities/isAdminUser'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -18,12 +19,66 @@ export const Media: CollectionConfig = {
   slug: 'media',
   folders: true,
   access: {
+    admin: authenticated,
     create: authenticated,
-    delete: authenticated,
-    read: anyone,
-    update: authenticated,
+    delete: ({ req: { user } }) => {
+      if (!user) return false
+      if (isAdminUser(user)) return true
+
+      return {
+        owner: {
+          equals: user.id,
+        },
+      }
+    },
+    read: ({ req: { user } }) => {
+      if (!user) return true
+      if (isAdminUser(user)) return true
+
+      return {
+        owner: {
+          equals: user.id,
+        },
+      }
+    },
+    update: ({ req: { user } }) => {
+      if (!user) return false
+      if (isAdminUser(user)) return true
+
+      return {
+        owner: {
+          equals: user.id,
+        },
+      }
+    },
   },
   fields: [
+    {
+      name: 'owner',
+      type: 'relationship',
+      relationTo: 'users',
+      access: {
+        create: ({ req: { user } }) => isAdminUser(user),
+        read: ({ req: { user } }) => isAdminUser(user),
+        update: ({ req: { user } }) => isAdminUser(user),
+      },
+      admin: {
+        hidden: true,
+      },
+    },
+    {
+      name: 'profile',
+      type: 'relationship',
+      relationTo: 'profiles',
+      access: {
+        create: ({ req: { user } }) => isAdminUser(user),
+        read: ({ req: { user } }) => isAdminUser(user),
+        update: ({ req: { user } }) => isAdminUser(user),
+      },
+      admin: {
+        hidden: true,
+      },
+    },
     {
       name: 'alt',
       type: 'text',
@@ -77,5 +132,8 @@ export const Media: CollectionConfig = {
         crop: 'center',
       },
     ],
+  },
+  hooks: {
+    beforeChange: [assignOwnership],
   },
 }

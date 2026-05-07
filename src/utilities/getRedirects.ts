@@ -9,6 +9,7 @@ export async function getRedirects(depth = 1) {
     collection: 'redirects',
     depth,
     limit: 0,
+    overrideAccess: true,
     pagination: false,
   })
 

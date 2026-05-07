@@ -103,9 +103,12 @@ export const seed = async ({
       collection: 'users',
       data: {
         name: 'Demo Author',
+        accountType: 'artist',
         email: 'demo-author@example.com',
         password: 'password',
+        role: 'creator',
       },
+      draft: false,
     }),
     payload.create({
       collection: 'media',

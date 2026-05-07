@@ -9,6 +9,7 @@ import { GenerateTitle, GenerateURL } from '@payloadcms/plugin-seo/types'
 import { FixedToolbarFeature, HeadingFeature, lexicalEditor } from '@payloadcms/richtext-lexical'
 import { searchFields } from '@/search/fieldOverrides'
 import { beforeSyncWithSearch } from '@/search/beforeSync'
+import { isAdminUser } from '@/utilities/isAdminUser'
 
 import { Page, Post } from '@/payload-types'
 import { getServerSideURL } from '@/utilities/getURL'
@@ -41,6 +42,9 @@ export const plugins: Plugin[] = [
           return field
         })
       },
+      admin: {
+        hidden: ({ user }) => !isAdminUser(user as { role?: null | string } | null | undefined),
+      },
       hooks: {
         afterChange: [revalidateRedirects],
       },
@@ -59,6 +63,9 @@ export const plugins: Plugin[] = [
       payment: false,
     },
     formOverrides: {
+      admin: {
+        hidden: ({ user }) => !isAdminUser(user as { role?: null | string } | null | undefined),
+      },
       fields: ({ defaultFields }) => {
         return defaultFields.map((field) => {
           if ('name' in field && field.name === 'confirmationMessage') {
@@ -79,11 +86,19 @@ export const plugins: Plugin[] = [
         })
       },
     },
+    formSubmissionOverrides: {
+      admin: {
+        hidden: ({ user }) => !isAdminUser(user as { role?: null | string } | null | undefined),
+      },
+    },
   }),
   searchPlugin({
     collections: ['posts'],
     beforeSync: beforeSyncWithSearch,
     searchOverrides: {
+      admin: {
+        hidden: ({ user }) => !isAdminUser(user as { role?: null | string } | null | undefined),
+      },
       fields: ({ defaultFields }) => {
         return [...defaultFields, ...searchFields]
       },

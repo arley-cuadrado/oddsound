@@ -30,15 +30,32 @@ export const ArchiveBlock: React.FC<
       collection: 'posts',
       depth: 1,
       limit,
+      overrideAccess: true,
       ...(flattenedCategories && flattenedCategories.length > 0
         ? {
             where: {
-              categories: {
-                in: flattenedCategories,
+              and: [
+                {
+                  categories: {
+                    in: flattenedCategories,
+                  },
+                },
+                {
+                  _status: {
+                    equals: 'published',
+                  },
+                },
+              ],
+            },
+          }
+        : {
+            where: {
+              _status: {
+                equals: 'published',
               },
             },
           }
-        : {}),
+      ),
     })
 
     posts = fetchedPosts.docs
