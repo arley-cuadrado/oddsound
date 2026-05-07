@@ -29,6 +29,7 @@ export function RegisterForm() {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [showPassword, setShowPassword] = useState(false)
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -71,7 +72,7 @@ export function RegisterForm() {
     <form className="space-y-6" onSubmit={handleSubmit}>
       <div className="space-y-2">
         <label className="text-sm font-medium text-foreground" htmlFor="name">
-          What is your Name dude?
+          What is your Name dude? *
         </label>
         <input
           className="h-12 w-full border border-border bg-background px-4 text-sm text-foreground outline-none"
@@ -101,7 +102,7 @@ export function RegisterForm() {
 
       <div className="space-y-2">
         <label className="text-sm font-medium text-foreground" htmlFor="country">
-          Enter your country
+          Enter your country *
         </label>
         <input
           className="h-12 w-full border border-border bg-background px-4 text-sm text-foreground outline-none"
@@ -115,7 +116,7 @@ export function RegisterForm() {
 
       <div className="space-y-2">
         <label className="text-sm font-medium text-foreground" htmlFor="genre">
-          Now your music genre
+          Now your music genre *
         </label>
         <input
           className="h-12 w-full border border-border bg-background px-4 text-sm text-foreground outline-none"
@@ -129,7 +130,7 @@ export function RegisterForm() {
 
       <div className="space-y-2">
         <label className="text-sm font-medium text-foreground" htmlFor="email">
-          Your email here
+          Your email here *
         </label>
         <input
           className="h-12 w-full border border-border bg-background px-4 text-sm text-foreground outline-none"
@@ -143,17 +144,28 @@ export function RegisterForm() {
 
       <div className="space-y-2">
         <label className="text-sm font-medium text-foreground" htmlFor="password">
-          And your password
+          And your password *
         </label>
-        <input
-          className="h-12 w-full border border-border bg-background px-4 text-sm text-foreground outline-none"
-          id="password"
-          minLength={8}
-          name="password"
-          placeholder="At least 8 characters"
-          required
-          type="password"
-        />
+        <div className="relative">
+          <input
+            className="h-12 w-full border border-border bg-background px-4 pr-20 text-sm text-foreground outline-none"
+            id="password"
+            minLength={8}
+            name="password"
+            placeholder="At least 8 characters"
+            required
+            type={showPassword ? 'text' : 'password'}
+          />
+          <button
+            aria-controls="password"
+            aria-label={showPassword ? 'Hide password' : 'Show password'}
+            className="absolute inset-y-0 right-0 px-4 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
+            onClick={() => setShowPassword((current) => !current)}
+            type="button"
+          >
+            {showPassword ? 'Hide' : 'Show'}
+          </button>
+        </div>
       </div>
 
       {error && (
