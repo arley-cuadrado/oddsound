@@ -72,7 +72,7 @@ export function RegisterForm() {
     <form className="space-y-6" onSubmit={handleSubmit}>
       <div className="space-y-2">
         <label className="text-sm font-medium text-foreground" htmlFor="name">
-          What is your Name dude? *
+          What is your Name dude?
         </label>
         <input
           className="h-12 w-full border border-border bg-background px-4 text-sm text-foreground outline-none"
@@ -93,6 +93,8 @@ export function RegisterForm() {
           defaultValue="artist"
           id="accountType"
           name="accountType"
+          // Account type is required because it defines the creator profile from signup.
+          required
         >
           <option value="artist">Artist</option>
           <option value="band">Band</option>
@@ -102,7 +104,7 @@ export function RegisterForm() {
 
       <div className="space-y-2">
         <label className="text-sm font-medium text-foreground" htmlFor="country">
-          Enter your country *
+          Enter your country
         </label>
         <input
           className="h-12 w-full border border-border bg-background px-4 text-sm text-foreground outline-none"
@@ -116,7 +118,7 @@ export function RegisterForm() {
 
       <div className="space-y-2">
         <label className="text-sm font-medium text-foreground" htmlFor="genre">
-          Now your music genre *
+          Now your music genre
         </label>
         <input
           className="h-12 w-full border border-border bg-background px-4 text-sm text-foreground outline-none"
@@ -130,7 +132,7 @@ export function RegisterForm() {
 
       <div className="space-y-2">
         <label className="text-sm font-medium text-foreground" htmlFor="email">
-          Your email here *
+          Your email here
         </label>
         <input
           className="h-12 w-full border border-border bg-background px-4 text-sm text-foreground outline-none"
@@ -144,7 +146,7 @@ export function RegisterForm() {
 
       <div className="space-y-2">
         <label className="text-sm font-medium text-foreground" htmlFor="password">
-          And your password *
+          And your password
         </label>
         <div className="relative">
           <input
@@ -166,6 +168,12 @@ export function RegisterForm() {
             {showPassword ? 'Hide' : 'Show'}
           </button>
         </div>
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-foreground" htmlFor="password">
+          *All fields are required
+        </label>
       </div>
 
       {error && (
