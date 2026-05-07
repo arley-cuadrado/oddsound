@@ -1,7 +1,6 @@
 import type { CollectionConfig } from 'payload'
 
 import { authenticated } from '@/access/authenticated'
-import { anyone } from '@/access/anyone'
 import { isAdmin } from '@/access/isAdmin'
 import { isAdminOrSelf } from '@/access/isAdminOrSelf'
 import { isAdminUser } from '@/utilities/isAdminUser'
@@ -14,11 +13,23 @@ export const Users: CollectionConfig = {
   access: {
     admin: authenticated,
     create: isAdmin,
-    delete: isAdmin,
+    delete: ({ req: { user } }) => {
+      if (!isAdminUser(user)) return false
+
+      // Admins can only delete creator accounts, never admin accounts.
+      return {
+        role: {
+          equals: 'creator',
+        },
+      }
+    },
     read: isAdminOrSelf,
     update: isAdminOrSelf,
   },
   admin: {
+    components: {
+      beforeList: ['@/components/UsersListSelectionGuard'],
+    },
     defaultColumns: ['name', 'email', 'role', 'accountType'],
     hidden: ({ user }) => !isAdminUser(user as { role?: null | string } | null | undefined),
     useAsTitle: 'name',
