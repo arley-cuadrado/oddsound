@@ -236,6 +236,10 @@ export interface User {
    * This account is administrative and cannot be changed to creator.
    */
   adminRoleLabel?: string | null;
+  /**
+   * This account is the only super admin and can create other admin accounts.
+   */
+  superAdminRoleLabel?: string | null;
   accountType?: ('artist' | 'band' | 'label') | null;
   profile?: (string | null) | Profile;
   isActive?: boolean | null;
@@ -1486,6 +1490,7 @@ export interface UsersSelect<T extends boolean = true> {
   name?: T;
   role?: T;
   adminRoleLabel?: T;
+  superAdminRoleLabel?: T;
   accountType?: T;
   profile?: T;
   isActive?: T;

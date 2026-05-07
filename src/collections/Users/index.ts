@@ -5,6 +5,7 @@ import { anyone } from '@/access/anyone'
 import { isAdmin } from '@/access/isAdmin'
 import { isAdminOrSelf } from '@/access/isAdminOrSelf'
 import { isAdminUser } from '@/utilities/isAdminUser'
+import { isSuperAdminUser } from '@/utilities/isSuperAdminUser'
 import { createProfile } from './hooks/createProfile'
 import { ensureCreatorDefaults } from './hooks/ensureCreatorDefaults'
 
@@ -34,7 +35,7 @@ export const Users: CollectionConfig = {
       defaultValue: 'creator',
       admin: {
         condition: (_data, siblingData, { user }) =>
-          isAdminUser(user as { role?: null | string } | null | undefined) &&
+          isSuperAdminUser(user as { email?: null | string; role?: null | string } | null | undefined) &&
           siblingData?.role !== 'admin',
       },
       options: [
@@ -57,8 +58,24 @@ export const Users: CollectionConfig = {
       admin: {
         condition: (_data, siblingData, { user }) =>
           isAdminUser(user as { role?: null | string } | null | undefined) &&
+          siblingData?.email?.trim?.().toLowerCase?.() !== 'arley.cuadrado@icloud.com' &&
           siblingData?.role === 'admin',
         description: 'This account is administrative and cannot be changed to creator.',
+        readOnly: true,
+      },
+      label: 'Role',
+    },
+    {
+      name: 'superAdminRoleLabel',
+      type: 'text',
+      virtual: true,
+      defaultValue: 'Super Admin',
+      admin: {
+        condition: (data, siblingData, { user }) =>
+          isAdminUser(user as { role?: null | string } | null | undefined) &&
+          data?.email?.trim?.().toLowerCase?.() === 'arley.cuadrado@icloud.com' &&
+          siblingData?.role === 'admin',
+        description: 'This account is the only super admin and can create other admin accounts.',
         readOnly: true,
       },
       label: 'Role',
