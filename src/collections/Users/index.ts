@@ -33,7 +33,9 @@ export const Users: CollectionConfig = {
       type: 'select',
       defaultValue: 'creator',
       admin: {
-        condition: (_data, siblingData) => siblingData?.role !== 'admin',
+        condition: (_data, siblingData, { user }) =>
+          isAdminUser(user as { role?: null | string } | null | undefined) &&
+          siblingData?.role !== 'admin',
       },
       options: [
         {
@@ -53,7 +55,9 @@ export const Users: CollectionConfig = {
       virtual: true,
       defaultValue: 'Admin',
       admin: {
-        condition: (_data, siblingData) => siblingData?.role === 'admin',
+        condition: (_data, siblingData, { user }) =>
+          isAdminUser(user as { role?: null | string } | null | undefined) &&
+          siblingData?.role === 'admin',
         description: 'This account is administrative and cannot be changed to creator.',
         readOnly: true,
       },
