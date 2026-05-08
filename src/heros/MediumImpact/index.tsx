@@ -22,9 +22,14 @@ export const MediumImpactHero: React.FC<MediumImpactHeroProps> = ({
   return (
     <div className="container py-0">
       <div className="grid items-center gap-8 md:grid-cols-[minmax(0,1.05fr)_minmax(18rem,0.95fr)] md:gap-12">
-        <div>
+        <div className="h-[272px] overflow-hidden md:h-[320px]">
           {media && typeof media === 'object' && (
-            <Media className="overflow-hidden" imgClassName="w-full object-cover" priority resource={media} />
+            <Media
+              className="h-full w-full overflow-hidden"
+              imgClassName="h-full w-full object-cover"
+              priority
+              resource={media}
+            />
           )}
         </div>
 
