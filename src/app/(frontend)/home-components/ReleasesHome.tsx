@@ -36,8 +36,8 @@ export default function ReleasesHome({ releases }: { releases: ReleaseItem[] }) 
                     alt={release.creatorName}
                   />
                   <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-4 bg-gradient-to-t from-black/70 via-black/20 to-transparent px-4 py-3 text-white">
-                    <p className="text-sm font-semibold">{release.creatorName}</p>
-                    <p className="text-sm">{release.country || 'Pais'}</p>
+                    <p className="text-sm font-semibold text-white">{release.creatorName}</p>
+                    <p className="text-sm text-white">{release.country || 'Pais'}</p>
                   </div>
                 </div>
                 <div className="flex h-[8rem] w-full flex-col pr-2">
