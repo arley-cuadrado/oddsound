@@ -6,6 +6,7 @@ import { isAdminOrSelf } from '@/access/isAdminOrSelf'
 import { isAdminUser } from '@/utilities/isAdminUser'
 import { isSuperAdminUser } from '@/utilities/isSuperAdminUser'
 import { createProfile } from './hooks/createProfile'
+import { deleteCreatorData } from './hooks/deleteCreatorData'
 import { ensureCreatorDefaults } from './hooks/ensureCreatorDefaults'
 
 export const Users: CollectionConfig = {
@@ -134,6 +135,7 @@ export const Users: CollectionConfig = {
     },
   ],
   hooks: {
+    afterDelete: [deleteCreatorData],
     afterOperation: [createProfile],
     beforeChange: [ensureCreatorDefaults],
   },
