@@ -8,10 +8,16 @@ import { CMSLink } from '@/components/Link'
 import { Media } from '@/components/Media'
 
 type HighImpactHeroProps = Page['hero'] & {
+  creatorName?: string
   pageTitle: string
 }
 
-export const HighImpactHero: React.FC<HighImpactHeroProps> = ({ links, media, pageTitle }) => {
+export const HighImpactHero: React.FC<HighImpactHeroProps> = ({
+  links,
+  media,
+  pageTitle,
+  creatorName,
+}) => {
   const { setHeaderTheme } = useHeaderTheme()
 
   useEffect(() => {
@@ -24,12 +30,15 @@ export const HighImpactHero: React.FC<HighImpactHeroProps> = ({ links, media, pa
         {media && typeof media === 'object' && (
           <Media fill imgClassName="-z-10 object-cover" priority resource={media} />
         )}
-        <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/20 via-black/10 to-transparent backdrop-blur-md [mask-image:linear-gradient(to_top,black_45%,transparent_100%)]" />
+        <div className="absolute inset-x-0 bottom-0 h-[200px] bg-gradient-to-t from-black/20 via-black/10 to-transparent backdrop-blur-md [mask-image:linear-gradient(to_top,black_45%,transparent_100%)]" />
       </div>
 
       <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex justify-center px-4">
         <div className="w-full max-w-4xl">
           <div className="px-5 pb-2 text-center md:px-8 md:pb-3">
+            {creatorName && (
+              <p className="mb-2 text-xs uppercase tracking-[0.14em] text-white/85">{creatorName}</p>
+            )}
             <h1 className="text-3xl font-black leading-none tracking-tight md:text-5xl lg:text-6xl">
               {pageTitle}
             </h1>
