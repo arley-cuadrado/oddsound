@@ -13,6 +13,8 @@ const heroes = {
 }
 
 type RenderHeroProps = Page['hero'] & {
+  creatorGenre?: string
+  creatorName?: string
   pageTitle: string
 }
 

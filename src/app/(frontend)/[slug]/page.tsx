@@ -65,6 +65,7 @@ export default async function Page({ params: paramsPromise }: Args) {
   }
 
   const { hero, layout } = page
+  const creatorProfile = typeof page.profile === 'object' && page.profile ? page.profile : null
 
   return (
     <article className="mx-auto max-w-4xl pb-24">
@@ -74,7 +75,12 @@ export default async function Page({ params: paramsPromise }: Args) {
 
       {draft && <LivePreviewListener />}
 
-      <RenderHero {...hero} pageTitle={page.title} />
+      <RenderHero
+        {...hero}
+        creatorGenre={creatorProfile?.genre || undefined}
+        creatorName={creatorProfile?.displayName || undefined}
+        pageTitle={page.title}
+      />
       <RenderBlocks blocks={layout} />
     </article>
   )
@@ -98,6 +104,7 @@ const queryPageBySlug = cache(async ({ slug }: { slug: string }) => {
 
   const result = await payload.find({
     collection: 'pages',
+    depth: 2,
     draft,
     limit: 1,
     pagination: false,
