@@ -52,7 +52,7 @@ export default async function Post({ params: paramsPromise }: Args) {
   if (!post) return <PayloadRedirects url={url} />
 
   return (
-    <article className="pt-16 pb-16">
+    <article className="mx-auto max-w-4xl pt-16 pb-16">
       <PageClient />
 
       {/* Allows redirects for valid pages too */}
