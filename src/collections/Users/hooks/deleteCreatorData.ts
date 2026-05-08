@@ -62,29 +62,45 @@ export const deleteCreatorData: CollectionAfterDeleteHook<User> = async ({ doc, 
     ...pagesResult.docs.map((page) =>
       req.payload.delete({
         collection: 'pages',
-        id: page.id,
-        overrideAccess: true,
+        req,
+        where: {
+          id: {
+            equals: page.id,
+          },
+        },
       }),
     ),
     ...postsResult.docs.map((post) =>
       req.payload.delete({
         collection: 'posts',
-        id: post.id,
-        overrideAccess: true,
+        req,
+        where: {
+          id: {
+            equals: post.id,
+          },
+        },
       }),
     ),
     ...mediaResult.docs.map((media) =>
       req.payload.delete({
         collection: 'media',
-        id: media.id,
-        overrideAccess: true,
+        req,
+        where: {
+          id: {
+            equals: media.id,
+          },
+        },
       }),
     ),
     ...profilesResult.docs.map((profile) =>
       req.payload.delete({
         collection: 'profiles',
-        id: profile.id,
-        overrideAccess: true,
+        req,
+        where: {
+          id: {
+            equals: profile.id,
+          },
+        },
       }),
     ),
   ])

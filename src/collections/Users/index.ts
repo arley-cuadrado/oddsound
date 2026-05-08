@@ -17,12 +17,21 @@ export const Users: CollectionConfig = {
     delete: ({ req: { user } }) => {
       if (!isAdminUser(user)) return false
 
-      // Admins can only delete creator accounts, never admin accounts.
+      // Admins can delete creator accounts, but never themselves or any admin account.
       return {
-        role: {
-          equals: 'creator',
-        },
-      }
+        and: [
+          {
+            role: {
+              equals: 'creator',
+            },
+          },
+          {
+            id: {
+              not_equals: user?.id,
+            },
+          },
+        ],
+      } as any
     },
     read: isAdminOrSelf,
     update: isAdminOrSelf,

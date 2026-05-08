@@ -10,10 +10,28 @@ export const Profiles: CollectionConfig = {
   access: {
     admin: authenticated,
     create: authenticated,
-    delete: isAdmin,
+    delete: ({ req: { user } }) => {
+      if (!user) return false
+
+      if (isAdminUser(user)) {
+        return {
+          owner: {
+            not_equals: user.id,
+          },
+        }
+      }
+
+      return false
+    },
     read: ({ req: { user } }) => {
       if (!user) return false
-      if (isAdminUser(user)) return true
+      if (isAdminUser(user)) {
+        return {
+          owner: {
+            not_equals: user.id,
+          },
+        }
+      }
 
       return {
         owner: {
@@ -23,7 +41,13 @@ export const Profiles: CollectionConfig = {
     },
     update: ({ req: { user } }) => {
       if (!user) return false
-      if (isAdminUser(user)) return true
+      if (isAdminUser(user)) {
+        return {
+          owner: {
+            not_equals: user.id,
+          },
+        }
+      }
 
       return {
         owner: {
