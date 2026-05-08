@@ -41,6 +41,9 @@ export const hero: Field = {
     {
       name: 'richText',
       type: 'richText',
+      admin: {
+        condition: (_, { type } = {}) => type === 'lowImpact',
+      },
       editor: lexicalEditor({
         features: ({ rootFeatures }) => {
           return [
