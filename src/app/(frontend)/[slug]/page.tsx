@@ -77,6 +77,7 @@ export default async function Page({ params: paramsPromise }: Args) {
 
       <RenderHero
         {...hero}
+        creatorCountry={creatorProfile?.location || undefined}
         creatorGenre={creatorProfile?.genre || undefined}
         creatorName={creatorProfile?.displayName || undefined}
         pageTitle={page.title}
