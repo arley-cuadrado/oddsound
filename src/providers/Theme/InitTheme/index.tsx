@@ -2,6 +2,7 @@ import Script from 'next/script'
 import React from 'react'
 
 import { defaultTheme, themeLocalStorageKey } from '../ThemeSelector/types'
+import { themeDesktopBreakpoint } from '../shared'
 
 export const InitTheme: React.FC = () => {
   return (
@@ -27,16 +28,14 @@ export const InitTheme: React.FC = () => {
     }
 
     var themeToSet = '${defaultTheme}'
-    var preference = window.localStorage.getItem('${themeLocalStorageKey}')
+    var implicitPreference = getImplicitPreference()
+    var isDesktop = window.innerWidth > ${themeDesktopBreakpoint}
+    var preference = isDesktop ? window.localStorage.getItem('${themeLocalStorageKey}') : null
 
     if (themeIsValid(preference)) {
       themeToSet = preference
-    } else {
-      var implicitPreference = getImplicitPreference()
-
-      if (implicitPreference) {
-        themeToSet = implicitPreference
-      }
+    } else if (implicitPreference) {
+      themeToSet = implicitPreference
     }
 
     document.documentElement.setAttribute('data-theme', themeToSet)

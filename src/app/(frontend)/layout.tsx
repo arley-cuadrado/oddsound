@@ -37,7 +37,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
             <Header />
             {/* static home and dynamic pages for artists*/}
-            <main className="w-full">{children}</main>
+            <main className="w-full max-[975px]:pt-20 max-[975px]:pb-24">{children}</main>
             {/*<Footer />*/}
           </div>
         </Providers>

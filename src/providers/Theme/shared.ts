@@ -1,6 +1,7 @@
 import type { Theme } from './types'
 
 export const themeLocalStorageKey = 'payload-theme'
+export const themeDesktopBreakpoint = 975
 
 export const defaultTheme = 'light'
 
