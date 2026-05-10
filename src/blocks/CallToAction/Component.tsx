@@ -6,6 +6,7 @@ import RichText from '@/components/RichText'
 import { CMSLink } from '@/components/Link'
 
 export const CallToActionBlock: React.FC<CTABlockProps> = ({ links, richText }) => {
+
   return (
     <div className="container">
       <div className="flex flex-col gap-8 bg-[length:400%_400%] bg-[linear-gradient(-45deg,#ee7752,#e73c7e,#23a6d5,#23d5ab)] p-4 [animation:gradient_15s_ease_infinite] md:flex-row md:items-center md:justify-between">

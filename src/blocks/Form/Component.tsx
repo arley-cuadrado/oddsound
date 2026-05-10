@@ -118,7 +118,7 @@ export const FormBlock: React.FC<
       {enableIntro && introContent && !hasSubmitted && (
         <RichText className="mb-8 lg:mb-12" data={introContent} enableGutter={false} />
       )}
-      <div className="p-4 lg:p-6 border border-border rounded-[0.8rem]">
+      <div className="rounded-[4px] border-0 bg-[#f9fafb] p-4 dark:border dark:border-border dark:bg-transparent lg:p-6">
         <FormProvider {...formMethods}>
           {!isLoading && hasSubmitted && confirmationType === 'message' && (
             <RichText data={confirmationMessage} />
@@ -126,7 +126,11 @@ export const FormBlock: React.FC<
           {isLoading && !hasSubmitted && <p>Loading, please wait...</p>}
           {error && <div>{`${error.status || '500'}: ${error.message || ''}`}</div>}
           {!hasSubmitted && (
-            <form id={formID} onSubmit={handleSubmit(onSubmit)}>
+            <form
+              id={formID}
+              className="[&_input]:rounded-[4px] [&_textarea]:rounded-[4px] dark:[&_input]:border-border dark:[&_input]:bg-[#262626] dark:[&_textarea]:border-border dark:[&_textarea]:bg-[#262626]"
+              onSubmit={handleSubmit(onSubmit)}
+            >
               <div className="mb-4 last:mb-0">
                 {formFromProps &&
                   formFromProps.fields &&
