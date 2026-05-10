@@ -41,7 +41,7 @@ export default function ReleasesHome({ releases }: { releases: ReleaseItem[] }) 
                   </div>
                 </div>
                 <div className="flex h-[8rem] w-full flex-col pr-2">
-                  <h3 className="text-2xl font-semibold leading-tight text-slate-800 dark:text-white">
+                  <h3 className="text-[16px] font-black leading-tight text-slate-800 dark:text-white">
                     {release.releaseTitle}
                   </h3>
                   <p className="text-sm line-clamp-3 text-slate-500 dark:text-gray-400">
