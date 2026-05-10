@@ -26,9 +26,9 @@ export default function ReleasesHome({ releases }: { releases: ReleaseItem[] }) 
     <>
       {visibleReleases.map((release) => {
         return (
-          <article key={release.id} className="w-full max-w-[28rem]">
+          <article key={release.id} className="w-full max-w-[28rem] max-[767.98px]:max-w-none">
             <Link href={`/${release.releaseSlug}`}>
-              <section className="flex h-[36rem] w-full flex-col gap-3 pt-4 pb-4 items-start">
+              <section className="flex h-[36rem] w-full flex-col items-start gap-3 pt-4 pb-4">
                 <div className="relative h-[28rem] w-full overflow-hidden bg-slate-100 dark:bg-slate-900">
                   <img
                     className="h-full w-full object-cover"
