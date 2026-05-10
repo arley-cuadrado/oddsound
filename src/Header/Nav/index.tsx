@@ -70,6 +70,11 @@ export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
             )
           })}
         </div>
+        <div className="hidden max-[975px]:block max-[975px]:shrink-0">
+          <Link href="/about-us" className="block text-left hover:underline">
+            about
+          </Link>
+        </div>
         <div className="max-[975px]:hidden max-[975px]:shrink-0">
           <ThemeSelector />
         </div>
