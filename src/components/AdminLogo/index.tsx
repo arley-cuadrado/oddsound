@@ -13,12 +13,11 @@ const AdminLogo: React.FC = () => {
           animation: 'oddsound-admin-gradient 15s ease infinite',
           display: 'inline-block',
           fontSize: '3rem',
-          fontWeight: 700,
           letterSpacing: '0.02em',
           lineHeight: 1,
         }}
       >
-        oddsound
+        <span style={{ fontWeight: 900 }}>odd</span>sound
         <style>{`
           @keyframes oddsound-admin-gradient {
             0% { background-position: 0% 50%; }

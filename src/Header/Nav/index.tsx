@@ -17,7 +17,7 @@ export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
       <div>
         <Link href="/" className="title">
           {/*<Logo loading="eager" priority="high" className="invert dark:invert-0" />*/}
-          oddssound
+          <span className="font-black">odd</span>sound
         </Link>
       </div>
       <div className="flex gap-6 items-center">
