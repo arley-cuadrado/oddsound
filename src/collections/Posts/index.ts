@@ -33,17 +33,8 @@ export const Posts: CollectionConfig<'posts'> = {
   slug: 'posts',
   access: {
     admin: authenticated,
-    create: authenticated,
-    delete: ({ req: { user } }) => {
-      if (!user) return false
-      if (isAdminUser(user)) return true
-
-      return {
-        owner: {
-          equals: user.id,
-        },
-      }
-    },
+    create: ({ req: { user } }) => isAdminUser(user),
+    delete: ({ req: { user } }) => isAdminUser(user),
     read: ({ req: { user } }) => {
       if (!user) {
         return {
@@ -84,6 +75,7 @@ export const Posts: CollectionConfig<'posts'> = {
     },
   },
   admin: {
+    hidden: ({ user }) => user?.role !== 'admin',
     defaultColumns: ['title', 'slug', 'updatedAt'],
     livePreview: {
       url: ({ data, req }) =>
