@@ -28,16 +28,18 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       </head>
       <body>
         <Providers>
-          <AdminBar
-            adminBarProps={{
-              preview: isEnabled,
-            }}
-          />
+          <div className="flex">
+            <AdminBar
+              adminBarProps={{
+                preview: isEnabled,
+              }}
+            />
 
-          <Header />
-          {/* static home and dynamic pages for artists*/}
-          {children}
-          {/*<Footer />*/}
+            <Header />
+            {/* static home and dynamic pages for artists*/}
+            <main className="w-full">{children}</main>
+            {/*<Footer />*/}
+          </div>
         </Providers>
       </body>
     </html>

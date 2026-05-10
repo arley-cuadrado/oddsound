@@ -13,14 +13,14 @@ export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
   const navItems = data?.navItems || []
 
   return (
-    <nav className="flex w-full justify-between">
+    <nav className="flex flex-col p-4 h-dvh fixed">
       <div>
         <Link href="/" className="title">
           {/*<Logo loading="eager" priority="high" className="invert dark:invert-0" />*/}
           <span className="font-black">odd</span>sound
         </Link>
       </div>
-      <div className="flex gap-6 items-center">
+      <div className="flex flex-col gap-6">
         <Link href="/about-us" className="block md:hidden">
           about
         </Link>
