@@ -7,6 +7,7 @@ import { Media } from '@/components/Media'
 import RichText from '@/components/RichText'
 
 type MediumImpactHeroProps = Page['hero'] & {
+  creatorCountry?: string
   creatorGenre?: string
   creatorName?: string
   pageTitle: string
@@ -16,9 +17,12 @@ export const MediumImpactHero: React.FC<MediumImpactHeroProps> = ({
   links,
   media,
   pageTitle,
+  creatorCountry,
   creatorGenre,
   creatorName,
 }) => {
+  const creatorMeta = [creatorGenre, creatorCountry].filter(Boolean).join(' · ')
+
   return (
     <div className="container py-0">
       <div className="grid items-center gap-8 md:grid-cols-[minmax(0,1.05fr)_minmax(18rem,0.95fr)] md:gap-12">
@@ -34,16 +38,16 @@ export const MediumImpactHero: React.FC<MediumImpactHeroProps> = ({
         </div>
 
         <div className="flex flex-col justify-center">
-          {(creatorName || creatorGenre) && (
+          {(creatorName || creatorMeta) && (
             <div className="mb-4 space-y-1">
               {creatorName && (
-                <p className="text-xs uppercase tracking-[0.14em] text-slate-500 dark:text-gray-400">
+                <p className="text-xs uppercase tracking-[0.14em] text-slate-500 dark:text-white/85">
                   {creatorName}
                 </p>
               )}
-              {creatorGenre && (
+              {creatorMeta && (
                 <p className="text-xs uppercase tracking-[0.14em] text-slate-500 dark:text-gray-400">
-                  {creatorGenre}
+                  {creatorMeta}
                 </p>
               )}
             </div>

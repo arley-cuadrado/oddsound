@@ -8,6 +8,8 @@ import { CMSLink } from '@/components/Link'
 import { Media } from '@/components/Media'
 
 type HighImpactHeroProps = Page['hero'] & {
+  creatorCountry?: string
+  creatorGenre?: string
   creatorName?: string
   pageTitle: string
 }
@@ -16,9 +18,12 @@ export const HighImpactHero: React.FC<HighImpactHeroProps> = ({
   links,
   media,
   pageTitle,
+  creatorCountry,
+  creatorGenre,
   creatorName,
 }) => {
   const { setHeaderTheme } = useHeaderTheme()
+  const creatorMeta = [creatorGenre, creatorCountry].filter(Boolean).join(' · ')
 
   useEffect(() => {
     setHeaderTheme('dark')
@@ -39,6 +44,11 @@ export const HighImpactHero: React.FC<HighImpactHeroProps> = ({
             {creatorName && (
               <p className="mb-2 text-xs uppercase tracking-[0.14em] text-white/85">
                 {creatorName}
+              </p>
+            )}
+            {creatorMeta && (
+              <p className="mb-2 text-xs uppercase tracking-[0.14em] text-white/70">
+                {creatorMeta}
               </p>
             )}
             <h1 className="text-3xl font-black leading-none tracking-tight md:text-5xl lg:text-6xl">
