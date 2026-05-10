@@ -57,7 +57,7 @@ export const HighImpactHero: React.FC<HighImpactHeroProps> = ({
           </div>
 
           {Array.isArray(links) && links.length > 0 && (
-            <ul className="pointer-events-auto mt-4 flex flex-wrap justify-center gap-4">
+            <ul className="pointer-events-auto mt-4 mb-3 flex flex-wrap justify-center gap-4">
               {links.map(({ link }, i) => {
                 return (
                   <li key={i}>
