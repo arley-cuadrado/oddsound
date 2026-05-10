@@ -13,26 +13,35 @@ export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
   const navItems = data?.navItems || []
 
   return (
-    <nav className="flex flex-col p-4 h-dvh fixed">
+    <nav className="fixed top-0 left-0 flex h-dvh flex-col gap-4 p-4">
       <div>
         <Link href="/" className="title">
           {/*<Logo loading="eager" priority="high" className="invert dark:invert-0" />*/}
           <span className="font-black">odd</span>sound
         </Link>
       </div>
-      <div className="flex flex-col gap-6">
-        <Link href="/about-us" className="block md:hidden">
-          about
-        </Link>
-        <Link href="/search" className="flex">
-          <SearchIcon className="w-auto text-primary" />
-          <span className="hidden md:block">search</span>
-        </Link>
+      <div className="flex h-[90vh] flex-col justify-between">
+        <div className="flex flex-col gap-4">
+          <Link href="/about-us" className="block md:hidden">
+            about
+          </Link>
+          <Link href="/search" className="flex hover:underline">
+            <span className="hidden md:block">Discover</span>
+          </Link>
+          {/* dynamic routes, registered artists */}
+          {navItems.map(({ link }, i) => {
+            return (
+              <div key={i} className="w-full text-left">
+                <CMSLink
+                  {...link}
+                  appearance="inline"
+                  className="block w-full text-left hover:underline"
+                />
+              </div>
+            )
+          })}
+        </div>
         <ThemeSelector />
-        {/* dynamic routes, registered artists */}
-        {navItems.map(({ link }, i) => {
-          return <CMSLink key={i} {...link} appearance="link" />
-        })}
       </div>
     </nav>
   )

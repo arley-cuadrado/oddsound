@@ -32,7 +32,9 @@ export const CMSLink: React.FC<CMSLinkType> = (props) => {
     size: sizeFromProps,
     url,
   } = props
-{/* CMSLink converts a page reference into a real URL here: */}
+  {
+    /* CMSLink converts a page reference into a real URL here: */
+  }
   const href =
     type === 'reference' && typeof reference?.value === 'object' && reference.value.slug
       ? `${reference?.relationTo !== 'pages' ? `/${reference?.relationTo}` : ''}/${

@@ -1,12 +1,5 @@
 'use client'
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import React, { useState } from 'react'
 
 import type { Theme } from './types'
@@ -16,34 +9,43 @@ import { themeLocalStorageKey } from './types'
 
 export const ThemeSelector: React.FC = () => {
   const { setTheme } = useTheme()
-  const [value, setValue] = useState('')
+  const [value, setValue] = useState<Theme>('light')
 
-  const onThemeChange = (themeToSet: Theme & 'auto') => {
-    if (themeToSet === 'auto') {
-      setTheme(null)
-      setValue('auto')
-    } else {
-      setTheme(themeToSet)
-      setValue(themeToSet)
-    }
+  const onThemeChange = (themeToSet: Theme) => {
+    setTheme(themeToSet)
+    setValue(themeToSet)
   }
 
   React.useEffect(() => {
     const preference = window.localStorage.getItem(themeLocalStorageKey)
-    setValue(preference ?? 'auto')
+    if (preference === 'dark' || preference === 'light') {
+      setValue(preference)
+      return
+    }
+
+    setValue('light')
   }, [])
 
   return (
-    <Select onValueChange={onThemeChange} value={value}>
-      <SelectTrigger aria-label="Select a theme">
-        {/* w-auto bg-transparent gap-2 pl-0 md:pl-3 border-none hidden md:block */}
-        <SelectValue placeholder="Theme" />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectItem value="auto">Auto</SelectItem>
-        <SelectItem value="light">Light</SelectItem>
-        <SelectItem value="dark">Dark</SelectItem>
-      </SelectContent>
-    </Select>
+    <button
+      type="button"
+      aria-label={`Switch to ${value === 'dark' ? 'light' : 'dark'} mode`}
+      aria-pressed={value === 'dark'}
+      className="inline-flex cursor-pointer items-center gap-2"
+      onClick={() => onThemeChange(value === 'dark' ? 'light' : 'dark')}
+    >
+      <span
+        className={`relative flex h-6 w-10 rounded-full border transition-colors ${
+          value === 'dark' ? 'border-border bg-[#262626]' : 'border-border bg-white'
+        }`}
+      >
+        <span
+          className={`absolute top-0.5 h-[18px] w-[18px] rounded-full bg-[#8a8a8a] transition-transform ${
+            value === 'dark' ? 'translate-x-0.5' : 'translate-x-[1.1rem]'
+          }`}
+        />
+      </span>
+      <span className="text-sm text-primary">{value === 'dark' ? 'Dark' : 'Light'}</span>
+    </button>
   )
 }
