@@ -183,7 +183,11 @@ export default async function Page({ searchParams: searchParamsPromise }: Args) 
       <PageClient />
       <div className="container mb-16">
         <div className="prose dark:prose-invert max-w-none text-center">
-          <h1 className="mb-8 lg:mb-16">Search</h1>
+          <h1>Discover</h1>
+          <p className="mb-8 lg:mb-8">
+            Explore music beyond the usual. Discover artists, releases, and scenes connected by
+            genre, place, and identity.
+          </p>
 
           <div className="max-w-[50rem] mx-auto">
             <Search />

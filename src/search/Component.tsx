@@ -38,7 +38,7 @@ export const Search: React.FC = () => {
           onChange={(event) => {
             setValue(event.target.value)
           }}
-          placeholder="Search"
+          placeholder="Enter the music genre, country, band, or album name..."
           value={value}
         />
         <button type="submit" className="sr-only">
