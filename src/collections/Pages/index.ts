@@ -11,6 +11,7 @@ import { Content } from '../../blocks/Content/config'
 import { Events } from '../../blocks/Events/config'
 import { FormBlock } from '../../blocks/Form/config'
 import { MediaBlock } from '../../blocks/MediaBlock/config'
+import { VideoBlock } from '../../blocks/VideoBlock/config'
 import { hero } from '@/heros/config'
 import { slugField } from 'payload'
 import { populatePublishedAt } from '../../hooks/populatePublishedAt'
@@ -81,12 +82,12 @@ export const Pages: CollectionConfig<'pages'> = {
         edit: {
           api: {
             tab: {
-              condition: ({ user }) => isSuperAdminUser(user),
+              condition: ({ req }) => isSuperAdminUser(req.user),
             },
           },
           versions: {
             tab: {
-              condition: ({ user }) => isSuperAdminUser(user),
+              condition: ({ req }) => isSuperAdminUser(req.user),
             },
           },
         },
@@ -155,7 +156,7 @@ export const Pages: CollectionConfig<'pages'> = {
             {
               name: 'layout',
               type: 'blocks',
-              blocks: [CallToAction, Content, Events, MediaBlock, Archive, FormBlock],
+              blocks: [CallToAction, Content, Events, MediaBlock, VideoBlock, Archive, FormBlock],
               required: true,
               admin: {
                 initCollapsed: true,
