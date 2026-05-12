@@ -41,6 +41,7 @@ pnpx create-payload-app my-project -t website
 
 1. First [clone the repo](#clone) if you have not done so already
 1. `cd my-project && cp .env.example .env` to copy the example environment variables
+1. Enable Corepack and use the repo-pinned pnpm version: `corepack enable && corepack use pnpm@11.1.1`
 1. `pnpm install && pnpm dev` to install dependencies and start the dev server
 1. open `http://localhost:3000` to open the app in your browser
 
