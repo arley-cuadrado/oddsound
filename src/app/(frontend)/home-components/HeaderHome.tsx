@@ -26,29 +26,38 @@ export default function SliderHeader({ posts }: { posts?: SliderPost[] }) {
   const heroCards = posts?.length ? posts : fallbackCards
   const [activeIndex, setActiveIndex] = useState(0)
   const [visibleCards, setVisibleCards] = useState(DESKTOP_VISIBLE_CARDS)
+  const [isDesktop, setIsDesktop] = useState(true)
   const containerRef = useRef<HTMLDivElement | null>(null)
   const trackRef = useRef<HTMLDivElement | null>(null)
   const cardRefs = useRef<Array<HTMLElement | null>>([])
   const maxStartIndex = Math.max(heroCards.length - visibleCards, 0)
+  const enablePeek = isDesktop ? heroCards.length > DESKTOP_VISIBLE_CARDS : heroCards.length > MOBILE_VISIBLE_CARDS
+  const showProgress = isDesktop && heroCards.length > DESKTOP_VISIBLE_CARDS
 
   useEffect(() => {
     const updateVisibleCards = () => {
-      setVisibleCards(window.innerWidth < 1024 ? MOBILE_VISIBLE_CARDS : DESKTOP_VISIBLE_CARDS)
+      const desktop = window.innerWidth >= 1024
+      const maxVisibleCards = desktop ? DESKTOP_VISIBLE_CARDS : MOBILE_VISIBLE_CARDS
+
+      setIsDesktop(desktop)
+      setVisibleCards(Math.min(heroCards.length, maxVisibleCards))
     }
 
     updateVisibleCards()
     window.addEventListener('resize', updateVisibleCards)
 
     return () => window.removeEventListener('resize', updateVisibleCards)
-  }, [])
+  }, [heroCards.length])
 
   useEffect(() => {
+    if (!showProgress) return
+
     const interval = window.setInterval(() => {
       setActiveIndex((currentIndex) => (currentIndex >= maxStartIndex ? 0 : currentIndex + 1))
     }, AUTO_SCROLL_MS)
 
     return () => window.clearInterval(interval)
-  }, [maxStartIndex])
+  }, [maxStartIndex, showProgress])
 
   useEffect(() => {
     setActiveIndex((currentIndex) => Math.min(currentIndex, maxStartIndex))
@@ -80,7 +89,7 @@ export default function SliderHeader({ posts }: { posts?: SliderPost[] }) {
           ref={trackRef}
           className="grid w-full grid-flow-col gap-4 px-4 md:px-6"
           style={{
-            gridAutoColumns: `calc((100% - 4rem) / ${visibleCards + PEEK_RATIO})`,
+            gridAutoColumns: `calc((100% - 4rem) / ${visibleCards + (enablePeek ? PEEK_RATIO : 0)})`,
           }}
         >
           {heroCards.map((card, index) => (
@@ -105,15 +114,17 @@ export default function SliderHeader({ posts }: { posts?: SliderPost[] }) {
           ))}
         </div>
       </div>
-      <div className="mx-auto mt-5 h-1.5 w-40 overflow-hidden rounded-full bg-black/10">
-        <div
-          key={activeIndex}
-          className="h-full rounded-full bg-black"
-          style={{
-            animation: `header-home-progress ${AUTO_SCROLL_MS}ms linear forwards`,
-          }}
-        />
-      </div>
+      {showProgress ? (
+        <div className="mx-auto mt-5 h-1.5 w-40 overflow-hidden rounded-full bg-black/10">
+          <div
+            key={activeIndex}
+            className="h-full rounded-full bg-black"
+            style={{
+              animation: `header-home-progress ${AUTO_SCROLL_MS}ms linear forwards`,
+            }}
+          />
+        </div>
+      ) : null}
     </section>
   )
 }
