@@ -65,15 +65,19 @@ export default async function Post({ params: paramsPromise }: Args) {
 
       <div className="flex flex-col items-center gap-4 pt-8">
         <div className="container">
-          <RichText className="max-w-[48rem] mx-auto" data={post.content} enableGutter={false} />
-          {Array.isArray(post.layout) && post.layout.length > 0 && (
-            <div className="mx-auto max-w-[48rem]">
-              <RenderBlocks blocks={post.layout} />
+          <RichText
+            className="mx-auto max-w-[48rem] px-4 md:px-0"
+            data={post.content}
+            enableGutter={false}
+          />
+          {Array.isArray(post.layout) && post.layout.length > 0 ? (
+            <div className="mx-auto max-w-[48rem] px-4 md:px-0">
+              <RenderBlocks blocks={post.layout} disableInnerContainer />
             </div>
-          )}
+          ) : null}
           {post.relatedPosts && post.relatedPosts.length > 0 && (
             <RelatedPosts
-              className="mt-12 max-w-[52rem] lg:grid lg:grid-cols-subgrid col-start-1 col-span-3 grid-rows-[2fr]"
+              className="col-start-1 col-span-3 mt-12 max-w-[52rem] px-4 md:px-0 lg:grid lg:grid-cols-subgrid grid-rows-[2fr]"
               docs={post.relatedPosts.filter((post) => typeof post === 'object')}
             />
           )}
