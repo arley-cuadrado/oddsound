@@ -179,56 +179,56 @@ export default async function Page({ searchParams: searchParamsPromise }: Args) 
     })
 
   return (
-    <div className="mx-auto max-w-4xl pt-24 pb-24">
+    <div className="pt-24 pb-24">
       <PageClient />
-      <div className="container mb-16">
-        <div className="prose dark:prose-invert max-w-none text-center">
-          <h1>Discover</h1>
-          <p className="mb-8 lg:mb-8">
-            Explore music beyond the usual. Discover artists, releases, and scenes connected by
-            genre, place, and identity.
-          </p>
+      <div className="container mx-auto max-w-4xl">
+        <div className="mb-16">
+          <div className="prose dark:prose-invert max-w-none text-center">
+            <h1>Discover</h1>
+            <p className="mb-8 lg:mb-8">
+              Explore music beyond the usual. Discover artists, releases, and scenes connected by
+              genre, place, and identity.
+            </p>
+          </div>
+        </div>
+        <div className="mx-auto max-w-[50rem]">
+          <Search />
 
-          <div className="max-w-[50rem] mx-auto">
-            <Search />
+          <div className="mt-12">
+            {releases.length > 0 ? (
+              <div className="grid grid-cols-2 gap-4 md:gap-6 xl:grid-cols-4">
+                {releases.map((release) => (
+                  <article className="w-full" key={release.slug}>
+                    <Link href={`/${release.slug}`}>
+                      <div className="relative aspect-square w-full overflow-hidden bg-slate-100 dark:bg-slate-900">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          alt={release.title}
+                          className="h-full w-full object-cover"
+                          src={release.imageUrl}
+                        />
+                        <div className="absolute inset-x-0 bottom-0 flex flex-col items-start gap-1 bg-gradient-to-t from-black/75 via-black/25 to-transparent px-3 py-3 text-white sm:flex-row sm:items-end sm:justify-between sm:gap-3 md:px-4">
+                          <p className="max-w-full text-xs leading-snug text-white sm:text-sm">
+                            {release.creatorName}
+                            {release.genre ? (
+                              <span className="text-white/85"> · {release.genre}</span>
+                            ) : null}
+                          </p>
+                          <p className="text-xs text-white sm:shrink-0 sm:text-sm">
+                            {release.country || 'Country'}
+                          </p>
+                        </div>
+                      </div>
+                    </Link>
+                  </article>
+                ))}
+              </div>
+            ) : (
+              <div>No release found.</div>
+            )}
           </div>
         </div>
       </div>
-
-      {releases.length > 0 ? (
-        <div className="container">
-          <div className="grid grid-cols-4 gap-y-4 gap-x-4 lg:grid-cols-12 lg:gap-y-8 lg:gap-x-8">
-            {releases.map((release) => (
-              <article
-                className="col-span-4 overflow-hidden border border-border bg-card"
-                key={release.slug}
-              >
-                <Link href={`/${release.slug}`}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    alt={release.title}
-                    className="aspect-square h-full w-full object-cover"
-                    src={release.imageUrl}
-                  />
-                  <div className="p-4">
-                    <p className="text-xs uppercase tracking-[0.14em] text-slate-500 dark:text-gray-400">
-                      {release.country}
-                    </p>
-                    <h2 className="mt-2 text-xl font-semibold text-slate-800 dark:text-white">
-                      {release.title}
-                    </h2>
-                    <p className="mt-1 text-sm font-medium text-slate-700 dark:text-slate-200">
-                      {release.creatorName}
-                    </p>
-                  </div>
-                </Link>
-              </article>
-            ))}
-          </div>
-        </div>
-      ) : (
-        <div className="container">No release found.</div>
-      )}
     </div>
   )
 }
