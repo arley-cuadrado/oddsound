@@ -205,7 +205,16 @@ export interface Page {
       | null;
     media?: (string | null) | Media;
   };
-  layout: (CallToActionBlock | ContentBlock | EventsBlock | MediaBlock | VideoBlock | ArchiveBlock | FormBlock)[];
+  layout: (
+    | CallToActionBlock
+    | ContentBlock
+    | EventsBlock
+    | MediaBlock
+    | SpotifyBlock
+    | VideoBlock
+    | ArchiveBlock
+    | FormBlock
+  )[];
   meta?: {
     title?: string | null;
     /**
@@ -631,6 +640,16 @@ export interface MediaBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'mediaBlock';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "SpotifyBlock".
+ */
+export interface SpotifyBlock {
+  spotify: string;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'spotifyBlock';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1189,6 +1208,7 @@ export interface PagesSelect<T extends boolean = true> {
         content?: T | ContentBlockSelect<T>;
         events?: T | EventsBlockSelect<T>;
         mediaBlock?: T | MediaBlockSelect<T>;
+        spotifyBlock?: T | SpotifyBlockSelect<T>;
         videoBlock?: T | VideoBlockSelect<T>;
         archive?: T | ArchiveBlockSelect<T>;
         formBlock?: T | FormBlockSelect<T>;
@@ -1290,6 +1310,15 @@ export interface EventsBlockSelect<T extends boolean = true> {
  */
 export interface MediaBlockSelect<T extends boolean = true> {
   media?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "SpotifyBlock_select".
+ */
+export interface SpotifyBlockSelect<T extends boolean = true> {
+  spotify?: T;
   id?: T;
   blockName?: T;
 }

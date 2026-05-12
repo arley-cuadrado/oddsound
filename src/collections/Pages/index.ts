@@ -11,6 +11,7 @@ import { Content } from '../../blocks/Content/config'
 import { Events } from '../../blocks/Events/config'
 import { FormBlock } from '../../blocks/Form/config'
 import { MediaBlock } from '../../blocks/MediaBlock/config'
+import { SpotifyBlock } from '../../blocks/SpotifyBlock/config'
 import { VideoBlock } from '../../blocks/VideoBlock/config'
 import { hero } from '@/heros/config'
 import { slugField } from 'payload'
@@ -156,7 +157,16 @@ export const Pages: CollectionConfig<'pages'> = {
             {
               name: 'layout',
               type: 'blocks',
-              blocks: [CallToAction, Content, Events, MediaBlock, VideoBlock, Archive, FormBlock],
+              blocks: [
+                CallToAction,
+                Content,
+                Events,
+                MediaBlock,
+                SpotifyBlock,
+                VideoBlock,
+                Archive,
+                FormBlock,
+              ],
               required: true,
               admin: {
                 initCollapsed: true,

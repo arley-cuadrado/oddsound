@@ -8,6 +8,7 @@ import { ContentBlock } from '@/blocks/Content/Component'
 import { EventsBlock } from '@/blocks/Events/Component'
 import { FormBlock } from '@/blocks/Form/Component'
 import { MediaBlock } from '@/blocks/MediaBlock/Component'
+import { SpotifyBlock } from '@/blocks/SpotifyBlock/Component'
 import { VideoBlock } from '@/blocks/VideoBlock/Component'
 
 const blockComponents = {
@@ -17,6 +18,7 @@ const blockComponents = {
   events: EventsBlock,
   formBlock: FormBlock,
   mediaBlock: MediaBlock,
+  spotifyBlock: SpotifyBlock,
   videoBlock: VideoBlock,
 }
 
