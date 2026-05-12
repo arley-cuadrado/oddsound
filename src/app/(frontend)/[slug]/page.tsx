@@ -4,6 +4,7 @@ import { PayloadRedirects } from '@/components/PayloadRedirects'
 import configPromise from '@payload-config'
 import { getPayload, type RequiredDataFromCollectionSlug } from 'payload'
 import { draftMode } from 'next/headers'
+import Link from 'next/link'
 import React, { cache } from 'react'
 import { homeStatic } from '@/endpoints/seed/home-static'
 
@@ -82,6 +83,16 @@ export default async function Page({ params: paramsPromise }: Args) {
         creatorName={creatorProfile?.displayName || undefined}
         pageTitle={page.title}
       />
+      {creatorProfile?.slug ? (
+        <div className="flex justify-center px-4 pb-8 pt-6 md:px-0">
+          <Link
+            href={`/${creatorProfile.slug}/releases`}
+            className="inline-flex items-center text-sm font-medium text-slate-700 underline underline-offset-4 dark:text-slate-200"
+          >
+            View {creatorProfile.displayName || page.title} releases
+          </Link>
+        </div>
+      ) : null}
       <RenderBlocks blocks={layout} />
     </article>
   )
