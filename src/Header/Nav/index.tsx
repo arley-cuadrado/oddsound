@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { ThemeSelector } from '@/providers/Theme/ThemeSelector'
 
 import type { Header as HeaderType } from '@/payload-types'
@@ -10,6 +10,39 @@ import Link from 'next/link'
 
 export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
   const navItems = data?.navItems || []
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+
+  useEffect(() => {
+    let isMounted = true
+
+    const checkSession = async () => {
+      try {
+        const response = await fetch('/api/users/me', {
+          credentials: 'include',
+        })
+
+        if (!response.ok) {
+          if (isMounted) setIsAuthenticated(false)
+          return
+        }
+
+        const result = (await response.json()) as { user?: { id?: string | null } | null }
+
+        if (isMounted) {
+          setIsAuthenticated(Boolean(result.user?.id))
+        }
+      } catch {
+        if (isMounted) setIsAuthenticated(false)
+      }
+    }
+
+    void checkSession()
+
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
   const isLoginLink = (label?: string | null, url?: string | null) => {
     const normalizedLabel = label?.toLowerCase() || ''
     const normalizedURL = url?.toLowerCase() || ''
@@ -23,25 +56,33 @@ export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
   const topNavItems = navItems.filter(({ link }) => isLoginLink(link.label, link.url))
 
   return (
-    <nav className="fixed top-0 left-0 z-30 flex h-dvh flex-col gap-4 p-4 max-[975px]:pointer-events-none max-[975px]:h-auto max-[975px]:w-full">
-      <div className="max-[975px]:pointer-events-auto max-[975px]:fixed max-[975px]:top-0 max-[975px]:left-0 max-[975px]:z-30 max-[975px]:w-full max-[975px]:bg-white max-[975px]:px-4 max-[975px]:py-4 max-[975px]:dark:bg-[#0f0f0f]">
+    <nav
+      className="fixed left-0 z-30 flex h-dvh flex-col gap-4 p-4 max-[975px]:pointer-events-none max-[975px]:h-auto max-[975px]:w-full"
+      style={{ top: 'var(--admin-bar-offset, 0px)' }}
+    >
+      <div
+        className="max-[975px]:pointer-events-auto max-[975px]:fixed max-[975px]:left-0 max-[975px]:z-30 max-[975px]:w-full max-[975px]:bg-white max-[975px]:px-4 max-[975px]:py-4 max-[975px]:dark:bg-[#0f0f0f]"
+        style={{ top: 'var(--admin-bar-offset, 0px)' }}
+      >
         <div className="max-[975px]:mx-auto max-[975px]:flex max-[975px]:max-w-4xl max-[975px]:items-center max-[975px]:justify-between">
           <Link href="/" className="title">
             {/*<Logo loading="eager" priority="high" className="invert dark:invert-0" />*/}
             <span className="font-black">odd</span>sound
           </Link>
-          <div className="hidden max-[975px]:flex max-[975px]:items-center max-[975px]:gap-4">
-            {topNavItems.map(({ link }, i) => {
-              return (
-                <CMSLink
-                  key={i}
-                  {...link}
-                  appearance="inline"
-                  className="block text-left hover:underline"
-                />
-              )
-            })}
-          </div>
+          {!isAuthenticated ? (
+            <div className="hidden max-[975px]:flex max-[975px]:items-center max-[975px]:gap-4">
+              {topNavItems.map(({ link }, i) => {
+                return (
+                  <CMSLink
+                    key={i}
+                    {...link}
+                    appearance="inline"
+                    className="block text-left hover:underline"
+                  />
+                )
+              })}
+            </div>
+          ) : null}
         </div>
       </div>
       <div className="flex h-[90vh] flex-col justify-between max-[975px]:pointer-events-auto max-[975px]:fixed max-[975px]:right-0 max-[975px]:bottom-0 max-[975px]:left-0 max-[975px]:z-30 max-[975px]:h-auto max-[975px]:w-full max-[975px]:flex-row max-[975px]:items-center max-[975px]:justify-between max-[975px]:gap-4 max-[975px]:bg-white max-[975px]:px-4 max-[975px]:py-4 max-[975px]:dark:bg-[#0f0f0f]">
@@ -58,7 +99,7 @@ export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
               <div
                 key={i}
                 className={`w-full text-left max-[975px]:w-auto ${
-                  isLoginLink(link.label, link.url) ? 'max-[975px]:hidden' : ''
+                  isLoginLink(link.label, link.url) && isAuthenticated ? 'hidden' : ''
                 }`}
               >
                 <CMSLink

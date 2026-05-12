@@ -67,6 +67,9 @@ export default async function Page({ params: paramsPromise }: Args) {
 
   const { hero, layout } = page
   const creatorProfile = typeof page.profile === 'object' && page.profile ? page.profile : null
+  const artistLayout = Array.isArray(layout)
+    ? layout.filter((block) => block.blockType !== 'formBlock')
+    : []
 
   return (
     <article className="mx-auto max-w-4xl pb-24">
@@ -93,7 +96,7 @@ export default async function Page({ params: paramsPromise }: Args) {
           </Link>
         </div>
       ) : null}
-      <RenderBlocks blocks={layout} />
+      <RenderBlocks blocks={artistLayout} />
     </article>
   )
 }
