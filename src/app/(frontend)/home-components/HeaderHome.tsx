@@ -1,23 +1,29 @@
 'use client'
 
+import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 
-interface DataArtist {
-  artist?: string
+interface SliderPost {
+  id: string
+  imageUrl?: string | null
+  slug: string
+  title: string
 }
 
 const AUTO_SCROLL_MS = 5000
 const DESKTOP_VISIBLE_CARDS = 4
-const COMPACT_VISIBLE_CARDS = 3
+const MOBILE_VISIBLE_CARDS = 2
 const PEEK_RATIO = 0.35
 
-const heroCards = Array.from({ length: 6 }, (_, index) => ({
-  id: index + 1,
-  artist: `ARTISTA #${index + 1}`,
+const fallbackCards: SliderPost[] = Array.from({ length: 5 }, (_, index) => ({
+  id: `fallback-${index + 1}`,
+  imageUrl: '/home-images/hero.jpeg',
+  slug: 'posts',
+  title: `Featured scene ${index + 1}`,
 }))
 
-export default function SliderHeader({ artist }: DataArtist) {
-  const fallbackArtist = artist || 'ARTISTA #1'
+export default function SliderHeader({ posts }: { posts?: SliderPost[] }) {
+  const heroCards = posts?.length ? posts : fallbackCards
   const [activeIndex, setActiveIndex] = useState(0)
   const [visibleCards, setVisibleCards] = useState(DESKTOP_VISIBLE_CARDS)
   const containerRef = useRef<HTMLDivElement | null>(null)
@@ -27,7 +33,7 @@ export default function SliderHeader({ artist }: DataArtist) {
 
   useEffect(() => {
     const updateVisibleCards = () => {
-      setVisibleCards(window.innerWidth < 1024 ? COMPACT_VISIBLE_CARDS : DESKTOP_VISIBLE_CARDS)
+      setVisibleCards(window.innerWidth < 1024 ? MOBILE_VISIBLE_CARDS : DESKTOP_VISIBLE_CARDS)
     }
 
     updateVisibleCards()
@@ -78,22 +84,24 @@ export default function SliderHeader({ artist }: DataArtist) {
           }}
         >
           {heroCards.map((card, index) => (
-            <article
+            <Link
               key={card.id}
+              href={`/posts/${card.slug}`}
               ref={(node) => {
                 cardRefs.current[index] = node
               }}
-              className="relative h-24 overflow-hidden rounded-0xl bg-[url('/home-images/hero.jpeg')] bg-cover bg-center"
+              className="relative block h-24 overflow-hidden bg-cover bg-center"
+              style={{
+                backgroundImage: `url('${card.imageUrl || '/home-images/hero.jpeg'}')`,
+              }}
             >
               <div className="absolute inset-0 bg-black/45" />
-              <div className="relative flex h-full items-end p-5 sm:p-6">
-                <h1 className="max-w-[14ch] text-24 font-bold uppercase leading-tight text-white">
-                  New album out now
-                  <br />
-                  {card.artist || fallbackArtist}
-                </h1>
+              <div className="relative flex h-full items-end p-3 sm:p-4">
+                <h2 className="max-w-[18ch] text-sm font-semibold leading-tight text-white sm:text-base">
+                  {card.title}
+                </h2>
               </div>
-            </article>
+            </Link>
           ))}
         </div>
       </div>

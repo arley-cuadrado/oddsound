@@ -1,15 +1,48 @@
 import AsideHome from './home-components/AsideHome'
 import SliderHeader from './home-components/HeaderHome'
 import { Suspense } from 'react'
+import configPromise from '@payload-config'
+import { getPayload } from 'payload'
 
 import ReleasesHomeSection from './home-components/ReleasesHomeSection'
 
 export default async function HomePage() {
+  const payload = await getPayload({ config: configPromise })
+
+  const featuredScenes = await payload.find({
+    collection: 'posts',
+    depth: 1,
+    limit: 8,
+    overrideAccess: true,
+    pagination: false,
+    select: {
+      heroImage: true,
+      slug: true,
+      title: true,
+    },
+    sort: '-publishedAt',
+    where: {
+      _status: {
+        equals: 'published',
+      },
+    },
+  })
+
+  const sliderPosts = featuredScenes.docs
+    .filter((post) => post.slug)
+    .map((post) => ({
+      id: post.id,
+      imageUrl:
+        post.heroImage && typeof post.heroImage === 'object' ? (post.heroImage.url ?? null) : null,
+      slug: post.slug as string,
+      title: post.title,
+    }))
+
   return (
     <div className="mx-auto max-w-4xl">
       <div className="flex justify-center items-center h-auto">
         <div className="container flex flex-row gap-4">
-          <SliderHeader />
+          <SliderHeader posts={sliderPosts} />
         </div>
       </div>
       <main className="text-sm container">
