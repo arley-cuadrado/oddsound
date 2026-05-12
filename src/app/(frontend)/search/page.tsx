@@ -172,8 +172,8 @@ export default async function Page({ searchParams: searchParamsPromise }: Args) 
     .filter((release) => {
       if (!query) return true
 
-      // Search by release title, creator country, and the genre captured at creator signup.
-      return [release.title, release.country, release.genre].some((value) =>
+      // Match the discover input against genre, country, band/creator name, and album/release title.
+      return [release.genre, release.country, release.creatorName, release.title].some((value) =>
         normalizeSearchValue(value).includes(query),
       )
     })

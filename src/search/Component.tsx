@@ -15,12 +15,15 @@ export const Search: React.FC = () => {
   const debouncedValue = useDebounce(value)
 
   useEffect(() => {
-    setValue(initialQuery)
+    // Only sync from the URL when navigation changes the query externally.
+    if (initialQuery !== value) {
+      setValue(initialQuery)
+    }
   }, [initialQuery])
 
   useEffect(() => {
     // Update the URL from the debounced value so the server page can filter release pages.
-    router.push(`/search${debouncedValue ? `?q=${debouncedValue}` : ''}`)
+    router.replace(`/search${debouncedValue ? `?q=${debouncedValue}` : ''}`)
   }, [debouncedValue, router])
 
   return (
@@ -34,11 +37,15 @@ export const Search: React.FC = () => {
           Search
         </Label>
         <Input
+          autoCapitalize="none"
+          autoComplete="off"
+          autoCorrect="off"
           id="search"
           onChange={(event) => {
             setValue(event.target.value)
           }}
           placeholder="Enter the music genre, country, band, or album name..."
+          spellCheck={false}
           value={value}
         />
         <button type="submit" className="sr-only">
