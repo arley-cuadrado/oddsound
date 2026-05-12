@@ -3,6 +3,7 @@ import type { CollectionConfig } from 'payload'
 import { assignOwnership } from '@/hooks/assignOwnership'
 import { generateCreatorContentSlug } from '@/hooks/generateCreatorContentSlug'
 import { isAdminUser } from '@/utilities/isAdminUser'
+import { isSuperAdminUser } from '@/utilities/isSuperAdminUser'
 import { authenticated } from '../../access/authenticated'
 import { Archive } from '../../blocks/ArchiveBlock/config'
 import { CallToAction } from '../../blocks/CallToAction/config'
@@ -55,6 +56,7 @@ export const Pages: CollectionConfig<'pages'> = {
         },
       } as any
     },
+    readVersions: ({ req: { user } }) => isSuperAdminUser(user),
     update: ({ req: { user } }) => {
       if (!user) return false
       if (isAdminUser(user)) return true
@@ -74,6 +76,22 @@ export const Pages: CollectionConfig<'pages'> = {
     slug: true,
   },
   admin: {
+    components: {
+      views: {
+        edit: {
+          api: {
+            tab: {
+              condition: ({ user }) => isSuperAdminUser(user),
+            },
+          },
+          versions: {
+            tab: {
+              condition: ({ user }) => isSuperAdminUser(user),
+            },
+          },
+        },
+      },
+    },
     defaultColumns: ['title', 'slug', 'updatedAt'],
     livePreview: {
       url: ({ data, req }) =>
