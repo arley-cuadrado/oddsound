@@ -30,7 +30,7 @@ export const HighImpactHero: React.FC<HighImpactHeroProps> = ({
   })
 
   return (
-    <div className="relative mt-0 overflow-hidden text-white" data-theme="dark">
+    <div className="relative mt-8 overflow-hidden text-white" data-theme="dark">
       <div className="relative h-[400px] select-none">
         {media && typeof media === 'object' && (
           <Media fill imgClassName="-z-10 object-cover" priority resource={media} />

@@ -41,10 +41,8 @@ export default async function HomePage() {
   return (
     <div className="mx-auto max-w-4xl">
       {sliderPosts.length > 0 ? (
-        <div className="flex justify-center items-center h-auto">
-          <div className="container flex flex-row gap-4">
-            <SliderHeader posts={sliderPosts} />
-          </div>
+        <div className="container px-4 py-0 md:px-6">
+          <SliderHeader posts={sliderPosts} />
         </div>
       ) : null}
       <main className="text-sm container">

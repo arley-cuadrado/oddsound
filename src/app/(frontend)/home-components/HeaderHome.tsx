@@ -35,8 +35,6 @@ export default function SliderHeader({ posts }: { posts?: SliderPost[] }) {
     ? heroCards.length > DESKTOP_VISIBLE_CARDS
     : heroCards.length > MOBILE_VISIBLE_CARDS
   const showProgress = isDesktop && heroCards.length > DESKTOP_VISIBLE_CARDS
-  const horizontalPadding = isDesktop ? 4 : 2
-
   useEffect(() => {
     const updateVisibleCards = () => {
       const desktop = window.innerWidth >= 1024
@@ -83,16 +81,16 @@ export default function SliderHeader({ posts }: { posts?: SliderPost[] }) {
   }, [activeIndex])
 
   return (
-    <section className="w-full overflow-hidden">
+    <section className="mt-8 w-full overflow-hidden">
       <div
         ref={containerRef}
-        className="mx-auto w-full max-w-screen-xl overflow-x-auto scroll-smooth [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+        className="w-full overflow-x-auto scroll-smooth [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
       >
         <div
           ref={trackRef}
-          className="grid w-full grid-flow-col gap-4 px-4 md:px-6"
+          className="grid w-full grid-flow-col gap-4"
           style={{
-            gridAutoColumns: `calc((100% - ${horizontalPadding}rem) / ${visibleCards + (enablePeek ? PEEK_RATIO : 0)})`,
+            gridAutoColumns: `calc(100% / ${visibleCards + (enablePeek ? PEEK_RATIO : 0)})`,
           }}
         >
           {heroCards.map((card, index) => (
