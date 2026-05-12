@@ -1,6 +1,7 @@
 import React from 'react'
 
 import type { SpotifyBlock as SpotifyBlockProps } from '@/payload-types'
+import { cn } from '@/utilities/ui'
 
 type Props = SpotifyBlockProps & {
   disableInnerContainer?: boolean
@@ -37,13 +38,19 @@ function getSpotifyEmbedURL(spotify: string) {
   }
 }
 
-export const SpotifyBlock: React.FC<Props> = ({ spotify }) => {
+export const SpotifyBlock: React.FC<Props> = ({ disableInnerContainer, spotify }) => {
   const embedURL = getSpotifyEmbedURL(spotify)
 
-  if (!embedURL) return <p className="container text-sm text-slate-500">Invalid Spotify URL</p>
+  if (!embedURL) {
+    return (
+      <p className={cn('text-sm text-slate-500', { container: !disableInnerContainer })}>
+        Invalid Spotify URL
+      </p>
+    )
+  }
 
   return (
-    <section className="container w-auto">
+    <section className={cn('w-auto', { container: !disableInnerContainer })}>
       <iframe
         allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
         className="w-full rounded-xl border-0"

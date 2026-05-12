@@ -3,6 +3,7 @@ import React from 'react'
 import type { EventsBlock as EventsBlockProps } from '@/payload-types'
 
 import { CMSLink } from '@/components/Link'
+import { cn } from '@/utilities/ui'
 
 function formatEventDateParts(timestamp: string) {
   const value = timestamp ? new Date(timestamp) : new Date()
@@ -13,13 +14,17 @@ function formatEventDateParts(timestamp: string) {
   }
 }
 
-export const EventsBlock: React.FC<EventsBlockProps> = (props) => {
-  const { events, title } = props
+type Props = EventsBlockProps & {
+  disableInnerContainer?: boolean
+}
+
+export const EventsBlock: React.FC<Props> = (props) => {
+  const { disableInnerContainer, events, title } = props
 
   if (!events?.length) return null
 
   return (
-    <section className="container my-16">
+    <section className={cn('my-16', { container: !disableInnerContainer })}>
       <div className="space-y-6">
         {title ? <h2 className="text-3xl font-semibold tracking-tight">{title}</h2> : null}
 

@@ -19,6 +19,7 @@ import { revalidateDelete, revalidatePost } from './hooks/revalidatePost'
 import { assignOwnership } from '@/hooks/assignOwnership'
 import { generateCreatorContentSlug } from '@/hooks/generateCreatorContentSlug'
 import { isAdminUser } from '@/utilities/isAdminUser'
+import { editorialBlocks } from '../shared/editorialBlocks'
 
 import {
   MetaDescriptionField,
@@ -157,6 +158,19 @@ export const Posts: CollectionConfig<'posts'> = {
             },
           ],
           label: 'Content',
+        },
+        {
+          fields: [
+            {
+              name: 'layout',
+              type: 'blocks',
+              blocks: editorialBlocks,
+              admin: {
+                initCollapsed: true,
+              },
+            },
+          ],
+          label: 'Layout',
         },
         {
           fields: [

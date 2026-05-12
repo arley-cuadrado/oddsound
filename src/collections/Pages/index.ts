@@ -4,16 +4,8 @@ import { assignOwnership } from '@/hooks/assignOwnership'
 import { generateCreatorContentSlug } from '@/hooks/generateCreatorContentSlug'
 import { isAdminUser } from '@/utilities/isAdminUser'
 import { isSuperAdminUser } from '@/utilities/isSuperAdminUser'
+import { editorialBlocks } from '../shared/editorialBlocks'
 import { authenticated } from '../../access/authenticated'
-import { Archive } from '../../blocks/ArchiveBlock/config'
-import { CallToAction } from '../../blocks/CallToAction/config'
-import { Content } from '../../blocks/Content/config'
-import { Events } from '../../blocks/Events/config'
-import { FormBlock } from '../../blocks/Form/config'
-import { MediaBlock } from '../../blocks/MediaBlock/config'
-import { SocialMediaBlock } from '../../blocks/SocialMediaBlock/config'
-import { SpotifyBlock } from '../../blocks/SpotifyBlock/config'
-import { VideoBlock } from '../../blocks/VideoBlock/config'
 import { hero } from '@/heros/config'
 import { slugField } from 'payload'
 import { populatePublishedAt } from '../../hooks/populatePublishedAt'
@@ -158,17 +150,7 @@ export const Pages: CollectionConfig<'pages'> = {
             {
               name: 'layout',
               type: 'blocks',
-              blocks: [
-                CallToAction,
-                Content,
-                Events,
-                MediaBlock,
-                SocialMediaBlock,
-                SpotifyBlock,
-                VideoBlock,
-                Archive,
-                FormBlock,
-              ],
+              blocks: editorialBlocks,
               required: true,
               admin: {
                 initCollapsed: true,
