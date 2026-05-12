@@ -194,39 +194,41 @@ export default async function Page({ searchParams: searchParamsPromise }: Args) 
         <div className="mx-auto max-w-[50rem]">
           <Search />
 
-          <div className="mt-12">
-            {releases.length > 0 ? (
-              <div className="grid grid-cols-2 gap-4 md:gap-6 xl:grid-cols-4">
-                {releases.map((release) => (
-                  <article className="w-full" key={release.slug}>
-                    <Link href={`/${release.slug}`}>
-                      <div className="relative aspect-square w-full overflow-hidden bg-slate-100 dark:bg-slate-900">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          alt={release.title}
-                          className="h-full w-full object-cover"
-                          src={release.imageUrl}
-                        />
-                        <div className="absolute inset-x-0 bottom-0 flex flex-col items-start gap-1 bg-gradient-to-t from-black/75 via-black/25 to-transparent px-3 py-3 text-white sm:flex-row sm:items-end sm:justify-between sm:gap-3 md:px-4">
-                          <p className="max-w-full text-xs leading-snug text-white sm:text-sm">
-                            {release.creatorName}
-                            {release.genre ? (
-                              <span className="text-white/85"> · {release.genre}</span>
-                            ) : null}
-                          </p>
-                          <p className="text-xs text-white sm:shrink-0 sm:text-sm">
-                            {release.country || 'Country'}
-                          </p>
+          {query ? (
+            <div className="mt-12">
+              {releases.length > 0 ? (
+                <div className="grid grid-cols-2 gap-4 md:gap-6 xl:grid-cols-4">
+                  {releases.map((release) => (
+                    <article className="w-full" key={release.slug}>
+                      <Link href={`/${release.slug}`}>
+                        <div className="relative aspect-square w-full overflow-hidden bg-slate-100 dark:bg-slate-900">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            alt={release.title}
+                            className="h-full w-full object-cover"
+                            src={release.imageUrl}
+                          />
+                          <div className="absolute inset-x-0 bottom-0 flex flex-col items-start gap-1 bg-gradient-to-t from-black/75 via-black/25 to-transparent px-3 py-3 text-white sm:flex-row sm:items-end sm:justify-between sm:gap-3 md:px-4">
+                            <p className="max-w-full text-xs leading-snug text-white sm:text-sm">
+                              {release.creatorName}
+                              {release.genre ? (
+                                <span className="text-white/85"> · {release.genre}</span>
+                              ) : null}
+                            </p>
+                            <p className="text-xs text-white sm:shrink-0 sm:text-sm">
+                              {release.country || 'Country'}
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                    </Link>
-                  </article>
-                ))}
-              </div>
-            ) : (
-              <div>No release found.</div>
-            )}
-          </div>
+                      </Link>
+                    </article>
+                  ))}
+                </div>
+              ) : (
+                <div className="mt-12 text-center">No release found.</div>
+              )}
+            </div>
+          ) : null}
         </div>
       </div>
     </div>
