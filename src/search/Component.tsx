@@ -33,9 +33,9 @@ export const Search: React.FC = () => {
           e.preventDefault()
         }}
       >
-        <Label htmlFor="search" className="sr-only">
+        {/*<Label htmlFor="search" className="sr-only">
           Search
-        </Label>
+        </Label>*/}
         <Input
           autoCapitalize="none"
           autoComplete="off"
@@ -48,9 +48,9 @@ export const Search: React.FC = () => {
           spellCheck={false}
           value={value}
         />
-        <button type="submit" className="sr-only">
+        {/*<button type="submit" className="sr-only">
           submit
-        </button>
+        </button>*/}
       </form>
     </div>
   )
