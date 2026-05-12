@@ -182,9 +182,11 @@ export default async function Page({ searchParams: searchParamsPromise }: Args) 
     <div className="pt-24 pb-24">
       <PageClient />
       <div className="container mx-auto max-w-4xl">
-        <div className="mb-16">
+        <div className="mb-8">
           <div className="prose dark:prose-invert max-w-none text-center">
-            <h1>Discover</h1>
+            <h1>
+              Discover the <strong className="title">odd</strong>
+            </h1>
             <p className="mb-8 lg:mb-8">
               Explore music beyond the usual. Find artists, releases, and scenes connected by genre,
               place, and identity.
