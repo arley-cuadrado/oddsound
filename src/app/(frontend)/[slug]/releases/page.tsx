@@ -128,21 +128,23 @@ export default async function ArtistReleasesPage({ params: paramsPromise }: Args
                           className="h-full w-full object-cover"
                           src={release.imageUrl}
                         />
-                        <div className="absolute inset-x-0 bottom-0 flex flex-col items-start gap-1 bg-gradient-to-t from-black/75 via-black/25 to-transparent px-3 py-3 text-white sm:flex-row sm:items-end sm:justify-between sm:gap-3 md:px-4">
-                          <p className="max-w-full text-xs leading-snug text-white sm:text-sm">
-                            {release.creatorName}
-                            {release.genre ? (
-                              <span className="text-white/85"> · {release.genre}</span>
-                            ) : null}
-                          </p>
-                          {/*<p className="text-xs text-white sm:shrink-0 sm:text-sm">
-                            {release.country || 'Country'}
-                          </p>*/}
+                        <div className="absolute inset-x-0 bottom-0 flex flex-col items-start gap-1 bg-gradient-to-t from-black/75 via-black/25 to-transparent px-3 py-3 text-white md:px-4">
+                          <h2 className="text-[10px] font-semibold leading-snug text-white">
+                            {release.releaseTitle}
+                          </h2>
+                          <div className="flex w-full flex-col items-start gap-1 sm:flex-row sm:items-end sm:justify-between sm:gap-3">
+                            <p className="max-w-full text-[10px] leading-snug text-white">
+                              {release.creatorName}
+                              {release.genre ? (
+                                <span className="text-white/85"> · {release.genre}</span>
+                              ) : null}
+                            </p>
+                            <p className="text-[10px] text-white sm:shrink-0">
+                              {release.country || 'Country'}
+                            </p>
+                          </div>
                         </div>
                       </div>
-                      <h2 className="pt-3 text-sm font-[900] leading-snug text-slate-800 dark:text-white">
-                        {release.releaseTitle}
-                      </h2>
                     </div>
                   </Link>
                 </article>
