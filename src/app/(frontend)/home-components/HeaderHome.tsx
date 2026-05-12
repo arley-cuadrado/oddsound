@@ -31,8 +31,11 @@ export default function SliderHeader({ posts }: { posts?: SliderPost[] }) {
   const trackRef = useRef<HTMLDivElement | null>(null)
   const cardRefs = useRef<Array<HTMLElement | null>>([])
   const maxStartIndex = Math.max(heroCards.length - visibleCards, 0)
-  const enablePeek = isDesktop ? heroCards.length > DESKTOP_VISIBLE_CARDS : heroCards.length > MOBILE_VISIBLE_CARDS
+  const enablePeek = isDesktop
+    ? heroCards.length > DESKTOP_VISIBLE_CARDS
+    : heroCards.length > MOBILE_VISIBLE_CARDS
   const showProgress = isDesktop && heroCards.length > DESKTOP_VISIBLE_CARDS
+  const horizontalPadding = isDesktop ? 4 : 2
 
   useEffect(() => {
     const updateVisibleCards = () => {
@@ -89,7 +92,7 @@ export default function SliderHeader({ posts }: { posts?: SliderPost[] }) {
           ref={trackRef}
           className="grid w-full grid-flow-col gap-4 px-4 md:px-6"
           style={{
-            gridAutoColumns: `calc((100% - 4rem) / ${visibleCards + (enablePeek ? PEEK_RATIO : 0)})`,
+            gridAutoColumns: `calc((100% - ${horizontalPadding}rem) / ${visibleCards + (enablePeek ? PEEK_RATIO : 0)})`,
           }}
         >
           {heroCards.map((card, index) => (
