@@ -43,11 +43,11 @@ export const SpotifyBlock: React.FC<Props> = ({ spotify }) => {
   if (!embedURL) return <p className="container text-sm text-slate-500">Invalid Spotify URL</p>
 
   return (
-    <section className="container w-auto pt-16 pb-16">
+    <section className="container w-auto">
       <iframe
         allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
         className="w-full rounded-xl border-0"
-        height="150"
+        height="80"
         loading="lazy"
         src={embedURL}
         title="Spotify player"

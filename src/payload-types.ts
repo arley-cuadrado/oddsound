@@ -210,6 +210,7 @@ export interface Page {
     | ContentBlock
     | EventsBlock
     | MediaBlock
+    | SocialMediaBlock
     | SpotifyBlock
     | VideoBlock
     | ArchiveBlock
@@ -640,6 +641,20 @@ export interface MediaBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'mediaBlock';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "SocialMediaBlock".
+ */
+export interface SocialMediaBlock {
+  socialLinks: {
+    platform: string;
+    url: string;
+    id?: string | null;
+  }[];
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'socialMediaBlock';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1208,6 +1223,7 @@ export interface PagesSelect<T extends boolean = true> {
         content?: T | ContentBlockSelect<T>;
         events?: T | EventsBlockSelect<T>;
         mediaBlock?: T | MediaBlockSelect<T>;
+        socialMediaBlock?: T | SocialMediaBlockSelect<T>;
         spotifyBlock?: T | SpotifyBlockSelect<T>;
         videoBlock?: T | VideoBlockSelect<T>;
         archive?: T | ArchiveBlockSelect<T>;
@@ -1310,6 +1326,21 @@ export interface EventsBlockSelect<T extends boolean = true> {
  */
 export interface MediaBlockSelect<T extends boolean = true> {
   media?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "SocialMediaBlock_select".
+ */
+export interface SocialMediaBlockSelect<T extends boolean = true> {
+  socialLinks?:
+    | T
+    | {
+        platform?: T;
+        url?: T;
+        id?: T;
+      };
   id?: T;
   blockName?: T;
 }

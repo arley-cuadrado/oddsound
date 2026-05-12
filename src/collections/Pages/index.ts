@@ -11,6 +11,7 @@ import { Content } from '../../blocks/Content/config'
 import { Events } from '../../blocks/Events/config'
 import { FormBlock } from '../../blocks/Form/config'
 import { MediaBlock } from '../../blocks/MediaBlock/config'
+import { SocialMediaBlock } from '../../blocks/SocialMediaBlock/config'
 import { SpotifyBlock } from '../../blocks/SpotifyBlock/config'
 import { VideoBlock } from '../../blocks/VideoBlock/config'
 import { hero } from '@/heros/config'
@@ -162,6 +163,7 @@ export const Pages: CollectionConfig<'pages'> = {
                 Content,
                 Events,
                 MediaBlock,
+                SocialMediaBlock,
                 SpotifyBlock,
                 VideoBlock,
                 Archive,
