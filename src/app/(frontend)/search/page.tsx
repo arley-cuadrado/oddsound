@@ -204,7 +204,7 @@ export default async function Page({ searchParams: searchParamsPromise }: Args) 
                     <article className="w-full" key={release.slug}>
                       <Link href={`/${release.slug}`}>
                         <div>
-                          <div className="relative aspect-square w-full overflow-hidden bg-slate-100 dark:bg-slate-900">
+                          <div className="relative aspect-square w-full overflow-hidden bg-slate-100 dark:bg-slate-900 rounded-lg">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                               alt={release.title}
