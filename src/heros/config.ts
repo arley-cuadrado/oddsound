@@ -56,6 +56,23 @@ export const hero: Field = {
       }),
       label: false,
     },
+    {
+      name: 'albumImage',
+      type: 'upload',
+      admin: {
+        condition: (_, { type } = {}) => type === 'lowImpact',
+        description: 'Required for release cards even when the low impact hero has no visible image.',
+      },
+      relationTo: 'media',
+      validate: (
+        value: unknown,
+        { siblingData }: { siblingData?: { type?: null | string } },
+      ) => {
+        if (siblingData?.type !== 'lowImpact') return true
+
+        return value ? true : 'Album image is required for low impact releases.'
+      },
+    },
     linkGroup({
       overrides: {
         maxRows: 2,

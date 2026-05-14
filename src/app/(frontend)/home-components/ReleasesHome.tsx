@@ -30,11 +30,13 @@ export default function ReleasesHome({ releases }: { releases: ReleaseItem[] }) 
             <Link href={`/${release.releaseSlug}`}>
               <section className="flex h-[36rem] w-full flex-col items-start gap-3 pt-4 pb-4">
                 <div className="relative h-[28rem] w-full overflow-hidden bg-slate-100 dark:bg-slate-900 rounded-lg">
-                  <img
-                    className="h-full w-full object-cover"
-                    src={release.imageUrl || '/home-images/hero.jpeg'}
-                    alt={release.creatorName}
-                  />
+                  {release.imageUrl ? (
+                    <img
+                      className="h-full w-full object-cover"
+                      src={release.imageUrl}
+                      alt={release.creatorName}
+                    />
+                  ) : null}
                   <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-4 bg-gradient-to-t from-black/70 via-black/20 to-transparent px-4 py-3 text-white">
                     <p className="text-sm text-white">
                       {release.creatorName}

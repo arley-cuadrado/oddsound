@@ -4,7 +4,7 @@ export interface ReleaseItem {
   creatorName: string
   description: string
   genre: string
-  imageUrl: string
+  imageUrl: string | null
   releaseTitle: string
   releaseSlug: string
 }

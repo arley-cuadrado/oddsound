@@ -123,11 +123,13 @@ export default async function ArtistReleasesPage({ params: paramsPromise }: Args
                     <div>
                       <div className="relative aspect-square w-full overflow-hidden bg-slate-100 dark:bg-slate-900">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          alt={release.releaseTitle}
-                          className="h-full w-full object-cover"
-                          src={release.imageUrl}
-                        />
+                        {release.imageUrl ? (
+                          <img
+                            alt={release.releaseTitle}
+                            className="h-full w-full object-cover"
+                            src={release.imageUrl}
+                          />
+                        ) : null}
                         <div className="absolute inset-x-0 bottom-0 flex flex-col items-start gap-1 bg-gradient-to-t from-black/75 via-black/25 to-transparent px-3 py-3 text-white md:px-4">
                           <h2 className="text-[10px] font-semibold leading-snug text-white">
                             {release.releaseTitle}

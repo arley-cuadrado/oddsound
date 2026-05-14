@@ -117,7 +117,9 @@ export function mapRelease(page: Page, profilesByOwnerId: Map<string, Profile>):
 
   if (!profile || !page.slug) return null
 
+  const isLowImpactRelease = page.hero?.type === 'lowImpact'
   const pageImage = getMediaUrl(page.meta?.image as Media | null | string | undefined)
+  const albumImage = getMediaUrl(page.hero?.albumImage as Media | null | string | undefined)
   const heroImage = getMediaUrl(page.hero?.media as Media | null | string | undefined)
   const coverImage = getMediaUrl(profile.coverImage as Media | null | string | undefined)
   const avatarImage = getMediaUrl(profile.avatar as Media | null | string | undefined)
@@ -137,7 +139,9 @@ export function mapRelease(page: Page, profilesByOwnerId: Map<string, Profile>):
     creatorName: profile.displayName || page.title,
     description,
     genre: profile.genre || '',
-    imageUrl: pageImage || heroImage || coverImage || avatarImage || FALLBACK_RELEASE_IMAGE,
+    imageUrl: isLowImpactRelease
+      ? albumImage || pageImage || null
+      : pageImage || albumImage || heroImage || coverImage || avatarImage || FALLBACK_RELEASE_IMAGE,
     releaseSlug: page.slug,
     releaseTitle: page.title,
   }

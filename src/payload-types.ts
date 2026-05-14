@@ -179,6 +179,10 @@ export interface Page {
       };
       [k: string]: unknown;
     } | null;
+    /**
+     * Required for release cards even when the low impact hero has no visible image.
+     */
+    albumImage?: (string | null) | Media;
     links?:
       | {
           link: {
@@ -1212,6 +1216,7 @@ export interface PagesSelect<T extends boolean = true> {
     | {
         type?: T;
         richText?: T;
+        albumImage?: T;
         links?:
           | T
           | {
