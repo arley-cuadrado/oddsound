@@ -53,7 +53,7 @@ export const VideoBlock: React.FC<Props> = ({ disableInnerContainer, video }) =>
       <iframe
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
         allowFullScreen
-        className="aspect-video w-full"
+        className="aspect-video w-full rounded-lg"
         src={embedURL}
         title="YouTube video player"
       />
