@@ -10,15 +10,10 @@ type Props = CTABlockProps & {
   disableInnerContainer?: boolean
 }
 
-export const CallToActionBlock: React.FC<Props> = ({
-  disableInnerContainer,
-  links,
-  richText,
-}) => {
-
+export const CallToActionBlock: React.FC<Props> = ({ disableInnerContainer, links, richText }) => {
   return (
     <div className={cn({ container: !disableInnerContainer })}>
-      <div className="flex flex-col gap-8 bg-[length:400%_400%] bg-[linear-gradient(-45deg,#ee7752,#e73c7e,#23a6d5,#23d5ab)] p-4 [animation:gradient_15s_ease_infinite] md:flex-row md:items-center md:justify-between">
+      <div className="flex flex-col gap-8 bg-[length:400%_400%] bg-[linear-gradient(-45deg,#ee7752,#e73c7e,#23a6d5,#23d5ab)] p-4 [animation:gradient_15s_ease_infinite] md:flex-row md:items-center md:justify-between rounded-lg">
         <div className="max-w-[48rem] flex items-center">
           {richText && (
             <RichText
