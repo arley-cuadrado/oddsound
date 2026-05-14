@@ -30,12 +30,12 @@ export const HighImpactHero: React.FC<HighImpactHeroProps> = ({
   })
 
   return (
-    <div className="relative mt-8 overflow-hidden text-white" data-theme="dark">
+    <div className="relative mt-8 overflow-hidden text-white container" data-theme="dark">
       <div className="relative h-[400px] select-none">
         {media && typeof media === 'object' && (
-          <Media fill imgClassName="-z-10 object-cover" priority resource={media} />
+          <Media fill imgClassName="-z-10 object-cover rounded-lg" priority resource={media} />
         )}
-        <div className="absolute inset-x-0 bottom-0 h-[200px] bg-gradient-to-t from-black/20 via-black/10 to-transparent backdrop-blur-md [mask-image:linear-gradient(to_top,black_45%,transparent_100%)]" />
+        <div className="absolute inset-x-0 bottom-0 h-[200px] bg-gradient-to-t from-black/20 via-black/10 to-transparent backdrop-blur-md [mask-image:linear-gradient(to_top,black_45%,transparent_100%)] rounded-lg" />
       </div>
 
       <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex justify-center px-4">
