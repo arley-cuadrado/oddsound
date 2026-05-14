@@ -29,7 +29,7 @@ export default function ReleasesHome({ releases }: { releases: ReleaseItem[] }) 
           <article key={release.id} className="w-full max-w-[28rem] max-[767.98px]:max-w-none">
             <Link href={`/${release.releaseSlug}`}>
               <section className="flex h-[36rem] w-full flex-col items-start gap-3 pt-4 pb-4">
-                <div className="relative h-[28rem] w-full overflow-hidden bg-slate-100 dark:bg-slate-900">
+                <div className="relative h-[28rem] w-full overflow-hidden bg-slate-100 dark:bg-slate-900 rounded-lg">
                   <img
                     className="h-full w-full object-cover"
                     src={release.imageUrl || '/home-images/hero.jpeg'}
@@ -38,7 +38,9 @@ export default function ReleasesHome({ releases }: { releases: ReleaseItem[] }) 
                   <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-4 bg-gradient-to-t from-black/70 via-black/20 to-transparent px-4 py-3 text-white">
                     <p className="text-sm text-white">
                       {release.creatorName}
-                      {release.genre ? <span className="text-white/85"> · {release.genre}</span> : null}
+                      {release.genre ? (
+                        <span className="text-white/85"> · {release.genre}</span>
+                      ) : null}
                     </p>
                     <p className="text-sm text-white">{release.country || 'Pais'}</p>
                   </div>
