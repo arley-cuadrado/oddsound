@@ -121,7 +121,7 @@ export default async function ArtistReleasesPage({ params: paramsPromise }: Args
                 <article className="w-full" key={release.id}>
                   <Link href={`/${release.releaseSlug}`}>
                     <div>
-                      <div className="relative aspect-square w-full overflow-hidden bg-slate-100 dark:bg-slate-900">
+                      <div className="relative aspect-square w-full overflow-hidden bg-slate-100 dark:bg-slate-900 rounded-lg">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         {release.imageUrl ? (
                           <img
