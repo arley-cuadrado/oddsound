@@ -30,7 +30,7 @@ export const MediumImpactHero: React.FC<MediumImpactHeroProps> = ({
           {media && typeof media === 'object' && (
             <Media
               className="h-full w-full overflow-hidden"
-              imgClassName="h-full w-full object-cover"
+              imgClassName="h-full w-full object-cover rounded-lg"
               priority
               resource={media}
             />
