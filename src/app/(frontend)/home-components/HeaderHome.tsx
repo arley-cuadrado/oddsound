@@ -100,7 +100,7 @@ export default function SliderHeader({ posts }: { posts?: SliderPost[] }) {
               ref={(node) => {
                 cardRefs.current[index] = node
               }}
-              className="relative block h-24 overflow-hidden bg-cover bg-center"
+              className="relative block h-24 overflow-hidden bg-cover bg-center rounded-lg"
               style={{
                 backgroundImage: `url('${card.imageUrl || '/home-images/hero.jpeg'}')`,
               }}
