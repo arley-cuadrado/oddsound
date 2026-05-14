@@ -142,6 +142,35 @@ export const Users: CollectionConfig = {
       type: 'checkbox',
       defaultValue: true,
     },
+    {
+      name: 'legalAccepted',
+      type: 'checkbox',
+      admin: {
+        description: 'Indicates whether the user accepted the legal terms during signup.',
+        position: 'sidebar',
+        readOnly: true,
+      },
+      defaultValue: false,
+    },
+    {
+      name: 'legalAcceptedAt',
+      type: 'date',
+      admin: {
+        date: {
+          pickerAppearance: 'dayAndTime',
+        },
+        position: 'sidebar',
+        readOnly: true,
+      },
+    },
+    {
+      name: 'legalAcceptedVersion',
+      type: 'text',
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+      },
+    },
   ],
   hooks: {
     afterDelete: [deleteCreatorData],

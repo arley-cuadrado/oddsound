@@ -5,6 +5,7 @@ import { cookies } from 'next/headers'
 import { createLocalReq, getPayload } from 'payload'
 
 type AccountType = 'artist' | 'band' | 'label'
+const LEGAL_VERSION = '2026-05-14'
 
 type ActionResult = {
   message?: string
@@ -12,6 +13,7 @@ type ActionResult = {
 }
 
 export async function registerCreator(input: {
+  acceptedLegal: boolean
   accountType: AccountType
   country: string
   email: string
@@ -26,6 +28,13 @@ export async function registerCreator(input: {
     // Persist genre on the creator profile so frontend search can match by musical genre.
     const genre = input.genre.trim()
     const name = input.name.trim()
+
+    if (!input.acceptedLegal) {
+      return {
+        message: 'You must accept the Terms and Conditions and Privacy Policy.',
+        ok: false,
+      }
+    }
 
     if (!country || !email || !genre || !name || !input.password) {
       return {
@@ -56,12 +65,15 @@ export async function registerCreator(input: {
 
     const createdUser = await payload.create({
       collection: 'users',
-      data: {
-        accountType: input.accountType,
-        email,
-        name,
-        password: input.password,
-        role: 'creator',
+        data: {
+          accountType: input.accountType,
+          email,
+          legalAccepted: true,
+          legalAcceptedAt: new Date().toISOString(),
+          legalAcceptedVersion: LEGAL_VERSION,
+          name,
+          password: input.password,
+          role: 'creator',
       },
       draft: false,
       overrideAccess: true,

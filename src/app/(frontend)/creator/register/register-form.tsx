@@ -1,6 +1,7 @@
 'use client'
 
 import { registerCreator } from '@/app/(frontend)/creator/actions'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { FormEvent, useState } from 'react'
 
@@ -41,12 +42,14 @@ export function RegisterForm() {
     const email = String(formData.get('email') || '')
     const password = String(formData.get('password') || '')
     const accountType = String(formData.get('accountType') || 'artist') as AccountType
+    const acceptedLegal = formData.get('acceptedLegal') === 'on'
     const country = String(formData.get('country') || '')
     // Genre is collected at signup so releases can later be searched by musical style.
     const genre = String(formData.get('genre') || '')
 
     try {
       const result = await registerCreator({
+        acceptedLegal,
         accountType,
         country,
         email,
@@ -173,6 +176,35 @@ export function RegisterForm() {
       <div className="space-y-2">
         <label className="text-sm font-medium text-foreground" htmlFor="password">
           *All fields are required
+        </label>
+      </div>
+
+      <div className="flex items-start gap-3 border border-border px-4 py-4">
+        <input
+          className="mt-1 h-4 w-4 shrink-0"
+          id="acceptedLegal"
+          name="acceptedLegal"
+          required
+          type="checkbox"
+        />
+        <label className="text-sm leading-6 text-foreground/80" htmlFor="acceptedLegal">
+          I have read and accept the{' '}
+          <Link
+            className="underline underline-offset-2"
+            href="/terms-and-conditions"
+            target="_blank"
+          >
+            Terms and Conditions
+          </Link>{' '}
+          and the{' '}
+          <Link
+            className="underline underline-offset-2"
+            href="/privacy-policy"
+            target="_blank"
+          >
+            Privacy Policy
+          </Link>
+          .
         </label>
       </div>
 

@@ -257,6 +257,12 @@ export interface User {
   accountType?: ('artist' | 'band' | 'label') | null;
   profile?: (string | null) | Profile;
   isActive?: boolean | null;
+  /**
+   * Indicates whether the user accepted the legal terms during signup.
+   */
+  legalAccepted?: boolean | null;
+  legalAcceptedAt?: string | null;
+  legalAcceptedVersion?: string | null;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -1605,6 +1611,9 @@ export interface UsersSelect<T extends boolean = true> {
   accountType?: T;
   profile?: T;
   isActive?: T;
+  legalAccepted?: T;
+  legalAcceptedAt?: T;
+  legalAcceptedVersion?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
