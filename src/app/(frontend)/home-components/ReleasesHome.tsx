@@ -97,21 +97,27 @@ export default function ReleasesHome({ releases }: { releases: ReleaseItem[] }) 
                       alt={release.creatorName}
                     />
                   ) : null}
-                  {spotifyEmbedURL && !isSpotifyVisible ? (
-                    <button
-                      aria-label={`Play ${release.releaseTitle} on Spotify`}
-                      className="absolute left-3 top-3 z-20 inline-flex h-[22px] w-[22px] items-center justify-center rounded-full bg-black text-white transition hover:bg-slate-800"
-                      onClick={(event) => {
-                        event.preventDefault()
-                        event.stopPropagation()
-                        setActiveSpotifyReleaseId(release.id)
-                      }}
-                      type="button"
+                  {spotifyEmbedURL ? (
+                    <div
+                      className={`absolute inset-x-0 top-0 z-20 bg-gradient-to-b from-black/55 via-black/15 to-transparent px-3 py-3 transition-opacity duration-300 ease-out ${
+                        isSpotifyVisible ? 'pointer-events-none opacity-0' : 'opacity-100'
+                      }`}
                     >
-                      <span aria-hidden="true" className="text-[9px] leading-none">
-                        ▶
-                      </span>
-                    </button>
+                      <button
+                        aria-label={`Open ${release.releaseTitle} on Spotify`}
+                        className="inline-flex h-6 items-center justify-center px-1 text-[10px] font-medium text-white transition hover:text-white/85"
+                        onClick={(event) => {
+                          event.preventDefault()
+                          event.stopPropagation()
+                          setActiveSpotifyReleaseId(release.id)
+                        }}
+                        type="button"
+                      >
+                        <span aria-hidden="true" className="leading-none">
+                          Listen
+                        </span>
+                      </button>
+                    </div>
                   ) : null}
                   {spotifyEmbedURL ? (
                     <div
@@ -126,7 +132,7 @@ export default function ReleasesHome({ releases }: { releases: ReleaseItem[] }) 
                           allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
                           className="w-full rounded-xl border-0"
                           height="80"
-                          loading="lazy"
+                          loading="eager"
                           src={spotifyEmbedURL}
                           title={`${release.creatorName} Spotify player`}
                         />
