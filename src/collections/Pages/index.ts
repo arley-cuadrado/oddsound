@@ -22,6 +22,10 @@ import {
 
 export const Pages: CollectionConfig<'pages'> = {
   slug: 'pages',
+  labels: {
+    plural: 'Releases',
+    singular: 'Release',
+  },
   access: {
     admin: authenticated,
     create: authenticated,
