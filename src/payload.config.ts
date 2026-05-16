@@ -28,6 +28,8 @@ export default buildConfig({
     },
     components: {
       afterLogin: ['@/components/CreatorRegisterLink'],
+      afterDashboard: ['@/components/BeforeDashboard'],
+      afterNavLinks: ['@/components/ScheduledPublishesNavLink'],
       graphics: {
         Icon: '@/components/AdminIcon',
         Logo: '@/components/AdminLogo',
@@ -93,6 +95,13 @@ export default buildConfig({
         return authHeader === `Bearer ${secret}`
       },
     },
+    autoRun: [
+      {
+        cron: '* * * * *',
+        limit: 50,
+        queue: 'default',
+      },
+    ],
     tasks: [],
   },
 })

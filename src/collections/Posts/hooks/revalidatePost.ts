@@ -4,6 +4,28 @@ import { revalidatePath, revalidateTag } from 'next/cache'
 
 import type { Post } from '../../../payload-types'
 
+function safelyRevalidate(args: {
+  path: string
+  payload: {
+    logger: {
+      info: (message: string) => void
+      warn: (message: string) => void
+    }
+  }
+  sitemapTag: string
+}) {
+  const { path, payload, sitemapTag } = args
+
+  try {
+    revalidatePath(path)
+    revalidateTag(sitemapTag, 'max')
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown revalidation error'
+
+    payload.logger.warn(`Skipping revalidation for "${path}": ${message}`)
+  }
+}
+
 export const revalidatePost: CollectionAfterChangeHook<Post> = ({
   doc,
   previousDoc,
@@ -15,8 +37,11 @@ export const revalidatePost: CollectionAfterChangeHook<Post> = ({
 
       payload.logger.info(`Revalidating post at path: ${path}`)
 
-      revalidatePath(path)
-      revalidateTag('posts-sitemap', 'max')
+      safelyRevalidate({
+        path,
+        payload,
+        sitemapTag: 'posts-sitemap',
+      })
     }
 
     // If the post was previously published, we need to revalidate the old path
@@ -25,19 +50,28 @@ export const revalidatePost: CollectionAfterChangeHook<Post> = ({
 
       payload.logger.info(`Revalidating old post at path: ${oldPath}`)
 
-      revalidatePath(oldPath)
-      revalidateTag('posts-sitemap', 'max')
+      safelyRevalidate({
+        path: oldPath,
+        payload,
+        sitemapTag: 'posts-sitemap',
+      })
     }
   }
   return doc
 }
 
-export const revalidateDelete: CollectionAfterDeleteHook<Post> = ({ doc, req: { context } }) => {
+export const revalidateDelete: CollectionAfterDeleteHook<Post> = ({
+  doc,
+  req: { context, payload },
+}) => {
   if (!context.disableRevalidate) {
     const path = `/posts/${doc?.slug}`
 
-    revalidatePath(path)
-    revalidateTag('posts-sitemap', 'max')
+    safelyRevalidate({
+      path,
+      payload,
+      sitemapTag: 'posts-sitemap',
+    })
   }
 
   return doc

@@ -4,6 +4,29 @@ import { revalidatePath, revalidateTag } from 'next/cache'
 
 import type { Page } from '../../../payload-types'
 
+function safelyRevalidate(args: {
+  path: string
+  payload: {
+    logger: {
+      info: (message: string) => void
+      warn: (message: string) => void
+    }
+  }
+  sitemapTag: string
+}) {
+  const { path, payload, sitemapTag } = args
+
+  try {
+    revalidatePath(path)
+    revalidateTag(sitemapTag, 'max')
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown revalidation error'
+
+    // Scheduled publish jobs run outside the normal App Router revalidation context.
+    payload.logger.warn(`Skipping revalidation for "${path}": ${message}`)
+  }
+}
+
 export const revalidatePage: CollectionAfterChangeHook<Page> = ({
   doc,
   previousDoc,
@@ -15,8 +38,11 @@ export const revalidatePage: CollectionAfterChangeHook<Page> = ({
 
       payload.logger.info(`Revalidating page at path: ${path}`)
 
-      revalidatePath(path)
-      revalidateTag('pages-sitemap', 'max')
+      safelyRevalidate({
+        path,
+        payload,
+        sitemapTag: 'pages-sitemap',
+      })
     }
 
     // If the page was previously published, we need to revalidate the old path
@@ -25,18 +51,27 @@ export const revalidatePage: CollectionAfterChangeHook<Page> = ({
 
       payload.logger.info(`Revalidating old page at path: ${oldPath}`)
 
-      revalidatePath(oldPath)
-      revalidateTag('pages-sitemap', 'max')
+      safelyRevalidate({
+        path: oldPath,
+        payload,
+        sitemapTag: 'pages-sitemap',
+      })
     }
   }
   return doc
 }
 
-export const revalidateDelete: CollectionAfterDeleteHook<Page> = ({ doc, req: { context } }) => {
+export const revalidateDelete: CollectionAfterDeleteHook<Page> = ({
+  doc,
+  req: { context, payload },
+}) => {
   if (!context.disableRevalidate) {
     const path = doc?.slug === 'home' ? '/' : `/${doc?.slug}`
-    revalidatePath(path)
-    revalidateTag('pages-sitemap', 'max')
+    safelyRevalidate({
+      path,
+      payload,
+      sitemapTag: 'pages-sitemap',
+    })
   }
 
   return doc

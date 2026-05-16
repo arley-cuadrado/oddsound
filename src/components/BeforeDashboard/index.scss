@@ -3,22 +3,56 @@
 .dashboard .before-dashboard {
   margin-bottom: base(1.5);
 
-  &__banner {
-    & h4 {
+  &__panel {
+    border: 1px solid var(--theme-elevation-150);
+    border-radius: 8px;
+    padding: base(1);
+    background: var(--theme-elevation-50);
+  }
+
+  &__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: base(0.75);
+    margin-bottom: base(0.75);
+
+    & h4,
+    & p {
       margin: 0;
     }
   }
 
-  &__instructions {
-    list-style: decimal;
-    margin-bottom: base(0.5);
-
-    & li {
-      width: 100%;
-    }
+  &__header p,
+  &__item p,
+  &__item time,
+  &__empty {
+    color: var(--theme-elevation-700);
   }
 
-  & a:hover {
-    opacity: 0.85;
+  &__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  &__item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: base(1);
+    padding: base(0.75) 0;
+    border-top: 1px solid var(--theme-elevation-100);
+
+    &:first-child {
+      border-top: 0;
+    }
+
+    & strong,
+    & p,
+    & time {
+      display: block;
+      margin: 0;
+    }
   }
 }
