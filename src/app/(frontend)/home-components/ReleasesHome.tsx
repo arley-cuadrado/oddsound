@@ -87,8 +87,14 @@ export default function ReleasesHome({ releases }: { releases: ReleaseItem[] }) 
                       </span>
                     </button>
                   ) : null}
-                  {spotifyEmbedURL && isSpotifyVisible ? (
-                    <div className="absolute inset-x-3 top-3 z-10 opacity-75">
+                  {spotifyEmbedURL ? (
+                    <div
+                      className={`absolute inset-x-3 top-3 z-10 transition-all duration-300 ease-out ${
+                        isSpotifyVisible
+                          ? 'translate-y-0 opacity-75'
+                          : 'pointer-events-none -translate-y-2 opacity-0'
+                      }`}
+                    >
                       <iframe
                         allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
                         className="w-full rounded-xl border-0"
