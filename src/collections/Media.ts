@@ -99,6 +99,7 @@ export const Media: CollectionConfig = {
     staticDir: path.resolve(dirname, '../../public/media'),
     adminThumbnail: 'thumbnail',
     focalPoint: true,
+    pasteURL: false,
     imageSizes: [
       {
         name: 'thumbnail',
