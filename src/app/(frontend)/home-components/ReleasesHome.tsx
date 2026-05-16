@@ -99,13 +99,13 @@ export default function ReleasesHome({ releases }: { releases: ReleaseItem[] }) 
                   ) : null}
                   {spotifyEmbedURL ? (
                     <div
-                      className={`absolute inset-x-0 top-0 z-20 bg-gradient-to-b from-black/55 via-black/15 to-transparent px-3 py-3 transition-opacity duration-300 ease-out ${
+                      className={`absolute inset-x-0 top-0 z-20 px-3 py-3 transition-opacity duration-300 ease-out ${
                         isSpotifyVisible ? 'pointer-events-none opacity-0' : 'opacity-100'
                       }`}
                     >
                       <button
                         aria-label={`Open ${release.releaseTitle} on Spotify`}
-                        className="inline-flex h-6 items-center justify-center px-1 text-[10px] font-medium text-white transition hover:text-white/85"
+                        className="inline-flex h-6 cursor-pointer items-center justify-center rounded-[16px] bg-white px-[10px] py-0 text-[10px] font-medium text-white transition hover:bg-white-800"
                         onClick={(event) => {
                           event.preventDefault()
                           event.stopPropagation()
@@ -113,7 +113,7 @@ export default function ReleasesHome({ releases }: { releases: ReleaseItem[] }) 
                         }}
                         type="button"
                       >
-                        <span aria-hidden="true" className="leading-none">
+                        <span aria-hidden="true" className="leading-none title">
                           Listen
                         </span>
                       </button>
