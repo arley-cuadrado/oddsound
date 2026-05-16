@@ -1,6 +1,6 @@
 import Link from 'next/link'
-import Image from 'next/image'
 import { Footer } from '@/Footer/Component'
+import { ArloSignature } from '../ArloSignature'
 
 export default function AsideHome() {
   return (
@@ -37,28 +37,9 @@ export default function AsideHome() {
                   </p>
                 </div>
               </Link>
-              <Link href="https://www.instagram.com/arlo_cuadrado/" target="_blank">
-                <div className="relative mt-8 flex items-center gap-x-4 justify-self-end pb-8">
-                  <Image
-                    src="/home-images/arlo_cuadrado.png"
-                    alt="Arlo Cuadrado"
-                    width={40}
-                    height={40}
-                    className="size-10 rounded-full"
-                  />
-                  <div className="text-sm/6">
-                    <div>
-                      <p>
-                        <span className="text-red title">@arlo_cuadrado</span>
-                      </p>
-
-                      <p className="text-slate-600 dark:text-gray-400 text-xs">
-                        Founder / &quot;Content Creator&quot;
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </Link>
+              <div className="pb-8">
+                <ArloSignature />
+              </div>
             </article>
           </div>
         </div>
