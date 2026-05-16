@@ -146,6 +146,8 @@ export const Users: CollectionConfig = {
       name: 'legalAccepted',
       type: 'checkbox',
       admin: {
+        condition: (_data, _siblingData, { user }) =>
+          isAdminUser(user as { role?: null | string } | null | undefined),
         description: 'Indicates whether the user accepted the legal terms during signup.',
         position: 'sidebar',
         readOnly: true,
@@ -156,6 +158,8 @@ export const Users: CollectionConfig = {
       name: 'legalAcceptedAt',
       type: 'date',
       admin: {
+        condition: (_data, _siblingData, { user }) =>
+          isAdminUser(user as { role?: null | string } | null | undefined),
         date: {
           pickerAppearance: 'dayAndTime',
         },
@@ -167,6 +171,8 @@ export const Users: CollectionConfig = {
       name: 'legalAcceptedVersion',
       type: 'text',
       admin: {
+        condition: (_data, _siblingData, { user }) =>
+          isAdminUser(user as { role?: null | string } | null | undefined),
         position: 'sidebar',
         readOnly: true,
       },
