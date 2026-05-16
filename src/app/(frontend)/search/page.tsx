@@ -106,12 +106,15 @@ function mapSearchRelease(
 
   if (!profile || !page.slug) return null
 
-  const imageUrl =
-    getMediaUrl(page.meta?.image as Media | null | string | undefined) ||
-    getMediaUrl(page.hero?.media as Media | null | string | undefined) ||
-    getMediaUrl(profile.coverImage as Media | null | string | undefined) ||
-    getMediaUrl(profile.avatar as Media | null | string | undefined) ||
-    FALLBACK_RELEASE_IMAGE
+  const isLowImpactRelease = page.hero?.type === 'lowImpact'
+  const albumImage = getMediaUrl(page.hero?.albumImage as Media | null | string | undefined)
+  const pageImage = getMediaUrl(page.meta?.image as Media | null | string | undefined)
+  const heroImage = getMediaUrl(page.hero?.media as Media | null | string | undefined)
+  const coverImage = getMediaUrl(profile.coverImage as Media | null | string | undefined)
+  const avatarImage = getMediaUrl(profile.avatar as Media | null | string | undefined)
+  const imageUrl = isLowImpactRelease
+    ? albumImage || pageImage || FALLBACK_RELEASE_IMAGE
+    : pageImage || albumImage || heroImage || coverImage || avatarImage || FALLBACK_RELEASE_IMAGE
 
   return {
     country: profile.location || '',
