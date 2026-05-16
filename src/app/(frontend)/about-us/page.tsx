@@ -20,7 +20,7 @@ const sections = [
     title: '',
     body: [
       <>
-        Si ves detalles de diseño o mejoras de funcionalidad que se deban ajustar{' '}
+        Si ves detalles de diseño o mejoras de funcionalidad que se deban ajustar, escríbeme a{' '}
         <Link
           className="underline underline-offset-2 title"
           href="mailto:arley.cuadrado@icloud.com"
