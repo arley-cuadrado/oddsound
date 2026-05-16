@@ -39,6 +39,7 @@ function getSpotifyEmbedURL(spotify: string) {
 export default function ReleasesHome({ releases }: { releases: ReleaseItem[] }) {
   const [visibleCount, setVisibleCount] = useState(RELEASES_BATCH_SIZE)
   const [activeSpotifyReleaseId, setActiveSpotifyReleaseId] = useState<string | null>(null)
+  const [animatedSpotifyReleaseId, setAnimatedSpotifyReleaseId] = useState<string | null>(null)
   const visibleReleases = releases.slice(0, visibleCount)
 
   useEffect(() => {
@@ -53,11 +54,36 @@ export default function ReleasesHome({ releases }: { releases: ReleaseItem[] }) 
     return () => window.removeEventListener('scroll', handleScroll)
   }, [releases.length])
 
+  useEffect(() => {
+    if (!activeSpotifyReleaseId) {
+      setAnimatedSpotifyReleaseId(null)
+      return
+    }
+
+    setAnimatedSpotifyReleaseId(null)
+    let frame: number | null = null
+
+    const timeout = window.setTimeout(() => {
+      frame = window.requestAnimationFrame(() => {
+        setAnimatedSpotifyReleaseId(activeSpotifyReleaseId)
+      })
+    }, 500)
+
+    return () => {
+      window.clearTimeout(timeout)
+
+      if (frame !== null) {
+        window.cancelAnimationFrame(frame)
+      }
+    }
+  }, [activeSpotifyReleaseId])
+
   return (
     <>
       {visibleReleases.map((release) => {
         const spotifyEmbedURL = release.spotifyURL ? getSpotifyEmbedURL(release.spotifyURL) : null
         const isSpotifyVisible = activeSpotifyReleaseId === release.id
+        const isSpotifyAnimated = animatedSpotifyReleaseId === release.id
 
         return (
           <article key={release.id} className="w-full max-w-[28rem] max-[767.98px]:max-w-none">
@@ -89,20 +115,22 @@ export default function ReleasesHome({ releases }: { releases: ReleaseItem[] }) 
                   ) : null}
                   {spotifyEmbedURL ? (
                     <div
-                      className={`absolute inset-x-3 top-3 z-10 transition-all duration-300 ease-out ${
-                        isSpotifyVisible
+                      className={`absolute inset-x-3 top-3 z-10 h-[80px] transition-all duration-300 ease-out ${
+                        isSpotifyAnimated
                           ? 'translate-y-0 opacity-75'
                           : 'pointer-events-none -translate-y-2 opacity-0'
                       }`}
                     >
-                      <iframe
-                        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                        className="w-full rounded-xl border-0"
-                        height="80"
-                        loading="lazy"
-                        src={spotifyEmbedURL}
-                        title={`${release.creatorName} Spotify player`}
-                      />
+                      {isSpotifyVisible ? (
+                        <iframe
+                          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                          className="w-full rounded-xl border-0"
+                          height="80"
+                          loading="lazy"
+                          src={spotifyEmbedURL}
+                          title={`${release.creatorName} Spotify player`}
+                        />
+                      ) : null}
                     </div>
                   ) : null}
                   <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-4 bg-gradient-to-t from-black/70 via-black/20 to-transparent px-4 py-3 text-white">
