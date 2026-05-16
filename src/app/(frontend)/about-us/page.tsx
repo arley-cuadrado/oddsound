@@ -1,31 +1,70 @@
-import Link from "next/link"
-//import { fetchAdminBlog } from "../../../lib/api"
-//import { BlocksRenderer } from "@strapi/blocks-react-renderer"
+import Image from 'next/image'
+import Link from 'next/link'
+import { LegalDocument } from '../legal/LegalDocument'
 
-export default async function AboutUs() {
+const intro = [
+  'Sin tanto cuento y sin tanta parla, hay un momento donde leer las mismas noticias de los artistas pop en magazines elitistas resulta en un estancamiento extraño. Más cuando interesa descubrir nuevas voces de la escena local - nacional e internacional, y en muchas de esas búsquedas he resultado sorprendido pero a veces la experiencia se ve un poco truncada por lo dispersa de la información.',
+]
 
-    /*
-    const adminBlog = await fetchAdminBlog()
-    if (!adminBlog) return <p>No content</p>
-    */
-    return (
-        <>
-            <article className="prose 
-                        prose-h1:text-slate-700 prose-h1:dark:text-white 
-                        prose-h2:text-slate-700 prose-h2:dark:text-white
-                        prose-h3:text-slate-700 prose-h3:dark:text-white
-                        prose-h4:text-slate-700 prose-h4:dark:text-white
-                        prose-h5:text-slate-700 prose-h5:dark:text-white
-                        max-w-none mx-auto lg:w-150 gap-4 text-slate-600 dark:text-gray-400">
-                {/*<BlocksRenderer content={adminBlog.description} />*/}
+const sections = [
+  {
+    title: 'Cosas como:',
+    body: [
+      'Tener parte de tu estrategía de marketing en tiktok, instagram, pero a la vez usar youtube para ver videos y las diversas plataformas de streaming musicales a las que hay que tener acceso para escucharte, hacen que el proceso de descubrimiento sea un tanto extenso, por lo que, por qué no tener un espacio que pueda funcionar como sitio web o landing page donde puedas sintetizar todo eso? Ojo! SINTETIZAR…',
+      'Puede que a primera vista el sitio no resulte en algo innovador y es que tampoco lo pretende, solo quiere decirle a los independientes:',
+      '“Hey, estoy aquí! Llégate y sube tu info y lanzamientos si quieres, si puedes y si te da la gana… no pierdes na’, a la final todos moriremos.”',
+    ],
+  },
+  {
+    title: 'Es gratis...',
+    body: ['Es la primera versión del sitio, por lo que puede que haya cosas por pulir.'],
+  },
+  {
+    title: '',
+    body: [
+      <>
+        Si ves detalles de diseño o mejoras de funcionalidad que se deban ajustar{' '}
+        <Link
+          className="underline underline-offset-2 title"
+          href="mailto:arley.cuadrado@icloud.com"
+        >
+          oddsound-support
+        </Link>
+        , con gusto lo revisaré y corregiré, a menos que se acabe el mundo en ese proceso.
+      </>,
+      <Link href="https://www.instagram.com/arlo_cuadrado/" target="_blank">
+        <span className="relative mt-8 flex items-center gap-x-4 pb-2">
+          <Image
+            src="/home-images/arlo_cuadrado.png"
+            alt="Arlo Cuadrado"
+            width={40}
+            height={40}
+            className="size-10 rounded-full"
+          />
+          <span className="text-sm/6">
+            <span>
+              <span>
+                <span className="text-red title">@arlo_cuadrado</span>
+              </span>
+              <span className="block text-xs text-slate-600 dark:text-gray-400">
+                Founder / &quot;Content Creator&quot;
+              </span>
+            </span>
+          </span>
+        </span>
+      </Link>,
+    ],
+  },
+]
 
-                {/*<Link href={`mailto:${adminBlog.emailAdmin}`}*/}
-                <Link href={`mailto:`}
-                    className="text-slate-600 dark:text-gray-400"
-                >Por ahora, si quieres aparecer escribeme aquí.</Link>
-
-                <h3>Admin name</h3>{/* {adminBlog.name} */}
-            </article>
-        </>
-    )
+export default function AboutUsPage() {
+  return (
+    <LegalDocument
+      intro={intro}
+      introTitle="Bueno, ¿por qué Oddsound existe?"
+      sections={sections}
+      title="About Oddsound"
+      updatedAt="16 de mayo de 2026"
+    />
+  )
 }

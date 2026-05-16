@@ -1,18 +1,25 @@
 import React from 'react'
 
 type Section = {
-  body: string[]
+  body: React.ReactNode[]
   title: string
 }
 
 type LegalDocumentProps = {
-  intro: string[]
+  intro: React.ReactNode[]
+  introTitle?: string
   sections: Section[]
   title: string
   updatedAt: string
 }
 
-export function LegalDocument({ intro, sections, title, updatedAt }: LegalDocumentProps) {
+export function LegalDocument({
+  intro,
+  introTitle,
+  sections,
+  title,
+  updatedAt,
+}: LegalDocumentProps) {
   return (
     <article className="mx-auto max-w-4xl px-4 pb-24 pt-12 md:px-6">
       <div className="mx-auto max-w-[48rem]">
@@ -29,13 +36,14 @@ export function LegalDocument({ intro, sections, title, updatedAt }: LegalDocume
         </header>
 
         <div className="prose max-w-none text-slate-700 prose-headings:text-slate-900 prose-p:text-slate-600 dark:text-slate-300 dark:prose-headings:text-white dark:prose-p:text-slate-300">
+          {introTitle ? <h2>{introTitle}</h2> : null}
           {intro.map((paragraph, index) => (
             <p key={index}>{paragraph}</p>
           ))}
 
           {sections.map((section) => (
             <section className="mt-10" key={section.title}>
-              <h2>{section.title}</h2>
+              {section.title ? <h2>{section.title}</h2> : null}
               {section.body.map((paragraph, index) => (
                 <p key={index}>{paragraph}</p>
               ))}
