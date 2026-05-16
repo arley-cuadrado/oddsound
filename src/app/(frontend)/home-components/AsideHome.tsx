@@ -19,7 +19,7 @@ export default function AsideHome() {
           <div className="grid-cols-1 gap-x-8 gap-y-16 border-t border-gray-200 pt-10 sm:mt-10 lg:mx-0 lg:max-w-none lg:grid-cols-3">
             <div>
               <AboutUsTeaser />
-              <div className="pb-8">
+              <div className="pb-6">
                 <ArloSignature />
               </div>
             </div>

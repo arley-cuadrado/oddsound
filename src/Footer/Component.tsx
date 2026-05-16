@@ -4,18 +4,22 @@ import Link from 'next/link'
 export async function Footer() {
   const footerData = await getCachedGlobal('footer', 1)()
   const currentYear = new Date().getFullYear()
-
-  const navItems = footerData?.navItems || []
+  void footerData
 
   return (
-    <footer className="mt-auto bg-white dark:bg-card text-dark text-xs">
+    <footer className="mt-auto bg-white text-dark dark:bg-card">
       {/* border-t border-border */}
-      <div className="container gap-8 flex flex-col md:flex-col items-center">
-        <div>
-          <Link href="https://www.instagram.com/arlo_cuadrado/" target="_blank">
-            <p>
-            © {currentYear} | Made with love and lots of Coffee</p> 
-          </Link>
+      <div className="flex flex-col gap-8 px-6 md:flex-col">
+        <div className="flex flex-col items-start gap-2">
+          <p className="text-[10px]">© {currentYear} | Made with love and lots of Coffee</p>
+          <div className="flex items-start gap-3 text-[10px] text-slate-600 dark:text-gray-400">
+            <Link className="underline underline-offset-2" href="/terms-and-conditions">
+              Terms and Conditions
+            </Link>
+            <Link className="underline underline-offset-2" href="/privacy-policy">
+              Privacy Policy
+            </Link>
+          </div>
         </div>
       </div>
     </footer>
