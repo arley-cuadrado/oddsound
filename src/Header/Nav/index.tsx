@@ -53,6 +53,16 @@ export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
       normalizedURL.includes('/login')
     )
   }
+
+  const getSafeLink = <T extends { label?: null | string; url?: null | string }>(link: T) => {
+    if (!isLoginLink(link.label, link.url)) return link
+
+    return {
+      ...link,
+      url: '/dashboard/login',
+    }
+  }
+
   const topNavItems = navItems.filter(({ link }) => isLoginLink(link.label, link.url))
 
   return (
@@ -75,7 +85,7 @@ export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
                 return (
                   <CMSLink
                     key={i}
-                    {...link}
+                    {...getSafeLink(link)}
                     appearance="inline"
                     className="block text-left hover:underline"
                   />
@@ -103,7 +113,7 @@ export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
                 }`}
               >
                 <CMSLink
-                  {...link}
+                  {...getSafeLink(link)}
                   appearance="inline"
                   className="block w-full text-left hover:underline max-[975px]:w-auto"
                 />
