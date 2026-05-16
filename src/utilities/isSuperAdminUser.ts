@@ -10,5 +10,5 @@ export function isSuperAdminUser(user: UserLike) {
 
   if (!email) return false
 
-  return SUPER_ADMIN_EMAILS.includes(email) && (!user?.role || user.role === 'admin')
+  return SUPER_ADMIN_EMAILS.includes(email) && user?.role === 'admin'
 }

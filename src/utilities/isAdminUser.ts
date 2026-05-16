@@ -3,5 +3,5 @@ type UserLike = {
 } | null | undefined
 
 export function isAdminUser(user: UserLike) {
-  return !user?.role || user.role === 'admin'
+  return user?.role === 'admin'
 }
