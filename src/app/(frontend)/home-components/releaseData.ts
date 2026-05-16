@@ -96,6 +96,19 @@ function getOwnerId(page: Page) {
   return page.owner.id
 }
 
+function getSpotifyURL(page: Page) {
+  if (!Array.isArray(page.layout)) return null
+
+  const spotifyBlock = page.layout.find(
+    (block): block is Extract<Page['layout'][number], { blockType: 'spotifyBlock' }> =>
+      Boolean(block && typeof block === 'object' && block.blockType === 'spotifyBlock'),
+  )
+
+  if (!spotifyBlock || typeof spotifyBlock.spotify !== 'string') return null
+
+  return spotifyBlock.spotify.trim() || null
+}
+
 export function buildProfilesByOwnerId(profiles: Profile[]) {
   const profilesByOwnerId = new Map<string, Profile>()
 
@@ -144,5 +157,6 @@ export function mapRelease(page: Page, profilesByOwnerId: Map<string, Profile>):
       : pageImage || albumImage || heroImage || coverImage || avatarImage || FALLBACK_RELEASE_IMAGE,
     releaseSlug: page.slug,
     releaseTitle: page.title,
+    spotifyURL: getSpotifyURL(page),
   }
 }

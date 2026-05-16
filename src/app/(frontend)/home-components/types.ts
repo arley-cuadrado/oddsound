@@ -7,4 +7,5 @@ export interface ReleaseItem {
   imageUrl: string | null
   releaseTitle: string
   releaseSlug: string
+  spotifyURL?: string | null
 }
