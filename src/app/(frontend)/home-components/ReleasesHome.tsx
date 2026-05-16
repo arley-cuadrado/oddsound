@@ -99,13 +99,13 @@ export default function ReleasesHome({ releases }: { releases: ReleaseItem[] }) 
                   ) : null}
                   {spotifyEmbedURL ? (
                     <div
-                      className={`absolute inset-x-0 top-0 z-20 px-3 py-3 transition-opacity duration-300 ease-out ${
+                      className={`absolute inset-x-0 top-0 z-10 px-3 py-3 transition-opacity duration-300 ease-out ${
                         isSpotifyVisible ? 'pointer-events-none opacity-0' : 'opacity-100'
                       }`}
                     >
                       <button
                         aria-label={`Open ${release.releaseTitle} on Spotify`}
-                        className="inline-flex h-6 cursor-pointer items-center justify-center rounded-[16px] bg-white px-[10px] py-0 text-[10px] font-medium text-white transition hover:bg-white-800"
+                        className="pointer-events-auto relative z-10 inline-flex h-6 touch-manipulation cursor-pointer items-center justify-center rounded-[16px] bg-black px-[10px] py-0 text-[10px] font-medium text-white transition hover:bg-slate-800"
                         onClick={(event) => {
                           event.preventDefault()
                           event.stopPropagation()
