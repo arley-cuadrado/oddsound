@@ -109,7 +109,11 @@ export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
               <div
                 key={i}
                 className={`w-full text-left max-[975px]:w-auto ${
-                  isLoginLink(link.label, link.url) && isAuthenticated ? 'hidden' : ''
+                  isLoginLink(link.label, link.url)
+                    ? isAuthenticated
+                      ? 'hidden'
+                      : 'max-[975px]:hidden'
+                    : ''
                 }`}
               >
                 <CMSLink
