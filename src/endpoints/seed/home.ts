@@ -77,7 +77,7 @@ export const home: (args: HomeArgs) => RequiredDataFromCollectionSlug<'pages'> =
                   fields: {
                     linkType: 'custom',
                     newTab: false,
-                    url: '/admin',
+                    url: '/dashboard',
                   },
                   format: '',
                   indent: 0,
@@ -231,7 +231,7 @@ export const home: (args: HomeArgs) => RequiredDataFromCollectionSlug<'pages'> =
                         fields: {
                           linkType: 'custom',
                           newTab: false,
-                          url: '/admin',
+                          url: '/dashboard',
                         },
                         format: '',
                         indent: 0,
@@ -422,7 +422,7 @@ export const home: (args: HomeArgs) => RequiredDataFromCollectionSlug<'pages'> =
                         fields: {
                           linkType: 'custom',
                           newTab: false,
-                          url: '/admin',
+                          url: '/dashboard',
                         },
                         format: '',
                         indent: 0,
@@ -634,7 +634,7 @@ export const home: (args: HomeArgs) => RequiredDataFromCollectionSlug<'pages'> =
                     fields: {
                       linkType: 'custom',
                       newTab: false,
-                      url: '/admin',
+                      url: '/dashboard',
                     },
                     format: '',
                     indent: 0,

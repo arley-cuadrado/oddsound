@@ -6,8 +6,8 @@ import React from 'react'
 
 const ScheduledPublishesNavLink: React.FC = () => {
   const pathname = usePathname()
-  const href = '/admin#scheduled-publishes'
-  const isActive = pathname === '/admin'
+  const href = '/dashboard#scheduled-publishes'
+  const isActive = pathname === '/dashboard'
 
   return (
     <div className="scheduled-publishes-nav-link">

@@ -5,7 +5,7 @@ import { useEffect } from 'react'
 export default function UsersListSelectionGuard() {
   useEffect(() => {
     if (typeof window === 'undefined') return
-    if (!window.location.pathname.includes('/admin/collections/users')) return
+    if (!window.location.pathname.includes('/dashboard/collections/users')) return
 
     const hideSelectionUI = () => {
       document.querySelectorAll('input[type="checkbox"]').forEach((checkbox) => {

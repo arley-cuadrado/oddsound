@@ -86,7 +86,7 @@ export const post1: (args: PostArgs) => RequiredDataFromCollectionSlug<'posts'> 
                           fields: {
                             linkType: 'custom',
                             newTab: true,
-                            url: '/admin',
+                            url: '/dashboard',
                           },
                           format: '',
                           indent: 0,

@@ -253,7 +253,7 @@ export const seed = async ({
             link: {
               type: 'custom',
               label: 'Admin',
-              url: '/admin',
+              url: '/dashboard',
             },
           },
           {

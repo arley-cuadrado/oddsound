@@ -5,7 +5,7 @@ import { RegisterForm } from './register-form'
 
 export default async function CreatorRegisterPage() {
   await getMeUser({
-    validUserRedirect: '/admin',
+    validUserRedirect: '/dashboard',
   }).catch(() => null)
 
   return (
@@ -21,7 +21,7 @@ export default async function CreatorRegisterPage() {
 
         <p className="mt-8 text-sm text-foreground/80">
           Already registered?{' '}
-          <Link className="text-foreground underline underline-offset-2" href="/admin/login">
+          <Link className="text-foreground underline underline-offset-2" href="/dashboard/login">
             Log in
           </Link>
         </p>

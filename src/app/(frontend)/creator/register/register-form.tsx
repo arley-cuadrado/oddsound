@@ -62,7 +62,7 @@ export function RegisterForm() {
         throw new Error(parseErrorMessage(result, 'Unable to create your account.'))
       }
 
-      router.push('/admin')
+      router.push('/dashboard')
       router.refresh()
     } catch (caughtError) {
       setError(caughtError instanceof Error ? caughtError.message : 'Something went wrong.')

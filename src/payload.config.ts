@@ -20,6 +20,9 @@ const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
 export default buildConfig({
+  routes: {
+    admin: '/dashboard',
+  },
   admin: {
     meta: {
       icons: {
