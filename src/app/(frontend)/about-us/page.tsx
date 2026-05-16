@@ -1,10 +1,7 @@
 import Link from 'next/link'
 import { ArloSignature } from '../ArloSignature'
 import { LegalDocument } from '../legal/LegalDocument'
-
-const intro = [
-  'Sin tanto cuento y sin tanta parla, hay un momento donde leer las mismas noticias de los artistas pop en magazines elitistas resulta en un estancamiento extraño. Más cuando interesa descubrir nuevas voces de la escena local - nacional e internacional, y en muchas de esas búsquedas he resultado sorprendido pero a veces la experiencia se ve un poco truncada por lo dispersa de la información.',
-]
+import { aboutUsIntro, aboutUsIntroTitle, aboutUsUpdatedAt } from './content'
 
 const sections = [
   {
@@ -40,11 +37,11 @@ const sections = [
 export default function AboutUsPage() {
   return (
     <LegalDocument
-      intro={intro}
-      introTitle="Bueno, ¿por qué Oddsound existe?"
+      intro={aboutUsIntro}
+      introTitle={aboutUsIntroTitle}
       sections={sections}
       title="About Oddsound"
-      updatedAt="16 de mayo de 2026"
+      updatedAt={aboutUsUpdatedAt}
     />
   )
 }
