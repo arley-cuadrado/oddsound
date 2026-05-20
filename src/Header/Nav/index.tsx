@@ -71,7 +71,7 @@ export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
       style={{ top: 'var(--admin-bar-offset, 0px)' }}
     >
       <div
-        className="max-[975px]:pointer-events-auto max-[975px]:fixed max-[975px]:left-0 max-[975px]:z-30 max-[975px]:w-full max-[975px]:bg-white max-[975px]:px-4 max-[975px]:py-4 max-[975px]:dark:bg-[#0f0f0f]"
+        className="max-[975px]:pointer-events-auto max-[975px]:fixed max-[975px]:left-0 max-[975px]:z-30 max-[975px]:w-full max-[975px]:bg-white max-[975px]:px-4 max-[975px]:py-2 max-[975px]:dark:bg-[#0f0f0f]"
         style={{ top: 'var(--admin-bar-offset, 0px)' }}
       >
         <div className="max-[975px]:mx-auto max-[975px]:flex max-[975px]:max-w-4xl max-[975px]:items-center max-[975px]:justify-between">
@@ -95,7 +95,7 @@ export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
           ) : null}
         </div>
       </div>
-      <div className="flex h-[90vh] flex-col justify-between max-[975px]:pointer-events-auto max-[975px]:fixed max-[975px]:right-0 max-[975px]:bottom-0 max-[975px]:left-0 max-[975px]:z-30 max-[975px]:h-auto max-[975px]:w-full max-[975px]:flex-row max-[975px]:items-center max-[975px]:justify-between max-[975px]:gap-4 max-[975px]:bg-white max-[975px]:px-4 max-[975px]:py-4 max-[975px]:dark:bg-[#0f0f0f]">
+      <div className="flex h-[90vh] flex-col justify-between max-[975px]:pointer-events-auto max-[975px]:fixed max-[975px]:right-0 max-[975px]:bottom-0 max-[975px]:left-0 max-[975px]:z-30 max-[975px]:h-auto max-[975px]:w-full max-[975px]:flex-row max-[975px]:items-center max-[975px]:justify-between max-[975px]:gap-4 max-[975px]:bg-white max-[975px]:px-4 max-[975px]:py-2 max-[975px]:dark:bg-[#0f0f0f]">
         <div className="flex flex-col gap-4 max-[975px]:flex-row max-[975px]:items-center max-[975px]:gap-6">
           <Link href="/about-us" className="hidden">
             about

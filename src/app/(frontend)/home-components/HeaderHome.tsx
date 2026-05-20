@@ -81,7 +81,7 @@ export default function SliderHeader({ posts }: { posts?: SliderPost[] }) {
   }, [activeIndex])
 
   return (
-    <section className="mt-8 w-full overflow-hidden">
+    <section className="mt-8 w-full overflow-hidden max-[975px]:mt-0">
       <div
         ref={containerRef}
         className="w-full overflow-x-auto scroll-smooth [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
