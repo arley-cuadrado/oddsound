@@ -21,7 +21,7 @@ export function ArloSignature() {
             <span className="block">
               <span className="text-red title">@arlo_cuadrado</span>
             </span>
-            <span className="block text-xs text-slate-600 dark:text-gray-400">
+            <span className="block text-xs text-black dark:text-white">
               Founder / &quot;Content Creator&quot;
             </span>
           </span>

@@ -8,10 +8,10 @@ export default function AsideHome() {
       <aside className="gap-6 mb-7 pt-4 pb-4">
         <div className="w-70 px-6">
           <div>
-            <h2 className="font-semibold tracking-tight text-pretty text-slate-700 dark:text-white">
+            <h2 className="text-[13px] font-semibold tracking-tight text-pretty text-black dark:text-white">
               Binevenid@!
             </h2>
-            <p className="mt-2 text-slate-600 dark:text-gray-400">
+            <p className="mt-2 text-[13px] text-[#777] dark:text-[#777]">
               Esta es una versión temprana del sitio, un espacio donde encontrarás artistas
               independientes.
             </p>
