@@ -153,7 +153,7 @@ export default function ReleasesHome({ releases }: { releases: ReleaseItem[] }) 
                   <h3 className="mt-4 text-[16px] font-black leading-tight text-slate-800 dark:text-white">
                     {release.releaseTitle}
                   </h3>
-                  <p className="text-sm line-clamp-3 text-slate-500 dark:text-gray-400">
+                  <p className="line-clamp-3 text-[13px] text-[#777] dark:text-[#777]">
                     {release.description}
                   </p>
                 </div>
