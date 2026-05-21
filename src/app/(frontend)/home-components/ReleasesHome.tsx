@@ -105,7 +105,7 @@ export default function ReleasesHome({ releases }: { releases: ReleaseItem[] }) 
                     >
                       <button
                         aria-label={`Open ${release.releaseTitle} on Spotify`}
-                        className="pointer-events-auto relative z-10 inline-flex h-6 touch-manipulation cursor-pointer items-center justify-center rounded-[16px] bg-black px-[10px] py-0 text-[10px] font-medium text-white transition hover:bg-slate-800"
+                        className="pointer-events-auto relative z-10 inline-flex h-6 touch-manipulation cursor-pointer items-center justify-center rounded-[16px] bg-white px-[10px] py-0 text-[10px] font-medium text-black transition hover:bg-slate-100"
                         onClick={(event) => {
                           event.preventDefault()
                           event.stopPropagation()
