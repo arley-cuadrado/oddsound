@@ -18,8 +18,8 @@ function enhancePasswordField() {
 
   const toggle = document.createElement('button')
   toggle.type = 'button'
-  toggle.textContent = 'Show'
-  toggle.setAttribute('aria-label', 'Show password')
+  toggle.textContent = 'Ver'
+  toggle.setAttribute('aria-label', 'Ver contraseña')
   toggle.style.position = 'absolute'
   toggle.style.right = '0.75rem'
   toggle.style.top = '50%'
@@ -34,8 +34,8 @@ function enhancePasswordField() {
   toggle.addEventListener('click', () => {
     const isHidden = passwordInput.type === 'password'
     passwordInput.type = isHidden ? 'text' : 'password'
-    toggle.textContent = isHidden ? 'Hide' : 'Show'
-    toggle.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password')
+    toggle.textContent = isHidden ? 'Ocultar' : 'Ver'
+    toggle.setAttribute('aria-label', isHidden ? 'Ocultar contraseña' : 'Ver contraseña')
   })
 
   wrapper.appendChild(toggle)

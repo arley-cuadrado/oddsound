@@ -14,12 +14,17 @@ export const Events: Block = {
     {
       name: 'events',
       type: 'array',
+      labels: {
+        plural: 'Eventos',
+        singular: 'Evento',
+      },
       minRows: 1,
       required: true,
       fields: [
         {
           name: 'date',
           type: 'date',
+          label: 'Fecha',
           required: true,
         },
         {
@@ -28,6 +33,7 @@ export const Events: Block = {
             {
               name: 'city',
               type: 'text',
+              label: 'Ciudad',
               required: true,
               admin: {
                 width: '50%',
@@ -36,6 +42,7 @@ export const Events: Block = {
             {
               name: 'venue',
               type: 'text',
+              label: 'Lugar',
               required: true,
               admin: {
                 width: '50%',

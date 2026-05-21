@@ -3,7 +3,7 @@ import React from 'react'
 const CreatorRegisterLink: React.FC = () => {
   return (
     <p>
-      Need a creator account first? <a href="/creator/register">creator register</a>
+      ¿Necesitas primero una cuenta de creador? <a href="/creator/register">regístrate aquí</a>
     </p>
   )
 }

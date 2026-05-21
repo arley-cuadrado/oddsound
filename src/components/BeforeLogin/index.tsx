@@ -6,7 +6,7 @@ const BeforeLogin: React.FC = () => {
     <div className="space-y-3">
       <AdminLoginPasswordToggle />
       <p>
-        Welcome to <strong>your</strong> space, sign in here.
+        Bienvenid@ a <strong>tu</strong> espacio, inicia sesión aquí.
       </p>
     </div>
   )

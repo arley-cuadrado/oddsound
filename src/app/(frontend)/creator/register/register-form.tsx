@@ -59,13 +59,13 @@ export function RegisterForm() {
       })
 
       if (!result.ok) {
-        throw new Error(parseErrorMessage(result, 'Unable to create your account.'))
+        throw new Error(parseErrorMessage(result, 'No fue posible crear tu cuenta.'))
       }
 
       router.push('/dashboard')
       router.refresh()
     } catch (caughtError) {
-      setError(caughtError instanceof Error ? caughtError.message : 'Something went wrong.')
+      setError(caughtError instanceof Error ? caughtError.message : 'Algo salió mal.')
     } finally {
       setIsSubmitting(false)
     }
@@ -75,13 +75,13 @@ export function RegisterForm() {
     <form className="space-y-6" onSubmit={handleSubmit}>
       <div className="space-y-2">
         <label className="text-sm font-medium text-foreground" htmlFor="name">
-          What is your Name dude?
+          ¿Cuál es tu nombre?
         </label>
         <input
           className="h-12 w-full border border-border bg-background px-4 text-sm text-foreground outline-none"
           id="name"
           name="name"
-          placeholder="Your artist, band, or label name"
+          placeholder="Nombre de tu artista, banda o sello"
           required
           type="text"
         />
@@ -89,7 +89,7 @@ export function RegisterForm() {
 
       <div className="space-y-2">
         <label className="text-sm font-medium text-foreground" htmlFor="accountType">
-          Pick your account type
+          Elige tu tipo de cuenta
         </label>
         <select
           className="h-12 w-full border border-border bg-background px-4 text-sm text-foreground outline-none"
@@ -99,21 +99,21 @@ export function RegisterForm() {
           // Account type is required because it defines the creator profile from signup.
           required
         >
-          <option value="artist">Artist</option>
-          <option value="band">Band</option>
-          <option value="label">Label</option>
+          <option value="artist">Artista</option>
+          <option value="band">Banda</option>
+          <option value="label">Sello</option>
         </select>
       </div>
 
       <div className="space-y-2">
         <label className="text-sm font-medium text-foreground" htmlFor="country">
-          Enter your country
+          Ingresa tu país
         </label>
         <input
           className="h-12 w-full border border-border bg-background px-4 text-sm text-foreground outline-none"
           id="country"
           name="country"
-          placeholder="Colombia, Mexico, USA, etc..."
+          placeholder="Colombia, México, EE. UU., etc..."
           required
           type="text"
         />
@@ -121,13 +121,13 @@ export function RegisterForm() {
 
       <div className="space-y-2">
         <label className="text-sm font-medium text-foreground" htmlFor="genre">
-          Now your music genre
+          Ahora tu género musical
         </label>
         <input
           className="h-12 w-full border border-border bg-background px-4 text-sm text-foreground outline-none"
           id="genre"
           name="genre"
-          placeholder="Indie Rock, Aafrobeats, Champeta, Reggaeton, etc..."
+          placeholder="Indie Rock, Afrobeats, Champeta, Reggaetón, etc..."
           required
           type="text"
         />
@@ -135,7 +135,7 @@ export function RegisterForm() {
 
       <div className="space-y-2">
         <label className="text-sm font-medium text-foreground" htmlFor="email">
-          Your email here
+          Tu correo electrónico
         </label>
         <input
           className="h-12 w-full border border-border bg-background px-4 text-sm text-foreground outline-none"
@@ -149,7 +149,7 @@ export function RegisterForm() {
 
       <div className="space-y-2">
         <label className="text-sm font-medium text-foreground" htmlFor="password">
-          And your password
+          Y tu contraseña
         </label>
         <div className="relative">
           <input
@@ -157,25 +157,25 @@ export function RegisterForm() {
             id="password"
             minLength={8}
             name="password"
-            placeholder="At least 8 characters"
+            placeholder="Mínimo 8 caracteres"
             required
             type={showPassword ? 'text' : 'password'}
           />
           <button
             aria-controls="password"
-            aria-label={showPassword ? 'Hide password' : 'Show password'}
+            aria-label={showPassword ? 'Ocultar contraseña' : 'Ver contraseña'}
             className="absolute inset-y-0 right-0 px-4 text-sm text-[#777] hover:text-slate-900 dark:text-[#858c98] dark:hover:text-white"
             onClick={() => setShowPassword((current) => !current)}
             type="button"
           >
-            {showPassword ? 'Hide' : 'Show'}
+            {showPassword ? 'Ocultar' : 'Ver'}
           </button>
         </div>
       </div>
 
       <div className="space-y-2">
         <label className="text-sm font-medium text-foreground" htmlFor="password">
-          *All fields are required
+          *Todos los campos son obligatorios
         </label>
       </div>
 
@@ -188,21 +188,21 @@ export function RegisterForm() {
           type="checkbox"
         />
         <label className="text-sm leading-6 text-foreground/80" htmlFor="acceptedLegal">
-          I have read and accept the{' '}
+          He leído y acepto los{' '}
           <Link
             className="underline underline-offset-2"
             href="/terms-and-conditions"
             target="_blank"
           >
-            Terms and Conditions
+            Términos y condiciones
           </Link>{' '}
-          and the{' '}
+          y la{' '}
           <Link
             className="underline underline-offset-2"
             href="/privacy-policy"
             target="_blank"
           >
-            Privacy Policy
+            Política de privacidad
           </Link>
           .
         </label>
@@ -219,7 +219,7 @@ export function RegisterForm() {
         disabled={isSubmitting}
         type="submit"
       >
-        {isSubmitting ? 'Creating account...' : 'Create account'}
+        {isSubmitting ? 'Creando cuenta...' : 'Crear cuenta'}
       </button>
     </form>
   )

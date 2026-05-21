@@ -31,14 +31,14 @@ export async function registerCreator(input: {
 
     if (!input.acceptedLegal) {
       return {
-        message: 'You must accept the Terms and Conditions and Privacy Policy.',
+        message: 'Debes aceptar los Términos y condiciones y la Política de privacidad.',
         ok: false,
       }
     }
 
     if (!country || !email || !genre || !name || !input.password) {
       return {
-        message: 'Name, country, music genre, email, and password are required.',
+        message: 'Nombre, país, género musical, correo electrónico y contraseña son obligatorios.',
         ok: false,
       }
     }
@@ -58,7 +58,7 @@ export async function registerCreator(input: {
 
     if (existingUser.docs.length > 0) {
       return {
-        message: 'This user is already registered.',
+        message: 'Este usuario ya está registrado.',
         ok: false,
       }
     }
@@ -100,7 +100,7 @@ export async function registerCreator(input: {
     })
   } catch (error) {
     return {
-      message: error instanceof Error ? error.message : 'Unable to create your account.',
+      message: error instanceof Error ? error.message : 'No fue posible crear tu cuenta.',
       ok: false,
     }
   }

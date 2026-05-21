@@ -13,16 +13,16 @@ export default async function CreatorRegisterPage() {
       <div className="mx-auto max-w-[30rem]">
         <div className="mb-8">
           <p className="text-sm text-foreground/80">
-            Welcome to <strong>oddsound</strong> space, create your account here.
+            Bienvenid@ al espacio de <strong>oddsound</strong>, crea tu cuenta aquí.
           </p>
         </div>
 
         <RegisterForm />
 
         <p className="mt-8 text-sm text-foreground/80">
-          Already registered?{' '}
+          ¿Ya estás registrad@?{' '}
           <Link className="text-foreground underline underline-offset-2" href="/dashboard/login">
-            Log in
+            Inicia sesión
           </Link>
         </p>
       </div>

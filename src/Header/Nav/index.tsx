@@ -59,6 +59,7 @@ export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
 
     return {
       ...link,
+      label: 'iniciar sesión',
       url: '/dashboard/login',
     }
   }
