@@ -50,7 +50,7 @@ export const EventsBlock: React.FC<Props> = (props) => {
 
                     <div>
                       <p className="flex h-[18px] items-center text-[11px] font-medium uppercase tracking-[0.18em] text-[#777] dark:text-[#858c98]">
-                        City
+                        Ciudad
                       </p>
                       <p className="flex h-[40px] items-center text-[18px] font-semibold leading-tight text-[#777] dark:text-[#858c98]">
                         {city}
@@ -59,7 +59,7 @@ export const EventsBlock: React.FC<Props> = (props) => {
 
                     <div>
                       <p className="flex h-[18px] items-center text-[11px] font-medium uppercase tracking-[0.18em] text-[#777] dark:text-[#858c98]">
-                        Venue
+                        Lugar
                       </p>
                       <p className="flex h-[40px] items-center text-[18px] font-semibold leading-tight text-[#777] dark:text-[#858c98]">
                         {venue}
@@ -72,7 +72,7 @@ export const EventsBlock: React.FC<Props> = (props) => {
                       {...ticketLink}
                       appearance={ticketLink?.appearance ?? 'default'}
                       className="w-full justify-center md:mt-2 md:w-auto"
-                      label="Buy Tickets"
+                      label="Comprar entradas"
                     />
                   ) : null}
                 </div>

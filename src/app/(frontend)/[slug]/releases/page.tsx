@@ -54,11 +54,11 @@ async function queryProfileBySlug(slug: string) {
 export async function generateMetadata({ params: paramsPromise }: Args): Promise<Metadata> {
   const { slug = '' } = await paramsPromise
   const profile = await queryProfileBySlug(decodeURIComponent(slug))
-  const bandName = profile?.displayName || 'Artist'
+  const bandName = profile?.displayName || 'Artista'
 
   return {
-    description: `Explore every release published by ${bandName}.`,
-    title: `${bandName} Releases`,
+    description: `Explora todos los lanzamientos publicados por ${bandName}.`,
+    title: `Lanzamientos de ${bandName}`,
   }
 }
 
@@ -100,17 +100,17 @@ export default async function ArtistReleasesPage({ params: paramsPromise }: Args
     .map((page) => mapRelease(page, profilesByOwnerId))
     .filter((release): release is ReleaseItem => Boolean(release))
 
-  const bandName = profile.displayName || 'Artist'
+  const bandName = profile.displayName || 'Artista'
 
   return (
     <div className="mx-auto max-w-4xl pb-24 pt-24 [&_p]:text-[13px]">
       <div className="container">
         <header className="mb-12 text-center">
           <h1 className="text-4xl font-semibold tracking-tight text-slate-900 dark:text-white">
-            {bandName} Releases
+            Lanzamientos de {bandName}
           </h1>
           <p className="mt-4 text-sm text-[#777] dark:text-[#858c98]">
-            Explore every release published by {bandName}.
+            Explora todos los lanzamientos publicados por {bandName}.
           </p>
         </header>
 
@@ -154,7 +154,7 @@ export default async function ArtistReleasesPage({ params: paramsPromise }: Args
             </div>
           ) : (
             <p className="py-8 text-center text-sm text-[#777] dark:text-[#858c98]">
-              No releases published yet.
+              Aún no hay lanzamientos publicados.
             </p>
           )}
         </div>
