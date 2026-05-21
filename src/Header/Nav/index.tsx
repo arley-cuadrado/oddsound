@@ -59,7 +59,7 @@ export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
 
     return {
       ...link,
-      label: 'iniciar sesión',
+      label: 'Iniciar sesión',
       url: '/dashboard/login',
     }
   }
@@ -88,7 +88,7 @@ export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
                     key={i}
                     {...getSafeLink(link)}
                     appearance="inline"
-                    className="block text-left hover:underline"
+                    className="block text-[13px] text-left hover:underline"
                   />
                 )
               })}
@@ -101,7 +101,7 @@ export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
           <Link href="/about-us" className="hidden">
             about
           </Link>
-          <Link href="/search" className="flex hover:underline">
+          <Link href="/search" className="flex text-[13px] hover:underline">
             <span className="block">Discover</span>
           </Link>
           {/* dynamic routes, registered artists */}
@@ -120,14 +120,14 @@ export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
                 <CMSLink
                   {...getSafeLink(link)}
                   appearance="inline"
-                  className="block w-full text-left hover:underline max-[975px]:w-auto"
+                  className="block w-full text-[13px] text-left hover:underline max-[975px]:w-auto"
                 />
               </div>
             )
           })}
         </div>
         <div className="hidden max-[975px]:block max-[975px]:shrink-0">
-          <Link href="/about-us" className="block text-left hover:underline">
+          <Link href="/about-us" className="block text-[13px] text-left hover:underline">
             about
           </Link>
         </div>

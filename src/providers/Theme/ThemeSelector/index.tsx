@@ -45,7 +45,7 @@ export const ThemeSelector: React.FC = () => {
           }`}
         />
       </span>
-      <span className="text-sm text-primary">{value === 'dark' ? 'Dark' : 'Light'}</span>
+      <span className="text-[13px] text-primary">{value === 'dark' ? 'Dark' : 'Light'}</span>
     </button>
   )
 }
