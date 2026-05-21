@@ -51,11 +51,12 @@ export const Search: React.FC = () => {
         autoCapitalize="none"
         autoComplete="off"
         autoCorrect="off"
+        className="h-[50px]"
         id="search"
         onChange={(event) => {
           handleChange(event.target.value)
         }}
-        placeholder="Enter the music genre, country, band, or album name..."
+        placeholder="Write here..."
         spellCheck={false}
         value={value}
       />
