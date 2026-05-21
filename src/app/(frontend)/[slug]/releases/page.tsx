@@ -103,7 +103,7 @@ export default async function ArtistReleasesPage({ params: paramsPromise }: Args
   const bandName = profile.displayName || 'Artist'
 
   return (
-    <div className="mx-auto max-w-4xl pb-24 pt-24">
+    <div className="mx-auto max-w-4xl pb-24 pt-24 [&_p]:text-[13px]">
       <div className="container">
         <header className="mb-12 text-center">
           <h1 className="text-4xl font-semibold tracking-tight text-slate-900 dark:text-white">

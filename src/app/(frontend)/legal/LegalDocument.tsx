@@ -30,12 +30,12 @@ export function LegalDocument({
           <h1 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white md:text-5xl">
             {title}
           </h1>
-          <p className="mt-4 text-sm text-[#777] dark:text-[#858c98]">
+          <p className="mt-4 text-[13px] text-[#777] dark:text-[#858c98]">
             Última actualización: {updatedAt}
           </p>
         </header>
 
-        <div className="prose max-w-none text-[#777] prose-headings:text-slate-900 prose-p:text-[#777] dark:text-[#858c98] dark:prose-headings:text-white dark:prose-p:text-[#858c98]">
+        <div className="prose max-w-none text-[#777] prose-headings:text-slate-900 prose-p:text-[13px] prose-p:text-[#777] dark:text-[#858c98] dark:prose-headings:text-white dark:prose-p:text-[#858c98]">
           {introTitle ? <h2>{introTitle}</h2> : null}
           {intro.map((paragraph, index) => (
             <p key={index}>{paragraph}</p>

@@ -188,7 +188,7 @@ export default async function Page({ searchParams: searchParamsPromise }: Args) 
         <div className="mb-8">
           <div className="prose dark:prose-invert max-w-none text-center">
             <h1>Discover</h1>
-            <p className="mx-auto mb-8 w-[50%] text-center lg:mb-8">
+            <p className="mx-auto mb-8 w-[50%] text-center text-[13px] lg:mb-8">
               Explore music beyond the usual. Find artists, releases, and scenes connected by places
               and identity. Enter the music genre, country, band, or album name...
             </p>

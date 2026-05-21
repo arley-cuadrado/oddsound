@@ -51,7 +51,7 @@ export const Search: React.FC = () => {
         autoCapitalize="none"
         autoComplete="off"
         autoCorrect="off"
-        className="h-[50px]"
+        className="h-[50px] text-[13px] placeholder:text-[13px]"
         id="search"
         onChange={(event) => {
           handleChange(event.target.value)
