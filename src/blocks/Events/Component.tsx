@@ -49,19 +49,19 @@ export const EventsBlock: React.FC<Props> = (props) => {
                     </div>
 
                     <div>
-                      <p className="flex h-[18px] items-center text-[11px] font-medium uppercase tracking-[0.18em] text-slate-500 dark:text-gray-400">
+                      <p className="flex h-[18px] items-center text-[11px] font-medium uppercase tracking-[0.18em] text-[#777] dark:text-gray-400">
                         City
                       </p>
-                      <p className="flex h-[40px] items-center text-[18px] font-semibold leading-tight text-slate-600 dark:text-slate-300">
+                      <p className="flex h-[40px] items-center text-[18px] font-semibold leading-tight text-[#777] dark:text-slate-300">
                         {city}
                       </p>
                     </div>
 
                     <div>
-                      <p className="flex h-[18px] items-center text-[11px] font-medium uppercase tracking-[0.18em] text-slate-500 dark:text-gray-400">
+                      <p className="flex h-[18px] items-center text-[11px] font-medium uppercase tracking-[0.18em] text-[#777] dark:text-gray-400">
                         Venue
                       </p>
-                      <p className="flex h-[40px] items-center text-[18px] font-semibold leading-tight text-slate-600 dark:text-slate-300">
+                      <p className="flex h-[40px] items-center text-[18px] font-semibold leading-tight text-[#777] dark:text-slate-300">
                         {venue}
                       </p>
                     </div>

@@ -41,12 +41,12 @@ export const MediumImpactHero: React.FC<MediumImpactHeroProps> = ({
           {(creatorName || creatorMeta) && (
             <div className="mb-4 space-y-1">
               {creatorName && (
-                <p className="text-xs uppercase tracking-[0.14em] text-slate-500 dark:text-white/85">
+                <p className="text-xs uppercase tracking-[0.14em] text-[#777] dark:text-white/85">
                   {creatorName}
                 </p>
               )}
               {creatorMeta && (
-                <p className="text-xs uppercase tracking-[0.14em] text-slate-500 dark:text-gray-400">
+                <p className="text-xs uppercase tracking-[0.14em] text-[#777] dark:text-gray-400">
                   {creatorMeta}
                 </p>
               )}

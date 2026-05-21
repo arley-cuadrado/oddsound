@@ -39,7 +39,7 @@ export default async function ReleasesHomeSection() {
 
   if (releases.length === 0) {
     return (
-      <p className="py-8 text-sm text-slate-500 dark:text-gray-400">Aun no hay lanzamientos.</p>
+      <p className="py-8 text-sm text-[#777] dark:text-gray-400">Aun no hay lanzamientos.</p>
     )
   }
 

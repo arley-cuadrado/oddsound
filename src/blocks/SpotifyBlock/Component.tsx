@@ -43,7 +43,7 @@ export const SpotifyBlock: React.FC<Props> = ({ disableInnerContainer, spotify }
 
   if (!embedURL) {
     return (
-      <p className={cn('text-sm text-slate-500', { container: !disableInnerContainer })}>
+      <p className={cn('text-sm text-[#777]', { container: !disableInnerContainer })}>
         Invalid Spotify URL
       </p>
     )

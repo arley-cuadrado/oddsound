@@ -52,7 +52,7 @@ export default async function HomePage() {
             <div className="w-auto md:w-full">
               <Suspense
                 fallback={
-                  <p className="py-8 text-sm text-slate-500 dark:text-gray-400">
+                  <p className="py-8 text-sm text-[#777] dark:text-gray-400">
                     Loading releases...
                   </p>
                 }
