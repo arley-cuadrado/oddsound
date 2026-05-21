@@ -15,7 +15,7 @@ const ScheduledPublishesNavLink: React.FC = () => {
         className={isActive ? 'scheduled-publishes-nav-link__link is-active' : 'scheduled-publishes-nav-link__link'}
         href={href}
       >
-        Scheduled publishes
+        Publicaciones programadas
       </Link>
     </div>
   )

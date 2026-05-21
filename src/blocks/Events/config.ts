@@ -9,7 +9,7 @@ export const Events: Block = {
     {
       name: 'title',
       type: 'text',
-      label: 'Section Title',
+      label: 'Título de la sección',
     },
     {
       name: 'events',
@@ -46,14 +46,14 @@ export const Events: Block = {
         {
           name: 'enableTicketLink',
           type: 'checkbox',
-          label: 'Enable ticket purchase',
+          label: 'Habilitar compra de entradas',
         },
         link({
           disableLabel: true,
           appearances: ['default', 'outline'],
           overrides: {
             name: 'ticketLink',
-            label: 'Ticket Link',
+            label: 'Enlace de entradas',
             admin: {
               condition: (_data, siblingData) => Boolean(siblingData?.enableTicketLink),
             },
@@ -63,7 +63,7 @@ export const Events: Block = {
     },
   ],
   labels: {
-    plural: 'Events',
-    singular: 'Events',
+    plural: 'Eventos',
+    singular: 'Evento',
   },
 }

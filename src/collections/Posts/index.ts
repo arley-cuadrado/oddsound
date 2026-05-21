@@ -126,6 +126,7 @@ export const Posts: CollectionConfig<'posts'> = {
     {
       name: 'title',
       type: 'text',
+      label: 'Título',
       required: true,
     },
     {
@@ -157,7 +158,7 @@ export const Posts: CollectionConfig<'posts'> = {
               required: true,
             },
           ],
-          label: 'Content',
+          label: 'Contenido',
         },
         {
           fields: [
@@ -170,7 +171,7 @@ export const Posts: CollectionConfig<'posts'> = {
               },
             },
           ],
-          label: 'Layout',
+          label: 'Diseño',
         },
         {
           fields: [
@@ -200,7 +201,7 @@ export const Posts: CollectionConfig<'posts'> = {
               relationTo: 'categories',
             },
           ],
-          label: 'Meta',
+          label: 'Metadatos',
         },
         {
           name: 'meta',
@@ -234,6 +235,7 @@ export const Posts: CollectionConfig<'posts'> = {
     {
       name: 'publishedAt',
       type: 'date',
+      label: 'Fecha de publicación',
       admin: {
         date: {
           pickerAppearance: 'dayAndTime',

@@ -17,22 +17,22 @@ export const hero: Field = {
       name: 'type',
       type: 'select',
       defaultValue: 'lowImpact',
-      label: 'Type',
+      label: 'Tipo',
       options: [
         {
-          label: 'None',
+          label: 'Ninguno',
           value: 'none',
         },
         {
-          label: 'High Impact',
+          label: 'Alto impacto',
           value: 'highImpact',
         },
         {
-          label: 'Medium Impact',
+          label: 'Impacto medio',
           value: 'mediumImpact',
         },
         {
-          label: 'Low Impact',
+          label: 'Bajo impacto',
           value: 'lowImpact',
         },
       ],
@@ -61,7 +61,7 @@ export const hero: Field = {
       type: 'upload',
       admin: {
         condition: (_, { type } = {}) => type === 'lowImpact',
-        description: 'Required for release cards even when the low impact hero has no visible image.',
+        description: 'Obligatoria para las cards de releases, incluso cuando el hero de bajo impacto no muestra imagen visible.',
       },
       relationTo: 'media',
       validate: (
@@ -70,7 +70,7 @@ export const hero: Field = {
       ) => {
         if (siblingData?.type !== 'lowImpact') return true
 
-        return value ? true : 'Album image is required for low impact releases.'
+        return value ? true : 'La imagen del álbum es obligatoria para los releases de bajo impacto.'
       },
     },
     linkGroup({

@@ -12,9 +12,9 @@ type ScheduledJobInput = {
 }
 
 function formatScheduledDate(value: string | null | undefined) {
-  if (!value) return 'No date'
+  if (!value) return 'Sin fecha'
 
-  return new Intl.DateTimeFormat('en-US', {
+  return new Intl.DateTimeFormat('es-CO', {
     dateStyle: 'medium',
     timeStyle: 'short',
     timeZone: 'America/Bogota',
@@ -58,7 +58,7 @@ const BeforeDashboard = async () => {
   const items = await Promise.all(
     upcomingJobs.docs.map(async (job) => {
       const input = (job.input || {}) as ScheduledJobInput
-      const typeLabel = input.type === 'unpublish' ? 'Unpublish' : 'Publish'
+      const typeLabel = input.type === 'unpublish' ? 'Despublicar' : 'Publicar'
 
       if (input.doc?.relationTo && input.doc.value) {
         const doc = await payload.findByID({
@@ -79,7 +79,7 @@ const BeforeDashboard = async () => {
       return {
         id: job.id,
         scheduledFor: formatScheduledDate(job.waitUntil),
-        target: input.global || 'Unknown target',
+        target: input.global || 'Destino desconocido',
         typeLabel,
       }
     }),
@@ -90,9 +90,9 @@ const BeforeDashboard = async () => {
       <div className={`${baseClass}__panel`}>
         <div className={`${baseClass}__header`}>
           <div>
-            <h4>Scheduled publishes</h4>
+            <h4>Publicaciones programadas</h4>
             <p>
-              Upcoming publish and unpublish jobs. Official editorial time:
+              Próximas tareas de publicación y despublicación. Hora editorial oficial:
               <strong> America/Bogota</strong>.
             </p>
           </div>
@@ -111,7 +111,7 @@ const BeforeDashboard = async () => {
             ))}
           </ul>
         ) : (
-          <p className={`${baseClass}__empty`}>No upcoming scheduled publish events.</p>
+          <p className={`${baseClass}__empty`}>No hay publicaciones programadas próximas.</p>
         )}
       </div>
     </section>

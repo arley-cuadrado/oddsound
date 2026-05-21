@@ -48,6 +48,7 @@ export const Users: CollectionConfig = {
   fields: [
     {
       name: 'name',
+      label: 'Nombre',
       type: 'text',
     },
     {
@@ -59,13 +60,14 @@ export const Users: CollectionConfig = {
           isSuperAdminUser(user as { email?: null | string; role?: null | string } | null | undefined) &&
           siblingData?.role !== 'admin',
       },
+      label: 'Rol',
       options: [
         {
-          label: 'Admin',
+          label: 'Administrador',
           value: 'admin',
         },
         {
-          label: 'Creator',
+          label: 'Creador',
           value: 'creator',
         },
       ],
@@ -75,50 +77,51 @@ export const Users: CollectionConfig = {
       name: 'adminRoleLabel',
       type: 'text',
       virtual: true,
-      defaultValue: 'Admin',
+      defaultValue: 'Administrador',
       admin: {
         condition: (_data, siblingData, { user }) =>
           isAdminUser(user as { role?: null | string } | null | undefined) &&
           siblingData?.email?.trim?.().toLowerCase?.() !== 'arley.cuadrado@icloud.com' &&
           siblingData?.role === 'admin',
-        description: 'This account is administrative and cannot be changed to creator.',
+        description: 'Esta cuenta es administrativa y no puede cambiarse a creador.',
         readOnly: true,
       },
-      label: 'Role',
+      label: 'Rol',
     },
     {
       name: 'superAdminRoleLabel',
       type: 'text',
       virtual: true,
-      defaultValue: 'Super Admin',
+      defaultValue: 'Superadministrador',
       admin: {
         condition: (data, siblingData, { user }) =>
           isAdminUser(user as { role?: null | string } | null | undefined) &&
           data?.email?.trim?.().toLowerCase?.() === 'arley.cuadrado@icloud.com' &&
           siblingData?.role === 'admin',
-        description: 'This account is the only super admin and can create other admin accounts.',
+        description: 'Esta cuenta es la única superadministradora y puede crear otras cuentas administrativas.',
         readOnly: true,
       },
-      label: 'Role',
+      label: 'Rol',
     },
     {
       name: 'accountType',
       type: 'select',
       defaultValue: 'artist',
+      label: 'Tipo de cuenta',
       admin: {
         condition: (_data, siblingData) => siblingData?.role !== 'admin',
       },
       options: [
         {
-          label: 'Artist',
+          label: 'Artista',
           value: 'artist',
         },
         {
-          label: 'Band',
+          label: 'Banda',
           value: 'band',
         },
         {
-          label: 'Label',
+          label: 'Sello',
           value: 'label',
         },
       ],
@@ -141,6 +144,7 @@ export const Users: CollectionConfig = {
       name: 'isActive',
       type: 'checkbox',
       defaultValue: true,
+      label: 'Está activa',
     },
     {
       name: 'legalAccepted',
@@ -148,7 +152,7 @@ export const Users: CollectionConfig = {
       admin: {
         condition: (_data, _siblingData, { user }) =>
           isAdminUser(user as { role?: null | string } | null | undefined),
-        description: 'Indicates whether the user accepted the legal terms during signup.',
+        description: 'Indica si el usuario aceptó los términos legales durante el registro.',
         position: 'sidebar',
         readOnly: true,
       },

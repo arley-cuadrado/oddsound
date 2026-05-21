@@ -87,15 +87,15 @@ export const Profiles: CollectionConfig = {
       defaultValue: 'artist',
       options: [
         {
-          label: 'Artist',
+          label: 'Artista',
           value: 'artist',
         },
         {
-          label: 'Band',
+          label: 'Banda',
           value: 'band',
         },
         {
-          label: 'Label',
+          label: 'Sello',
           value: 'label',
         },
       ],

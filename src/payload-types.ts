@@ -180,7 +180,7 @@ export interface Page {
       [k: string]: unknown;
     } | null;
     /**
-     * Required for release cards even when the low impact hero has no visible image.
+     * Obligatoria para las cards de releases, incluso cuando el hero de bajo impacto no muestra imagen visible.
      */
     albumImage?: (string | null) | Media;
     links?:
@@ -200,7 +200,7 @@ export interface Page {
             url?: string | null;
             label: string;
             /**
-             * Choose how the link should be rendered.
+             * Elige cómo debe renderizarse el enlace.
              */
             appearance?: ('default' | 'outline') | null;
           };
@@ -247,18 +247,18 @@ export interface User {
   name?: string | null;
   role?: ('admin' | 'creator') | null;
   /**
-   * This account is administrative and cannot be changed to creator.
+   * Esta cuenta es administrativa y no puede cambiarse a creador.
    */
   adminRoleLabel?: string | null;
   /**
-   * This account is the only super admin and can create other admin accounts.
+   * Esta cuenta es la única superadministradora y puede crear otras cuentas administrativas.
    */
   superAdminRoleLabel?: string | null;
   accountType?: ('artist' | 'band' | 'label') | null;
   profile?: (string | null) | Profile;
   isActive?: boolean | null;
   /**
-   * Indicates whether the user accepted the legal terms during signup.
+   * Indica si el usuario aceptó los términos legales durante el registro.
    */
   legalAccepted?: boolean | null;
   legalAcceptedAt?: string | null;
@@ -535,7 +535,7 @@ export interface CallToActionBlock {
           url?: string | null;
           label: string;
           /**
-           * Choose how the link should be rendered.
+           * Elige cómo debe renderizarse el enlace.
            */
           appearance?: ('default' | 'outline') | null;
         };
@@ -585,7 +585,7 @@ export interface ContentBlock {
           url?: string | null;
           label: string;
           /**
-           * Choose how the link should be rendered.
+           * Elige cómo debe renderizarse el enlace.
            */
           appearance?: ('default' | 'outline') | null;
         };
@@ -621,7 +621,7 @@ export interface EventsBlock {
           } | null);
       url?: string | null;
       /**
-       * Choose how the link should be rendered.
+       * Elige cómo debe renderizarse el enlace.
        */
       appearance?: ('default' | 'outline') | null;
     };

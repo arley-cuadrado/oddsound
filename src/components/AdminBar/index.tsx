@@ -16,8 +16,8 @@ const baseClass = 'admin-bar'
 
 const collectionLabels = {
   pages: {
-    plural: 'Releases',
-    singular: 'Release',
+    plural: 'Lanzamientos',
+    singular: 'Lanzamiento',
   },
   posts: {
     plural: 'Posts',
@@ -75,8 +75,8 @@ export const AdminBar: React.FC<{
           cmsURL={getClientSideURL()}
           collectionSlug={collection}
           collectionLabels={{
-            plural: collectionLabels[collection]?.plural || 'Releases',
-            singular: collectionLabels[collection]?.singular || 'Release',
+            plural: collectionLabels[collection]?.plural || 'Lanzamientos',
+            singular: collectionLabels[collection]?.singular || 'Lanzamiento',
           }}
           logo={<Title />}
           onAuthChange={onAuthChange}

@@ -23,8 +23,8 @@ import {
 export const Pages: CollectionConfig<'pages'> = {
   slug: 'pages',
   labels: {
-    plural: 'Releases',
-    singular: 'Release',
+    plural: 'Lanzamientos',
+    singular: 'Lanzamiento',
   },
   access: {
     admin: authenticated,
@@ -140,6 +140,7 @@ export const Pages: CollectionConfig<'pages'> = {
     {
       name: 'title',
       type: 'text',
+      label: 'Título',
       required: true,
     },
     {
@@ -147,7 +148,7 @@ export const Pages: CollectionConfig<'pages'> = {
       tabs: [
         {
           fields: [hero],
-          label: 'Hero',
+          label: 'Encabezado',
         },
         {
           fields: [
@@ -161,7 +162,7 @@ export const Pages: CollectionConfig<'pages'> = {
               },
             },
           ],
-          label: 'Content',
+          label: 'Contenido',
         },
         {
           name: 'meta',
@@ -195,6 +196,7 @@ export const Pages: CollectionConfig<'pages'> = {
     {
       name: 'publishedAt',
       type: 'date',
+      label: 'Fecha de publicación',
       admin: {
         position: 'sidebar',
       },

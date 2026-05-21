@@ -15,14 +15,14 @@ export const SocialMediaBlock: Block = {
   slug: 'socialMediaBlock',
   interfaceName: 'SocialMediaBlock',
   labels: {
-    plural: 'Social Media',
-    singular: 'Social Media',
+    plural: 'Redes sociales',
+    singular: 'Red social',
   },
   fields: [
     {
       name: 'socialLinks',
       type: 'array',
-      label: 'Social links',
+      label: 'Enlaces sociales',
       minRows: 1,
       required: true,
       fields: [
@@ -37,11 +37,11 @@ export const SocialMediaBlock: Block = {
           required: true,
           validate: (value: null | string | undefined) => {
             if (typeof value !== 'string' || !value.trim()) {
-              return 'A social media URL is required.'
+              return 'La URL de la red social es obligatoria.'
             }
 
             if (!isValidURL(value)) {
-              return 'Enter a valid URL.'
+              return 'Ingresa una URL válida.'
             }
 
             return true

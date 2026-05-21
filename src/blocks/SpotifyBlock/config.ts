@@ -33,15 +33,15 @@ export const SpotifyBlock: Block = {
     {
       name: 'spotify',
       type: 'text',
-      label: 'Spotify URL',
+      label: 'URL de Spotify',
       required: true,
       validate: (value: null | string | undefined) => {
         if (typeof value !== 'string' || !value.trim()) {
-          return 'A Spotify URL is required.'
+          return 'La URL de Spotify es obligatoria.'
         }
 
         if (!isValidSpotifyURL(value)) {
-          return 'Enter a valid Spotify artist, album, track, playlist, show, or episode URL.'
+          return 'Ingresa una URL válida de artista, álbum, track, playlist, show o episodio de Spotify.'
         }
 
         return true

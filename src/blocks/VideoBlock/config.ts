@@ -23,22 +23,22 @@ export const VideoBlock: Block = {
   slug: 'videoBlock',
   interfaceName: 'VideoBlock',
   labels: {
-    plural: 'Video',
+    plural: 'Videos',
     singular: 'Video',
   },
   fields: [
     {
       name: 'video',
       type: 'text',
-      label: 'YouTube URL',
+      label: 'URL de YouTube',
       required: true,
       validate: (value: null | string | undefined) => {
         if (typeof value !== 'string' || !value.trim()) {
-          return 'A YouTube URL is required.'
+          return 'La URL de YouTube es obligatoria.'
         }
 
         if (!isValidYouTubeURL(value)) {
-          return 'Enter a valid YouTube video, short, or share URL.'
+          return 'Ingresa una URL válida de video, short o enlace compartido de YouTube.'
         }
 
         return true

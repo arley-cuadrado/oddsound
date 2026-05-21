@@ -16,19 +16,19 @@ const columnFields: Field[] = [
     defaultValue: 'oneThird',
     options: [
       {
-        label: 'One Third',
+        label: 'Un tercio',
         value: 'oneThird',
       },
       {
-        label: 'Half',
+        label: 'Mitad',
         value: 'half',
       },
       {
-        label: 'Two Thirds',
+        label: 'Dos tercios',
         value: 'twoThirds',
       },
       {
-        label: 'Full',
+        label: 'Completo',
         value: 'full',
       },
     ],
@@ -67,8 +67,8 @@ export const Content: Block = {
   slug: 'content',
   interfaceName: 'ContentBlock',
   labels: {
-    plural: 'Content',
-    singular: 'Content',
+    plural: 'Contenido',
+    singular: 'Contenido',
   },
   fields: [
     {

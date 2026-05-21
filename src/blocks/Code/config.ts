@@ -4,8 +4,8 @@ export const Code: Block = {
   slug: 'code',
   interfaceName: 'CodeBlock',
   labels: {
-    plural: 'Code',
-    singular: 'Code',
+    plural: 'Código',
+    singular: 'Código',
   },
   fields: [
     {
@@ -14,11 +14,11 @@ export const Code: Block = {
       defaultValue: 'typescript',
       options: [
         {
-          label: 'Typescript',
+          label: 'TypeScript',
           value: 'typescript',
         },
         {
-          label: 'Javascript',
+          label: 'JavaScript',
           value: 'javascript',
         },
         {
