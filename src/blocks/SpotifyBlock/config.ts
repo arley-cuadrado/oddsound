@@ -25,6 +25,10 @@ function isValidSpotifyURL(value: null | string | undefined) {
 export const SpotifyBlock: Block = {
   slug: 'spotifyBlock',
   interfaceName: 'SpotifyBlock',
+  labels: {
+    plural: 'Spotify',
+    singular: 'Spotify',
+  },
   fields: [
     {
       name: 'spotify',

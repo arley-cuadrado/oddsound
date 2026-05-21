@@ -14,6 +14,10 @@ function isValidURL(value: null | string | undefined) {
 export const SocialMediaBlock: Block = {
   slug: 'socialMediaBlock',
   interfaceName: 'SocialMediaBlock',
+  labels: {
+    plural: 'Social Media',
+    singular: 'Social Media',
+  },
   fields: [
     {
       name: 'socialLinks',

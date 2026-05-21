@@ -22,6 +22,10 @@ function isValidYouTubeURL(value: null | string | undefined) {
 export const VideoBlock: Block = {
   slug: 'videoBlock',
   interfaceName: 'VideoBlock',
+  labels: {
+    plural: 'Video',
+    singular: 'Video',
+  },
   fields: [
     {
       name: 'video',
