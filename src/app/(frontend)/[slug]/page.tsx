@@ -90,7 +90,7 @@ export default async function Page({ params: paramsPromise }: Args) {
         <div className="flex justify-center px-4 pb-8 pt-6 md:px-0">
           <Link
             href={`/${creatorProfile.slug}/releases`}
-            className="inline-flex items-center text-sm font-medium text-[#777] underline underline-offset-4 dark:text-slate-200"
+            className="inline-flex items-center text-sm font-medium text-[#777] underline underline-offset-4 dark:text-[#858c98]"
           >
             View {creatorProfile.displayName || page.title} releases
           </Link>

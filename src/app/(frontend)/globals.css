@@ -222,7 +222,7 @@
   }
 
   p {
-    @apply text-sm text-[rgb(119,119,119)] dark:text-gray-400;
+    @apply text-sm text-[rgb(119,119,119)] dark:text-[#858c98];
   }
 }
 

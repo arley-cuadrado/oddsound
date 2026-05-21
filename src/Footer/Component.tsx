@@ -12,7 +12,7 @@ export async function Footer() {
       <div className="flex flex-col gap-8 px-6 md:flex-col">
         <div className="flex flex-col items-start gap-2">
           <p className="text-[10px]">© {currentYear} | Made with love and lots of Coffee</p>
-          <div className="flex items-start gap-3 text-[10px] text-[#777] dark:text-[#777]">
+          <div className="flex items-start gap-3 text-[10px] text-[#777] dark:text-[#858c98]">
             <Link className="underline underline-offset-2" href="/terms-and-conditions">
               Terms and Conditions
             </Link>

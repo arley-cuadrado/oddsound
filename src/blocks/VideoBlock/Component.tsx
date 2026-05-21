@@ -42,7 +42,7 @@ export const VideoBlock: React.FC<Props> = ({ disableInnerContainer, video }) =>
 
   if (!embedURL) {
     return (
-      <p className={cn('text-sm text-[#777]', { container: !disableInnerContainer })}>
+      <p className={cn('text-sm text-[#777] dark:text-[#858c98]', { container: !disableInnerContainer })}>
         Invalid video URL
       </p>
     )

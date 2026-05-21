@@ -20,7 +20,7 @@ export const SocialMediaBlock: React.FC<Props> = ({ socialLinks }) => {
       {visibleLinks.map((item, index) => (
         <li key={item.id || `${item.platform}-${index}`}>
           <Link
-            className="text-sm font-medium capitalize text-[#777] underline underline-offset-4 dark:text-slate-200"
+            className="text-sm font-medium capitalize text-[#777] underline underline-offset-4 dark:text-[#858c98]"
             href={item.url}
             rel="noopener noreferrer"
             target="_blank"

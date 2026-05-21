@@ -109,7 +109,7 @@ export default async function ArtistReleasesPage({ params: paramsPromise }: Args
           <h1 className="text-4xl font-semibold tracking-tight text-slate-900 dark:text-white">
             {bandName} Releases
           </h1>
-          <p className="mt-4 text-sm text-[#777] dark:text-gray-400">
+          <p className="mt-4 text-sm text-[#777] dark:text-[#858c98]">
             Explore every release published by {bandName}.
           </p>
         </header>
@@ -153,7 +153,7 @@ export default async function ArtistReleasesPage({ params: paramsPromise }: Args
               ))}
             </div>
           ) : (
-            <p className="py-8 text-center text-sm text-[#777] dark:text-gray-400">
+            <p className="py-8 text-center text-sm text-[#777] dark:text-[#858c98]">
               No releases published yet.
             </p>
           )}

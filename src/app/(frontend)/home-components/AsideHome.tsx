@@ -11,7 +11,7 @@ export default function AsideHome() {
             <h2 className="text-[13px] font-semibold tracking-tight text-pretty text-black dark:text-white">
               Binevenid@!
             </h2>
-            <p className="mt-2 text-[13px] text-[#777] dark:text-[#777]">
+            <p className="mt-2 text-[13px] text-[#777] dark:text-[#858c98]">
               Esta es una versión temprana del sitio, un espacio donde encontrarás artistas
               independientes.
             </p>

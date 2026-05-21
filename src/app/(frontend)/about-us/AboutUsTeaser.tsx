@@ -19,7 +19,7 @@ export function AboutUsTeaser() {
             <span className="absolute inset-0"></span>
             {aboutUsTitle}
           </h3>
-          <p className="mt-5 line-clamp-3 text-[13px] text-[#777] dark:text-[#777]">
+          <p className="mt-5 line-clamp-3 text-[13px] text-[#777] dark:text-[#858c98]">
             {aboutUsIntro[0]}
           </p>
         </div>

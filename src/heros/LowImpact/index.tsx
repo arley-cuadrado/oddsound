@@ -36,12 +36,12 @@ export const LowImpactHero: React.FC<LowImpactHeroType> = ({
         {(creatorName || creatorGenre || creatorCountry) && (
           <div className="mb-4 space-y-1">
             {creatorName && (
-              <p className="text-xs uppercase tracking-[0.14em] text-[#777] dark:text-gray-400">
+              <p className="text-xs uppercase tracking-[0.14em] text-[#777] dark:text-[#858c98]">
                 {creatorName}
               </p>
             )}
             {(creatorGenre || creatorCountry) && (
-              <p className="text-xs uppercase tracking-[0.14em] text-[#777] dark:text-gray-400">
+              <p className="text-xs uppercase tracking-[0.14em] text-[#777] dark:text-[#858c98]">
                 {[creatorGenre, creatorCountry].filter(Boolean).join(' · ')}
               </p>
             )}
