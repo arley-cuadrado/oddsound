@@ -1,4 +1,5 @@
 import { mongooseAdapter } from '@payloadcms/db-mongodb'
+import { es } from '@payloadcms/translations/languages/es'
 import sharp from 'sharp'
 import path from 'path'
 import { buildConfig, PayloadRequest } from 'payload'
@@ -76,6 +77,12 @@ export default buildConfig({
   collections: [Pages, Posts, Media, Categories, Profiles, Users],
   cors: [getServerSideURL()].filter(Boolean),
   globals: [Header, Footer],
+  i18n: {
+    fallbackLanguage: 'es',
+    supportedLanguages: {
+      es,
+    },
+  },
   plugins,
   secret: process.env.PAYLOAD_SECRET,
   sharp,
