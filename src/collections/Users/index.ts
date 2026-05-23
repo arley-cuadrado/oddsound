@@ -5,6 +5,10 @@ import { isAdmin } from '@/access/isAdmin'
 import { isAdminOrSelf } from '@/access/isAdminOrSelf'
 import { isAdminUser } from '@/utilities/isAdminUser'
 import { isSuperAdminUser } from '@/utilities/isSuperAdminUser'
+import {
+  generateCreatorVerificationEmailHTML,
+  generateCreatorVerificationEmailSubject,
+} from '@/utilities/emailVerification'
 import { createProfile } from './hooks/createProfile'
 import { deleteCreatorData } from './hooks/deleteCreatorData'
 import { ensureCreatorDefaults } from './hooks/ensureCreatorDefaults'
@@ -44,7 +48,16 @@ export const Users: CollectionConfig = {
     hidden: ({ user }) => !isAdminUser(user as { role?: null | string } | null | undefined),
     useAsTitle: 'name',
   },
-  auth: true,
+  auth: {
+    verify: {
+      generateEmailHTML: ({ token, user }) =>
+        generateCreatorVerificationEmailHTML({
+          token,
+          user,
+        }),
+      generateEmailSubject: generateCreatorVerificationEmailSubject,
+    },
+  },
   fields: [
     {
       name: 'name',

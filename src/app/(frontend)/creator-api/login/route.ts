@@ -45,6 +45,13 @@ export async function POST(request: Request) {
       user: result.user,
     })
   } catch (error) {
+    if (error instanceof Error && error.name === 'UnverifiedEmail') {
+      return Response.json(
+        { message: 'You need to verify your email before logging in.' },
+        { status: 403 },
+      )
+    }
+
     const message = error instanceof Error ? error.message : 'Unable to log in.'
 
     return Response.json({ message }, { status: 401 })

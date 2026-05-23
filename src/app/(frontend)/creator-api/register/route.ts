@@ -25,6 +25,7 @@ export async function POST(request: Request) {
       limit: 1,
       overrideAccess: true,
       pagination: false,
+      showHiddenFields: true,
       where: {
         email: {
           equals: normalizedEmail,
@@ -32,11 +33,30 @@ export async function POST(request: Request) {
       },
     })
 
-    if (existingUser.docs.length > 0) {
+    const user = existingUser.docs[0] as
+      | {
+          _verified?: boolean | null
+          email: string
+        }
+      | undefined
+
+    if (user?._verified) {
       return Response.json({ message: 'This user is already registered.' }, { status: 409 })
     }
 
-    const user = await payload.create({
+    if (user) {
+      return Response.json(
+        {
+          message: 'Account already exists and is pending verification.',
+          user: {
+            email: user.email,
+          },
+        },
+        { status: 202 },
+      )
+    }
+
+    const createdUser = await payload.create({
       collection: 'users',
       data: {
         accountType: body.accountType || 'artist',
@@ -51,10 +71,10 @@ export async function POST(request: Request) {
 
     return Response.json(
       {
-        message: 'Account created successfully.',
+        message: 'Account created successfully. Check your email to verify it.',
         user: {
-          email: user.email,
-          id: user.id,
+          email: createdUser.email,
+          id: createdUser.id,
         },
       },
       { status: 201 },

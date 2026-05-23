@@ -1,15 +1,64 @@
 'use server'
 
 import config from '@payload-config'
+import crypto from 'crypto'
 import { cookies } from 'next/headers'
 import { createLocalReq, getPayload } from 'payload'
 
+import {
+  VERIFICATION_RESEND_COOLDOWN_MS,
+  generateCreatorVerificationEmailHTML,
+  generateCreatorVerificationEmailSubject,
+  getVerificationCooldownMessage,
+} from '@/utilities/emailVerification'
+
 type AccountType = 'artist' | 'band' | 'label'
 const LEGAL_VERSION = '2026-05-14'
+const VERIFICATION_ERROR_MESSAGE = 'Debes confirmar tu correo antes de iniciar sesión.'
 
 type ActionResult = {
+  email?: string
   message?: string
   ok: boolean
+  status?: 'logged_in' | 'pending_verification' | 'verification_email_resent'
+}
+
+type VerificationUser = {
+  _verificationToken?: null | string
+  _verified?: boolean | null
+  createdAt?: null | string
+  email: string
+  id: string
+  updatedAt?: null | string
+}
+
+async function findUserByEmail(email: string): Promise<null | VerificationUser> {
+  const payload = await getPayload({ config })
+  const existingUser = await payload.find({
+    collection: 'users',
+    depth: 0,
+    limit: 1,
+    overrideAccess: true,
+    pagination: false,
+    showHiddenFields: true,
+    where: {
+      email: {
+        equals: email,
+      },
+    },
+  })
+
+  return (existingUser.docs[0] as VerificationUser | undefined) || null
+}
+
+function getCooldownRemaining(isoDate?: null | string) {
+  if (!isoDate) return 0
+
+  const sentAt = new Date(isoDate).getTime()
+
+  if (Number.isNaN(sentAt)) return 0
+
+  return Math.max(0, VERIFICATION_RESEND_COOLDOWN_MS - (Date.now() - sentAt))
 }
 
 export async function registerCreator(input: {
@@ -43,37 +92,35 @@ export async function registerCreator(input: {
       }
     }
 
-    const existingUser = await payload.find({
-      collection: 'users',
-      depth: 0,
-      limit: 1,
-      overrideAccess: true,
-      pagination: false,
-      where: {
-        email: {
-          equals: email,
-        },
-      },
-    })
+    const existingUser = await findUserByEmail(email)
 
-    if (existingUser.docs.length > 0) {
+    if (existingUser?._verified === true) {
       return {
         message: 'Este usuario ya está registrado.',
         ok: false,
       }
     }
 
+    if (existingUser) {
+      return {
+        email,
+        message: 'Esta cuenta ya existe y está pendiente de verificación.',
+        ok: true,
+        status: 'pending_verification',
+      }
+    }
+
     const createdUser = await payload.create({
       collection: 'users',
-        data: {
-          accountType: input.accountType,
-          email,
-          legalAccepted: true,
-          legalAcceptedAt: new Date().toISOString(),
-          legalAcceptedVersion: LEGAL_VERSION,
-          name,
-          password: input.password,
-          role: 'creator',
+      data: {
+        accountType: input.accountType,
+        email,
+        legalAccepted: true,
+        legalAcceptedAt: new Date().toISOString(),
+        legalAcceptedVersion: LEGAL_VERSION,
+        name,
+        password: input.password,
+        role: 'creator',
       },
       draft: false,
       overrideAccess: true,
@@ -94,10 +141,12 @@ export async function registerCreator(input: {
       })
     }
 
-    return loginCreator({
+    return {
       email,
-      password: input.password,
-    })
+      message: 'Tu cuenta fue creada. Revisa tu correo para activarla.',
+      ok: true,
+      status: 'pending_verification',
+    }
   } catch (error) {
     return {
       message: error instanceof Error ? error.message : 'No fue posible crear tu cuenta.',
@@ -113,11 +162,12 @@ export async function loginCreator(input: {
   try {
     const payload = await getPayload({ config })
     const payloadReq = await createLocalReq({}, payload)
+    const email = input.email.trim().toLowerCase()
 
     const result = await payload.login({
       collection: 'users',
       data: {
-        email: input.email.trim().toLowerCase(),
+        email,
         password: input.password,
       },
       req: payloadReq,
@@ -139,10 +189,103 @@ export async function loginCreator(input: {
       secure: process.env.NODE_ENV === 'production',
     })
 
-    return { ok: true }
+    return { ok: true, status: 'logged_in' }
   } catch (error) {
+    if (error instanceof Error && error.name === 'UnverifiedEmail') {
+      return {
+        email: input.email.trim().toLowerCase(),
+        message: VERIFICATION_ERROR_MESSAGE,
+        ok: false,
+        status: 'pending_verification',
+      }
+    }
+
     return {
       message: error instanceof Error ? error.message : 'Unable to log in.',
+      ok: false,
+    }
+  }
+}
+
+export async function resendVerificationEmail(input: {
+  email: string
+}): Promise<ActionResult> {
+  const email = input.email.trim().toLowerCase()
+
+  if (!email) {
+    return {
+      message: 'Necesitamos un correo electrónico para reenviar el enlace.',
+      ok: false,
+    }
+  }
+
+  try {
+    const payload = await getPayload({ config })
+    const user = await findUserByEmail(email)
+
+    if (!user) {
+      return {
+        message: 'No encontramos una cuenta pendiente con ese correo.',
+        ok: false,
+      }
+    }
+
+    if (user._verified) {
+      return {
+        message: 'Esta cuenta ya está verificada. Ya puedes iniciar sesión.',
+        ok: false,
+      }
+    }
+
+    const cooldownRemaining = getCooldownRemaining(user.updatedAt || user.createdAt)
+
+    if (cooldownRemaining > 0) {
+      return {
+        email,
+        message: getVerificationCooldownMessage(cooldownRemaining),
+        ok: false,
+        status: 'pending_verification',
+      }
+    }
+
+    const payloadReq = await createLocalReq({}, payload)
+    const token = crypto.randomBytes(20).toString('hex')
+
+    const updatedUser = await payload.update({
+      id: user.id,
+      collection: 'users',
+      data: {
+        _verificationToken: token,
+        _verified: false,
+      } as never,
+      depth: 0,
+      overrideAccess: true,
+      req: payloadReq,
+      showHiddenFields: true,
+    })
+
+    await payload.sendEmail({
+      html: generateCreatorVerificationEmailHTML({
+        token,
+        user: {
+          email: updatedUser.email,
+          name: updatedUser.name || null,
+        },
+      }),
+      subject: generateCreatorVerificationEmailSubject(),
+      to: email,
+    })
+
+    return {
+      email,
+      message: 'Te enviamos un nuevo enlace de verificación.',
+      ok: true,
+      status: 'verification_email_resent',
+    }
+  } catch (error) {
+    return {
+      email,
+      message: error instanceof Error ? error.message : 'No fue posible reenviar el correo.',
       ok: false,
     }
   }

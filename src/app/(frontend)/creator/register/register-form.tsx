@@ -62,7 +62,9 @@ export function RegisterForm() {
         throw new Error(parseErrorMessage(result, 'No fue posible crear tu cuenta.'))
       }
 
-      router.push('/dashboard')
+      const nextEmail = encodeURIComponent(result.email || email.trim().toLowerCase())
+
+      router.push(`/creator/register/check-email?email=${nextEmail}`)
       router.refresh()
     } catch (caughtError) {
       setError(caughtError instanceof Error ? caughtError.message : 'Algo salió mal.')

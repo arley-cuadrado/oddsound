@@ -1,4 +1,5 @@
 import { mongooseAdapter } from '@payloadcms/db-mongodb'
+import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
 import { es } from '@payloadcms/translations/languages/es'
 import sharp from 'sharp'
 import path from 'path'
@@ -19,8 +20,10 @@ import { getServerSideURL } from './utilities/getURL'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
+const hasSMTPConfig = Boolean(process.env.SMTP_HOST && process.env.SMTP_PASS)
 
 export default buildConfig({
+  serverURL: getServerSideURL(),
   routes: {
     admin: '/dashboard',
   },
@@ -73,6 +76,28 @@ export default buildConfig({
   editor: defaultLexical,
   db: mongooseAdapter({
     url: process.env.DATABASE_URL || '',
+  }),
+  email: nodemailerAdapter({
+    defaultFromAddress: process.env.EMAIL_FROM_ADDRESS || 'hello@oddsound.co',
+    defaultFromName: process.env.EMAIL_FROM_NAME || 'oddsound',
+    skipVerify: !hasSMTPConfig,
+    ...(hasSMTPConfig
+      ? {
+          transportOptions: {
+            auth: {
+              pass: process.env.SMTP_PASS,
+              user: process.env.SMTP_USER || 'resend',
+            },
+            host: process.env.SMTP_HOST,
+            port: Number(process.env.SMTP_PORT || '465'),
+            secure: Number(process.env.SMTP_PORT || '465') === 465,
+          },
+        }
+      : {
+          transportOptions: {
+            jsonTransport: true,
+          } as any,
+        }),
   }),
   collections: [Pages, Posts, Media, Categories, Profiles, Users],
   cors: [getServerSideURL()].filter(Boolean),
