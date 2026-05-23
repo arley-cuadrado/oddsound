@@ -28,6 +28,9 @@ export default buildConfig({
     admin: '/dashboard',
   },
   admin: {
+    routes: {
+      logout: '/role-logout',
+    },
     meta: {
       icons: {
         icon: '/favicon-light.ico',
@@ -40,6 +43,9 @@ export default buildConfig({
       graphics: {
         Icon: '@/components/AdminIcon',
         Logo: '@/components/AdminLogo',
+      },
+      logout: {
+        Button: '@/components/AdminLogoutButton',
       },
       // The `BeforeLogin` component renders a message that you see while logging into your admin panel.
       // Feel free to delete this at any time. Simply remove the line below.
