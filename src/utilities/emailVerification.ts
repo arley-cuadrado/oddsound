@@ -3,6 +3,7 @@ import type { User } from '@/payload-types'
 import { getServerSideURL } from '@/utilities/getURL'
 
 export const VERIFICATION_RESEND_COOLDOWN_MS = 5 * 60 * 1000
+export const CREATOR_RESET_PASSWORD_EXPIRATION_MS = 60 * 60 * 1000
 
 type VerificationUser = Pick<User, 'email' | 'name'>
 
@@ -66,3 +67,52 @@ export const generateCreatorVerificationEmailHTML = ({
 }
 
 export const generateCreatorVerificationEmailSubject = () => 'Confirma tu correo en oddsound'
+
+export const getCreatorResetPasswordURL = (token: string) => {
+  const url = new URL('/creator/reset-password', getServerSideURL())
+
+  url.searchParams.set('token', token)
+
+  return url.toString()
+}
+
+export const generateCreatorResetPasswordEmailHTML = ({
+  token,
+  user,
+}: {
+  token: string
+  user: VerificationUser
+}) => {
+  const resetURL = getCreatorResetPasswordURL(token)
+
+  return `
+    <div style="background:#f7f4ef;padding:32px 20px;font-family:Arial,sans-serif;color:#171717;">
+      <div style="max-width:560px;margin:0 auto;background:#ffffff;border:1px solid #e5ddd2;padding:32px;">
+        <p style="margin:0 0 16px;font-size:14px;line-height:1.7;">Hola${user.name ? ` ${user.name}` : ''},</p>
+        <p style="margin:0 0 16px;font-size:14px;line-height:1.7;">
+          Recibimos una solicitud para cambiar la contraseña de tu cuenta en <strong>oddsound</strong>.
+        </p>
+        <p style="margin:24px 0;">
+          <a
+            href="${resetURL}"
+            style="display:inline-block;background:#171717;color:#ffffff;padding:14px 22px;text-decoration:none;font-size:14px;"
+          >
+            Crear nueva contraseña
+          </a>
+        </p>
+        <p style="margin:0 0 8px;font-size:13px;line-height:1.7;">
+          Si no pediste este cambio, puedes ignorar este correo.
+        </p>
+        <p style="margin:16px 0 8px;font-size:13px;line-height:1.7;">
+          Si el botón no abre, copia y pega este enlace en tu navegador:
+        </p>
+        <p style="margin:0;font-size:13px;line-height:1.7;word-break:break-word;">
+          <a href="${resetURL}" style="color:#171717;">${resetURL}</a>
+        </p>
+      </div>
+    </div>
+  `
+}
+
+export const generateCreatorResetPasswordEmailSubject = () =>
+  'Restablece tu contraseña en oddsound'

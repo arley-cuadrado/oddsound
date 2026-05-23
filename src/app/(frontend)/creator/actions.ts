@@ -21,11 +21,17 @@ type ActionResult = {
   email?: string
   message?: string
   ok: boolean
-  status?: 'logged_in' | 'pending_verification' | 'verification_email_resent'
+  status?:
+    | 'logged_in'
+    | 'password_reset_completed'
+    | 'password_reset_requested'
+    | 'pending_verification'
+    | 'verification_email_resent'
 }
 
 type VerificationUser = {
   name?: null | string
+  role?: null | string
   _verificationToken?: null | string
   _verified?: boolean | null
   createdAt?: null | string
@@ -310,6 +316,114 @@ export async function resendVerificationEmail(input: {
     return {
       email,
       message: error instanceof Error ? error.message : 'No fue posible reenviar el correo.',
+      ok: false,
+    }
+  }
+}
+
+export async function requestCreatorPasswordReset(input: {
+  email: string
+}): Promise<ActionResult> {
+  const email = input.email.trim().toLowerCase()
+
+  if (!email) {
+    return {
+      message: 'Ingresa el correo electrónico asociado a tu cuenta.',
+      ok: false,
+    }
+  }
+
+  try {
+    const payload = await getPayload({ config })
+    const user = await findUserByEmail(email)
+
+    if (!user || user.role !== 'creator') {
+      return {
+        message: 'No encontramos una cuenta de creador con ese correo. Regístrate para continuar.',
+        ok: false,
+      }
+    }
+
+    if (user._verified === false) {
+      return {
+        email,
+        message:
+          'Primero debes confirmar tu correo. Revisa tu bandeja o solicita un nuevo enlace de verificación.',
+        ok: false,
+        status: 'pending_verification',
+      }
+    }
+
+    await payload.forgotPassword({
+      collection: 'users',
+      data: {
+        email,
+      },
+      overrideAccess: true,
+    })
+
+    return {
+      email,
+      message: 'Te enviamos un enlace para crear una nueva contraseña.',
+      ok: true,
+      status: 'password_reset_requested',
+    }
+  } catch (error) {
+    return {
+      email,
+      message:
+        error instanceof Error
+          ? error.message
+          : 'No fue posible enviar el enlace para restablecer la contraseña.',
+      ok: false,
+    }
+  }
+}
+
+export async function resetCreatorPassword(input: {
+  password: string
+  token: string
+}): Promise<ActionResult> {
+  const password = input.password.trim()
+  const token = input.token.trim()
+
+  if (!token) {
+    return {
+      message: 'El enlace de recuperación no es válido o ya expiró.',
+      ok: false,
+    }
+  }
+
+  if (!password) {
+    return {
+      message: 'Ingresa una nueva contraseña.',
+      ok: false,
+    }
+  }
+
+  try {
+    const payload = await getPayload({ config })
+
+    await payload.resetPassword({
+      collection: 'users',
+      data: {
+        password,
+        token,
+      },
+      overrideAccess: true,
+    })
+
+    return {
+      message: 'Tu contraseña fue actualizada. Ya puedes iniciar sesión.',
+      ok: true,
+      status: 'password_reset_completed',
+    }
+  } catch (error) {
+    return {
+      message:
+        error instanceof Error
+          ? error.message
+          : 'No fue posible actualizar la contraseña con este enlace.',
       ok: false,
     }
   }

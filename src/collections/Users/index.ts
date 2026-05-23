@@ -6,6 +6,9 @@ import { isAdminOrSelf } from '@/access/isAdminOrSelf'
 import { isAdminUser } from '@/utilities/isAdminUser'
 import { isSuperAdminUser } from '@/utilities/isSuperAdminUser'
 import {
+  CREATOR_RESET_PASSWORD_EXPIRATION_MS,
+  generateCreatorResetPasswordEmailHTML,
+  generateCreatorResetPasswordEmailSubject,
   generateCreatorVerificationEmailHTML,
   generateCreatorVerificationEmailSubject,
 } from '@/utilities/emailVerification'
@@ -49,6 +52,18 @@ export const Users: CollectionConfig = {
     useAsTitle: 'name',
   },
   auth: {
+    forgotPassword: {
+      expiration: CREATOR_RESET_PASSWORD_EXPIRATION_MS,
+      generateEmailHTML: (args) =>
+        generateCreatorResetPasswordEmailHTML({
+          token: args?.token || '',
+          user: {
+            email: args?.user?.email || '',
+            name: args?.user?.name || null,
+          },
+        }),
+      generateEmailSubject: generateCreatorResetPasswordEmailSubject,
+    },
     verify: {
       generateEmailHTML: ({ token, user }) =>
         generateCreatorVerificationEmailHTML({

@@ -78,7 +78,7 @@ export function CreatorLoginForm() {
       </div>
 
       <p className="text-[13px] text-foreground/80">
-        <Link className="underline underline-offset-2" href="/dashboard/login">
+        <Link className="underline underline-offset-2" href="/creator/forgot-password">
           ¿Olvidaste tu contraseña?
         </Link>
       </p>
