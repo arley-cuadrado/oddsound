@@ -1,3 +1,7 @@
+import { redirect } from 'next/navigation'
+
+import { getMeUser } from '@/utilities/getMeUser'
+import { isAdminUser } from '@/utilities/isAdminUser'
 import {
   generateCreatorResetPasswordEmailHTML,
   generateCreatorResetPasswordEmailSubject,
@@ -56,6 +60,14 @@ function EmailPreviewCard({
 }
 
 export default async function EmailPreviewPage({ searchParams }: Props) {
+  const session = await getMeUser({
+    nullUserRedirect: '/dashboard/login',
+  }).catch(() => null)
+
+  if (!isAdminUser(session?.user)) {
+    redirect('/dashboard/login')
+  }
+
   const { email = 'demo@oddsound.co', name = 'ARTISTA TEST' } = await searchParams
 
   const verificationHTML = generateCreatorVerificationEmailHTML({
