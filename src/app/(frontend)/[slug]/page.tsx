@@ -15,6 +15,11 @@ import PageClient from './page.client'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
 
 export async function generateStaticParams() {
+  if (process.env.NODE_ENV === 'development') {
+    // In local dev this query slows the first render of dynamic artist pages a lot.
+    return []
+  }
+
   const payload = await getPayload({ config: configPromise })
   const pages = await payload.find({
     collection: 'pages',
