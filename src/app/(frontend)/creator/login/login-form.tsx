@@ -42,7 +42,7 @@ export function CreatorLoginForm() {
     <form className="space-y-6" onSubmit={handleSubmit}>
       <div className="space-y-2">
         <label className="text-[13px] font-medium text-foreground" htmlFor="email">
-          Correo electrónico
+          Correo electrónico <span className="text-[#ff6a6a]">*</span>
         </label>
         <input
           className="h-12 w-full border border-border bg-background px-4 text-[13px] text-foreground outline-none"
@@ -55,7 +55,7 @@ export function CreatorLoginForm() {
 
       <div className="space-y-2">
         <label className="text-[13px] font-medium text-foreground" htmlFor="password">
-          Contraseña
+          Contraseña <span className="text-[#ff6a6a]">*</span>
         </label>
         <div className="relative">
           <input
@@ -76,6 +76,12 @@ export function CreatorLoginForm() {
           </button>
         </div>
       </div>
+
+      <p className="text-[13px] text-foreground/80">
+        <Link className="underline underline-offset-2" href="/dashboard/login">
+          ¿Olvidaste tu contraseña?
+        </Link>
+      </p>
 
       <p className="text-[13px] text-foreground/80">
         <Link className="underline underline-offset-2" href="/dashboard/login">
