@@ -1,0 +1,120 @@
+import type { Payload, PayloadRequest } from 'payload'
+
+type CreatorLike = {
+  accountType?: null | 'artist' | 'band' | 'label'
+  email?: null | string
+  id: string
+  name?: null | string
+  profile?: null | string | { id?: null | string }
+  role?: null | string
+}
+
+function toSlug(value: string) {
+  return value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+}
+
+async function resolveUniqueProfileSlug(payload: Payload, seed: string) {
+  const normalizedSeed = toSlug(seed) || 'creator'
+  let candidate = normalizedSeed
+  let attempt = 1
+
+  while (true) {
+    const existing = await payload.find({
+      collection: 'profiles',
+      depth: 0,
+      limit: 1,
+      overrideAccess: true,
+      pagination: false,
+      where: {
+        slug: {
+          equals: candidate,
+        },
+      },
+    })
+
+    if (existing.docs.length === 0) return candidate
+
+    attempt += 1
+    candidate = `${normalizedSeed}-${attempt}`
+  }
+}
+
+export async function ensureCreatorProfile({
+  payload,
+  req,
+  user,
+}: {
+  payload: Payload
+  req?: PayloadRequest
+  user: CreatorLike
+}) {
+  if (user.role !== 'creator') return user.profile || null
+
+  const inlineProfileId = typeof user.profile === 'string' ? user.profile : user.profile?.id
+
+  if (inlineProfileId) return inlineProfileId
+
+  const existingProfiles = await payload.find({
+    collection: 'profiles',
+    depth: 0,
+    limit: 1,
+    overrideAccess: true,
+    pagination: false,
+    where: {
+      owner: {
+        equals: user.id,
+      },
+    },
+  })
+
+  const existingProfileId = existingProfiles.docs[0]?.id
+
+  if (existingProfileId) {
+    await payload.update({
+      collection: 'users',
+      id: user.id,
+      data: {
+        profile: existingProfileId,
+      },
+      depth: 0,
+      overrideAccess: true,
+      ...(req ? { req } : {}),
+    })
+
+    return existingProfileId
+  }
+
+  const displayName = user.name || user.email?.split('@')[0] || 'New Creator'
+  const profileSlug = await resolveUniqueProfileSlug(payload, displayName)
+
+  const profile = await payload.create({
+    collection: 'profiles',
+    data: {
+      accountType: user.accountType || 'artist',
+      contactEmail: user.email || undefined,
+      displayName,
+      owner: user.id,
+      slug: profileSlug,
+    },
+    draft: false,
+    overrideAccess: true,
+    ...(req ? { req } : {}),
+  })
+
+  await payload.update({
+    collection: 'users',
+    id: user.id,
+    data: {
+      profile: profile.id,
+    },
+    depth: 0,
+    overrideAccess: true,
+    ...(req ? { req } : {}),
+  })
+
+  return profile.id
+}

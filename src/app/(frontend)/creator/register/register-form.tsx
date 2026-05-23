@@ -65,7 +65,6 @@ export function RegisterForm() {
       const nextEmail = encodeURIComponent(result.email || email.trim().toLowerCase())
 
       router.push(`/creator/register/check-email?email=${nextEmail}`)
-      router.refresh()
     } catch (caughtError) {
       setError(caughtError instanceof Error ? caughtError.message : 'Algo salió mal.')
     } finally {

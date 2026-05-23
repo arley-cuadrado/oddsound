@@ -11,6 +11,7 @@ import {
   generateCreatorVerificationEmailSubject,
   getVerificationCooldownMessage,
 } from '@/utilities/emailVerification'
+import { ensureCreatorProfile } from '@/utilities/creatorProfiles'
 
 type AccountType = 'artist' | 'band' | 'label'
 const LEGAL_VERSION = '2026-05-14'
@@ -24,6 +25,7 @@ type ActionResult = {
 }
 
 type VerificationUser = {
+  name?: null | string
   _verificationToken?: null | string
   _verified?: boolean | null
   createdAt?: null | string
@@ -94,7 +96,7 @@ export async function registerCreator(input: {
 
     const existingUser = await findUserByEmail(email)
 
-    if (existingUser?._verified === true) {
+    if (existingUser && existingUser._verified !== false) {
       return {
         message: 'Este usuario ya está registrado.',
         ok: false,
@@ -160,9 +162,18 @@ export async function loginCreator(input: {
   password: string
 }): Promise<ActionResult> {
   try {
+    const email = input.email.trim().toLowerCase()
+    const existingUser = await findUserByEmail(email)
+
+    if (!existingUser) {
+      return {
+        message: 'No encontramos una cuenta con ese correo. Regístrate para continuar.',
+        ok: false,
+      }
+    }
+
     const payload = await getPayload({ config })
     const payloadReq = await createLocalReq({}, payload)
-    const email = input.email.trim().toLowerCase()
 
     const result = await payload.login({
       collection: 'users',
@@ -179,6 +190,19 @@ export async function loginCreator(input: {
         ok: false,
       }
     }
+
+    await ensureCreatorProfile({
+      payload,
+      req: payloadReq,
+      user: {
+        accountType: result.user.accountType,
+        email: result.user.email,
+        id: result.user.id,
+        name: result.user.name,
+        profile: result.user.profile,
+        role: result.user.role,
+      },
+    })
 
     const cookieStore = await cookies()
 

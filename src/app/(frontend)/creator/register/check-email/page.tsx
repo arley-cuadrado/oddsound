@@ -30,7 +30,7 @@ export default async function CreatorRegisterCheckEmailPage({ searchParams }: Pr
           <p>Si no lo ves, revisa spam o promociones. Si aún no llega, puedes reenviarlo.</p>
           <p>
             ¿Ya verificaste tu correo?{' '}
-            <Link className="text-foreground underline underline-offset-2" href="/dashboard/login">
+            <Link className="text-foreground underline underline-offset-2" href="/creator/login">
               Inicia sesión
             </Link>
           </p>

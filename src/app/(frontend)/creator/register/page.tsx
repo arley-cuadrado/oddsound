@@ -21,7 +21,7 @@ export default async function CreatorRegisterPage() {
 
         <p className="mt-8 text-[13px] text-foreground/80">
           ¿Ya estás registrad@?{' '}
-          <Link className="text-[13px] text-foreground underline underline-offset-2" href="/dashboard/login">
+          <Link className="text-[13px] text-foreground underline underline-offset-2" href="/creator/login">
             Inicia sesión
           </Link>
         </p>
