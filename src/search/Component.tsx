@@ -56,7 +56,7 @@ export const Search: React.FC = () => {
         onChange={(event) => {
           handleChange(event.target.value)
         }}
-        placeholder="Escribe aquí..."
+        placeholder="Comienza a descubrir ;)"
         spellCheck={false}
         value={value}
       />
