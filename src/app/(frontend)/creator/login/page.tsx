@@ -1,5 +1,6 @@
 import Link from 'next/link'
 
+import AdminLogo from '@/components/AdminLogo'
 import { getMeUser } from '@/utilities/getMeUser'
 import { CreatorLoginForm } from './login-form'
 
@@ -12,9 +13,9 @@ export default async function CreatorLoginPage() {
     <main className="min-h-screen px-6 py-16">
       <div className="mx-auto flex min-h-[calc(100vh-8rem)] max-w-[32rem] flex-col justify-center">
         <div className="mb-12 text-center">
-          <Link className="inline-flex text-5xl font-light tracking-tight text-foreground" href="/">
-            <span className="font-black title">odd</span>sound
-          </Link>
+          <div className="inline-flex">
+            <AdminLogo />
+          </div>
         </div>
 
         <div className="mb-8">
