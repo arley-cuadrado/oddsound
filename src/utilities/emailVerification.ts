@@ -1,6 +1,7 @@
 import type { User } from '@/payload-types'
 
 import { getServerSideURL } from '@/utilities/getURL'
+import { ArloSignature } from '../app/(frontend)/ArloSignature'
 
 export const VERIFICATION_RESEND_COOLDOWN_MS = 5 * 60 * 1000
 export const CREATOR_RESET_PASSWORD_EXPIRATION_MS = 60 * 60 * 1000
@@ -13,13 +14,7 @@ export const getVerificationCooldownMessage = (msRemaining: number) => {
   return `Espera ${minutes} minuto${minutes === 1 ? '' : 's'} antes de pedir otro enlace.`
 }
 
-export const getCreatorVerificationURL = ({
-  email,
-  token,
-}: {
-  email: string
-  token: string
-}) => {
+export const getCreatorVerificationURL = ({ email, token }: { email: string; token: string }) => {
   const url = new URL('/creator/verify', getServerSideURL())
 
   url.searchParams.set('email', email)
@@ -43,10 +38,19 @@ export const generateCreatorVerificationEmailHTML = ({
   return `
     <div style="background:#f7f4ef;padding:32px 20px;font-family:Arial,sans-serif;color:#171717;">
       <div style="max-width:560px;margin:0 auto;background:#ffffff;border:1px solid #e5ddd2;padding:32px;">
+
+        <div className="mb-12 text-center">
+          <Link className="inline-flex text-5xl font-light tracking-tight text-foreground" href="/">
+            <span className="font-black title">odd</span>sound
+          </Link>
+        </div>
+
         <p style="margin:0 0 16px;font-size:14px;line-height:1.7;">Hola${user.name ? ` ${user.name}` : ''},</p>
         <p style="margin:0 0 16px;font-size:14px;line-height:1.7;">
           Ya casi activas tu cuenta en <strong>oddsound</strong>. Solo confirma tu correo para poder entrar.
+          Una vez lo hagas podrás acceder a tu panel de usuario y comenzar a crear tus lanzamientos y publicaciones.
         </p>
+        
         <p style="margin:24px 0;">
           <a
             href="${verificationURL}"
@@ -61,6 +65,9 @@ export const generateCreatorVerificationEmailHTML = ({
         <p style="margin:0;font-size:13px;line-height:1.7;word-break:break-word;">
           <a href="${verificationURL}" style="color:#171717;">${verificationURL}</a>
         </p>
+
+        <ArloSignature />
+
       </div>
     </div>
   `
@@ -88,6 +95,13 @@ export const generateCreatorResetPasswordEmailHTML = ({
   return `
     <div style="background:#f7f4ef;padding:32px 20px;font-family:Arial,sans-serif;color:#171717;">
       <div style="max-width:560px;margin:0 auto;background:#ffffff;border:1px solid #e5ddd2;padding:32px;">
+
+        <div className="mb-12 text-center">
+          <Link className="inline-flex text-5xl font-light tracking-tight text-foreground" href="/">
+            <span className="font-black title">odd</span>sound
+          </Link>
+        </div>
+
         <p style="margin:0 0 16px;font-size:14px;line-height:1.7;">Hola${user.name ? ` ${user.name}` : ''},</p>
         <p style="margin:0 0 16px;font-size:14px;line-height:1.7;">
           Recibimos una solicitud para cambiar la contraseña de tu cuenta en <strong>oddsound</strong>.
@@ -109,10 +123,12 @@ export const generateCreatorResetPasswordEmailHTML = ({
         <p style="margin:0;font-size:13px;line-height:1.7;word-break:break-word;">
           <a href="${resetURL}" style="color:#171717;">${resetURL}</a>
         </p>
+
+        <ArloSignature />
+
       </div>
     </div>
   `
 }
 
-export const generateCreatorResetPasswordEmailSubject = () =>
-  'Restablece tu contraseña en oddsound'
+export const generateCreatorResetPasswordEmailSubject = () => 'Restablece tu contraseña en oddsound'
