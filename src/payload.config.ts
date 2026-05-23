@@ -39,7 +39,7 @@ export default buildConfig({
     components: {
       afterLogin: ['@/components/CreatorRegisterLink'],
       afterDashboard: ['@/components/BeforeDashboard'],
-      afterNavLinks: ['@/components/ScheduledPublishesNavLink'],
+      afterNavLinks: ['@/components/EmailPreviewNavLink', '@/components/ScheduledPublishesNavLink'],
       graphics: {
         Icon: '@/components/AdminIcon',
         Logo: '@/components/AdminLogo',

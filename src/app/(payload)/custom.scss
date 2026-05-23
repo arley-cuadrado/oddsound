@@ -19,6 +19,34 @@
   }
 }
 
+.email-preview-nav-link {
+  margin: 1rem 0 0.25rem;
+}
+
+.email-preview-nav-link__label {
+  margin: 0 0 0.35rem;
+  color: var(--theme-elevation-500);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.email-preview-nav-link__link {
+  display: block;
+  padding: 0.125rem 0;
+  color: var(--theme-elevation-800);
+  text-decoration: none;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: var(--theme-text);
+  }
+
+  &.is-active {
+    color: var(--theme-text);
+    font-weight: 600;
+  }
+}
+
 .before-dashboard {
   display: grid;
   gap: 1rem;
