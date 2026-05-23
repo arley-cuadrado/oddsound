@@ -11,9 +11,31 @@
 export const getMediaUrl = (url: string | null | undefined, cacheTag?: string | null): string => {
   if (!url) return ''
 
+  let normalizedURL = url
+
+  try {
+    const parsedURL = new URL(url)
+    const serverURL =
+      process.env.NEXT_PUBLIC_SERVER_URL ||
+      (process.env.VERCEL_PROJECT_PRODUCTION_URL
+        ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+        : null)
+
+    if (serverURL) {
+      const parsedServerURL = new URL(serverURL)
+
+      // Normalize same-origin media URLs to local paths so Next treats them as local assets.
+      if (parsedURL.origin === parsedServerURL.origin) {
+        normalizedURL = `${parsedURL.pathname}${parsedURL.search}`
+      }
+    }
+  } catch {
+    normalizedURL = url
+  }
+
   if (cacheTag && cacheTag !== '') {
     cacheTag = encodeURIComponent(cacheTag)
   }
 
-  return cacheTag ? `${url}?${cacheTag}` : url
+  return cacheTag ? `${normalizedURL}${normalizedURL.includes('?') ? '&' : '?'}${cacheTag}` : normalizedURL
 }
