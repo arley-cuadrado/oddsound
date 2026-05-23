@@ -83,6 +83,18 @@ const LocalizedPayloadAdminBar: React.FC<LocalizedPayloadAdminBarProps> = (props
   if (!user) return null
 
   const { id: userID, email } = user
+  const isCreatorUser = (user as PayloadMeUser & { role?: null | string })?.role === 'creator'
+
+  const handleCreatorLogout = async () => {
+    try {
+      await fetch('/creator-api/logout', {
+        credentials: 'include',
+        method: 'POST',
+      })
+    } finally {
+      window.location.href = '/creator/login'
+    }
+  }
 
   return (
     <div className={className} id="payload-admin-bar" style={style}>
@@ -138,15 +150,21 @@ const LocalizedPayloadAdminBar: React.FC<LocalizedPayloadAdminBarProps> = (props
         ) : null}
       </div>
 
-      <a
-        className={classNames?.logout}
-        href={`${cmsURL}${adminPath}/logout`}
-        rel="noopener noreferrer"
-        target="_blank"
-        {...logoutProps}
-      >
-        <span>Cerrar sesión</span>
-      </a>
+      {isCreatorUser ? (
+        <button className={classNames?.logout} onClick={handleCreatorLogout} type="button" {...logoutProps}>
+          <span>Cerrar sesión</span>
+        </button>
+      ) : (
+        <a
+          className={classNames?.logout}
+          href={`${cmsURL}${adminPath}/logout`}
+          rel="noopener noreferrer"
+          target="_blank"
+          {...logoutProps}
+        >
+          <span>Cerrar sesión</span>
+        </a>
+      )}
     </div>
   )
 }
