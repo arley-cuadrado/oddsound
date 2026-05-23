@@ -1,8 +1,10 @@
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
+import config from '@payload-config'
+import { createPayloadRequest } from 'payload'
 
 import type { User } from '../payload-types'
-import { getClientSideURL } from './getURL'
+import { getServerSideURL } from './getURL'
 
 export const getMeUser = async (args?: {
   nullUserRedirect?: string
@@ -15,29 +17,46 @@ export const getMeUser = async (args?: {
   const cookieStore = await cookies()
   const token = cookieStore.get('payload-token')?.value
 
-  const meUserReq = await fetch(`${getClientSideURL()}/api/users/me`, {
-    headers: {
+  if (!token) {
+    if (nullUserRedirect) {
+      redirect(nullUserRedirect)
+    }
+
+    throw new Error('No authenticated user found.')
+  }
+
+  const request = new Request(`${getServerSideURL()}/api/users/me`, {
+    headers: new Headers({
       Authorization: `JWT ${token}`,
-    },
+      Cookie: `payload-token=${token}`,
+      DisableAutologin: 'true',
+    }),
   })
 
-  const {
-    user,
-  }: {
-    user: User
-  } = await meUserReq.json()
+  const req = await createPayloadRequest({
+    config,
+    params: {
+      collection: 'users',
+    },
+    request,
+  })
 
-  if (validUserRedirect && meUserReq.ok && user) {
+  const user = req.user as User | null
+
+  if (validUserRedirect && user) {
     redirect(validUserRedirect)
   }
 
-  if (nullUserRedirect && (!meUserReq.ok || !user)) {
+  if (nullUserRedirect && !user) {
     redirect(nullUserRedirect)
   }
 
-  // Token will exist here because if it doesn't the user will be redirected
+  if (!user) {
+    throw new Error('No authenticated user found.')
+  }
+
   return {
-    token: token!,
-    user,
+    token,
+    user: user as User,
   }
 }
