@@ -23,6 +23,7 @@ type ActionResult = {
   ok: boolean
   status?:
     | 'logged_in'
+    | 'not_found'
     | 'password_reset_completed'
     | 'password_reset_requested'
     | 'pending_verification'
@@ -341,6 +342,7 @@ export async function requestCreatorPasswordReset(input: {
       return {
         message: 'No encontramos una cuenta de creador con ese correo. Regístrate para continuar.',
         ok: false,
+        status: 'not_found',
       }
     }
 

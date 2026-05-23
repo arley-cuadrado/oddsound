@@ -17,13 +17,6 @@ export default async function CreatorForgotPasswordPage() {
           </Link>
         </div>
 
-        <div className="mb-8 space-y-2">
-          <p className="text-[13px] text-foreground/80">Recupera el acceso a tu cuenta.</p>
-          <p className="text-[13px] text-foreground/80">
-            Ingresa tu correo y te enviaremos un enlace para crear una nueva contraseña.
-          </p>
-        </div>
-
         <CreatorForgotPasswordForm />
 
         <p className="mt-8 text-[13px] text-foreground/80">
