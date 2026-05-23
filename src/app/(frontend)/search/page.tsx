@@ -236,7 +236,7 @@ export default async function Page({ searchParams: searchParamsPromise }: Args) 
                   ))}
                 </div>
               ) : (
-                <div className="mt-12 text-center">No release found.</div>
+                <div className="mt-12 text-center">No se encontraron lanzamientos.</div>
               )}
             </div>
           ) : null}
