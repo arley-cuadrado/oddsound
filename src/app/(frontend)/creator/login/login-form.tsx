@@ -83,14 +83,10 @@ export function CreatorLoginForm() {
         </Link>
       </p>
 
-      <p className="text-[13px] text-foreground/80">
-        <Link className="underline underline-offset-2" href="/dashboard/login">
-          ¿Necesitas entrar como administrador?
-        </Link>
-      </p>
-
       {error ? (
-        <p className="border border-red-200 bg-red-50 px-4 py-3 text-[13px] text-red-700">{error}</p>
+        <p className="border border-red-200 bg-red-50 px-4 py-3 text-[13px] text-red-700">
+          {error}
+        </p>
       ) : null}
 
       <button
