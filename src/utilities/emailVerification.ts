@@ -285,9 +285,9 @@ function buildEmailTemplate({
                         <tr>
                           <td align="center" style="padding: 70px 20px 0 20px;">
                             <p style="margin: 0; font-family: Arial, Helvetica, sans-serif; font-size: 29px; line-height: 30px; color: #ffffff; font-weight: 400; letter-spacing: -0.4px;">
-                              <span style="font-weight: 800;">odd</span>sound
+                              <span style="font-weight: 900;">odd</span>sound
                             </p>
-                            <p style="margin: 4px 0 0 0; font-family: Arial, Helvetica, sans-serif; font-size: 11px; line-height: 13px; color: #ffffff; font-weight: 700;">
+                            <p style="margin: 4px 0 0 0; font-family: Arial, Helvetica, sans-serif; font-size: 11px; line-height: 13px; color: #ffffff; font-weight: 100;">
                               Be heard. Stay odd.
                             </p>
                           </td>
