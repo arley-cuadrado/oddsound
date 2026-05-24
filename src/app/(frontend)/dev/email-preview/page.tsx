@@ -19,17 +19,7 @@ type Props = {
 const PREVIEW_TOKEN = 'preview-token-oddsound-1234567890'
 
 function buildPreviewDocument(html: string) {
-  return `<!doctype html>
-<html lang="es">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Email Preview</title>
-  </head>
-  <body style="margin:0;padding:0;background:#f5f2eb;">
-    ${html}
-  </body>
-</html>`
+  return html
 }
 
 function EmailPreviewCard({
