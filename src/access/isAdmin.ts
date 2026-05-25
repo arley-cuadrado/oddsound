@@ -1,4 +1,12 @@
+import { hasFreshAdminAccess } from './hasFreshAdminAccess'
 import { isAdminUser } from '@/utilities/isAdminUser'
 
-export const isAdmin = ({ req: { user } }: { req: { user?: { role?: string | null } | null } }) =>
-  isAdminUser(user)
+export const isAdmin = async ({
+  req,
+}: {
+  req: { payload: any; user?: { id?: number | string; role?: string | null } | null }
+}) => {
+  if (isAdminUser(req.user)) return true
+
+  return hasFreshAdminAccess(req)
+}

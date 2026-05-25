@@ -1,14 +1,14 @@
 import type { Access, AccessArgs } from 'payload'
 
 import type { User } from '@/payload-types'
-import { isAdminUser } from '@/utilities/isAdminUser'
+import { hasFreshAdminAccess } from './hasFreshAdminAccess'
 
 type AdminOrSelfAccess = Access<User>
 
-export const isAdminOrSelf: AdminOrSelfAccess = ({ req: { user } }: AccessArgs<User>) => {
+export const isAdminOrSelf: AdminOrSelfAccess = async ({ req, req: { user } }: AccessArgs<User>) => {
   if (!user) return false
 
-  if (isAdminUser(user)) return true
+  if (await hasFreshAdminAccess(req as any)) return true
 
   return {
     id: {

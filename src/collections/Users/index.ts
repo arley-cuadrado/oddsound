@@ -1,6 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
 import { authenticated } from '@/access/authenticated'
+import { hasFreshAdminAccess } from '@/access/hasFreshAdminAccess'
 import { isAdmin } from '@/access/isAdmin'
 import { isAdminOrSelf } from '@/access/isAdminOrSelf'
 import { isAdminUser } from '@/utilities/isAdminUser'
@@ -21,8 +22,11 @@ export const Users: CollectionConfig = {
   access: {
     admin: authenticated,
     create: isAdmin,
-    delete: ({ req: { user } }) => {
-      if (!isAdminUser(user)) return false
+    delete: async ({ req }) => {
+      const user = req.user
+
+      if (!user) return false
+      if (!(await hasFreshAdminAccess(req as any))) return false
 
       // Admins can delete creator accounts, but never themselves or any admin account.
       return {

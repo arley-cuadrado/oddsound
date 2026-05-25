@@ -1,6 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
 import { authenticated } from '@/access/authenticated'
+import { hasFreshAdminAccess } from '@/access/hasFreshAdminAccess'
 import { isAdmin } from '@/access/isAdmin'
 import { isAdminUser } from '@/utilities/isAdminUser'
 import { slugField } from 'payload'
@@ -10,10 +11,12 @@ export const Profiles: CollectionConfig = {
   access: {
     admin: authenticated,
     create: authenticated,
-    delete: ({ req: { user } }) => {
+    delete: async ({ req }) => {
+      const user = req.user
+
       if (!user) return false
 
-      if (isAdminUser(user)) {
+      if (await hasFreshAdminAccess(req as any)) {
         return {
           owner: {
             not_equals: user.id,
@@ -23,9 +26,11 @@ export const Profiles: CollectionConfig = {
 
       return false
     },
-    read: ({ req: { user } }) => {
+    read: async ({ req }) => {
+      const user = req.user
+
       if (!user) return false
-      if (isAdminUser(user)) {
+      if (await hasFreshAdminAccess(req as any)) {
         return {
           owner: {
             not_equals: user.id,
@@ -39,9 +44,11 @@ export const Profiles: CollectionConfig = {
         },
       }
     },
-    update: ({ req: { user } }) => {
+    update: async ({ req }) => {
+      const user = req.user
+
       if (!user) return false
-      if (isAdminUser(user)) {
+      if (await hasFreshAdminAccess(req as any)) {
         return {
           owner: {
             not_equals: user.id,

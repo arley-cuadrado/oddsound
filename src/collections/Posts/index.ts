@@ -1,5 +1,6 @@
 import type { CollectionConfig } from 'payload'
 
+import { hasFreshAdminAccess } from '@/access/hasFreshAdminAccess'
 import {
   BlocksFeature,
   FixedToolbarFeature,
@@ -34,9 +35,11 @@ export const Posts: CollectionConfig<'posts'> = {
   slug: 'posts',
   access: {
     admin: authenticated,
-    create: ({ req: { user } }) => isAdminUser(user),
-    delete: ({ req: { user } }) => isAdminUser(user),
-    read: ({ req: { user } }) => {
+    create: async ({ req }) => hasFreshAdminAccess(req as any),
+    delete: async ({ req }) => hasFreshAdminAccess(req as any),
+    read: async ({ req }) => {
+      const user = req.user
+
       if (!user) {
         return {
           _status: {
@@ -44,7 +47,7 @@ export const Posts: CollectionConfig<'posts'> = {
           },
         } as any
       }
-      if (isAdminUser(user)) return true
+      if (await hasFreshAdminAccess(req as any)) return true
 
       return {
         owner: {
@@ -52,9 +55,11 @@ export const Posts: CollectionConfig<'posts'> = {
         },
       } as any
     },
-    update: ({ req: { user } }) => {
+    update: async ({ req }) => {
+      const user = req.user
+
       if (!user) return false
-      if (isAdminUser(user)) return true
+      if (await hasFreshAdminAccess(req as any)) return true
 
       return {
         owner: {

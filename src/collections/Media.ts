@@ -9,6 +9,7 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 
 import { authenticated } from '../access/authenticated'
+import { hasFreshAdminAccess } from '@/access/hasFreshAdminAccess'
 import { assignOwnership } from '@/hooks/assignOwnership'
 import { isAdminUser } from '@/utilities/isAdminUser'
 import { getServerSideURL } from '@/utilities/getURL'
@@ -81,9 +82,11 @@ export const Media: CollectionConfig = {
   access: {
     admin: authenticated,
     create: authenticated,
-    delete: ({ req: { user } }) => {
+    delete: async ({ req }) => {
+      const user = req.user
+
       if (!user) return false
-      if (isAdminUser(user)) return true
+      if (await hasFreshAdminAccess(req as any)) return true
 
       return {
         owner: {
@@ -91,9 +94,11 @@ export const Media: CollectionConfig = {
         },
       }
     },
-    read: ({ req: { user } }) => {
+    read: async ({ req }) => {
+      const user = req.user
+
       if (!user) return true
-      if (isAdminUser(user)) return true
+      if (await hasFreshAdminAccess(req as any)) return true
 
       return {
         owner: {
@@ -101,9 +106,11 @@ export const Media: CollectionConfig = {
         },
       }
     },
-    update: ({ req: { user } }) => {
+    update: async ({ req }) => {
+      const user = req.user
+
       if (!user) return false
-      if (isAdminUser(user)) return true
+      if (await hasFreshAdminAccess(req as any)) return true
 
       return {
         owner: {

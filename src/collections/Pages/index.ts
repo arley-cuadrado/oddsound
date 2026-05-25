@@ -1,5 +1,6 @@
 import type { CollectionConfig } from 'payload'
 
+import { hasFreshAdminAccess } from '@/access/hasFreshAdminAccess'
 import { assignOwnership } from '@/hooks/assignOwnership'
 import { generateCreatorContentSlug } from '@/hooks/generateCreatorContentSlug'
 import { isAdminUser } from '@/utilities/isAdminUser'
@@ -29,9 +30,11 @@ export const Pages: CollectionConfig<'pages'> = {
   access: {
     admin: authenticated,
     create: authenticated,
-    delete: ({ req: { user } }) => {
+    delete: async ({ req }) => {
+      const user = req.user
+
       if (!user) return false
-      if (isAdminUser(user)) return true
+      if (await hasFreshAdminAccess(req as any)) return true
 
       return {
         owner: {
@@ -39,7 +42,9 @@ export const Pages: CollectionConfig<'pages'> = {
         },
       }
     },
-    read: ({ req: { user } }) => {
+    read: async ({ req }) => {
+      const user = req.user
+
       if (!user) {
         return {
           _status: {
@@ -47,7 +52,7 @@ export const Pages: CollectionConfig<'pages'> = {
           },
         } as any
       }
-      if (isAdminUser(user)) return true
+      if (await hasFreshAdminAccess(req as any)) return true
 
       return {
         owner: {
@@ -56,9 +61,11 @@ export const Pages: CollectionConfig<'pages'> = {
       } as any
     },
     readVersions: ({ req: { user } }) => isSuperAdminUser(user),
-    update: ({ req: { user } }) => {
+    update: async ({ req }) => {
+      const user = req.user
+
       if (!user) return false
-      if (isAdminUser(user)) return true
+      if (await hasFreshAdminAccess(req as any)) return true
 
       return {
         owner: {
