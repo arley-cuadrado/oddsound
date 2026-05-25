@@ -11,6 +11,10 @@ import {
   generateCreatorVerificationEmailSubject,
   getVerificationCooldownMessage,
 } from '@/utilities/emailVerification'
+import {
+  getExpiredPayloadTokenCookieOptions,
+  getPayloadTokenCookieOptions,
+} from '@/utilities/payloadAuthCookie'
 import { ensureCreatorProfile } from '@/utilities/creatorProfiles'
 
 type AccountType = 'artist' | 'band' | 'label'
@@ -213,12 +217,7 @@ export async function loginCreator(input: {
 
     const cookieStore = await cookies()
 
-    cookieStore.set('payload-token', result.token, {
-      httpOnly: true,
-      path: '/',
-      sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production',
-    })
+    cookieStore.set('payload-token', result.token, await getPayloadTokenCookieOptions())
 
     return { ok: true, status: 'logged_in' }
   } catch (error) {
@@ -434,11 +433,5 @@ export async function resetCreatorPassword(input: {
 export async function logoutCreator(): Promise<void> {
   const cookieStore = await cookies()
 
-  cookieStore.set('payload-token', '', {
-    expires: new Date(0),
-    httpOnly: true,
-    path: '/',
-    sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
-  })
+  cookieStore.set('payload-token', '', await getExpiredPayloadTokenCookieOptions())
 }

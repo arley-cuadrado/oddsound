@@ -1,6 +1,7 @@
 import config from '@payload-config'
 import { cookies } from 'next/headers'
 import { createLocalReq, getPayload } from 'payload'
+import { getPayloadTokenCookieOptions } from '@/utilities/payloadAuthCookie'
 
 type LoginBody = {
   email?: string
@@ -33,12 +34,7 @@ export async function POST(request: Request) {
 
     const cookieStore = await cookies()
 
-    cookieStore.set('payload-token', result.token, {
-      httpOnly: true,
-      path: '/',
-      sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production',
-    })
+    cookieStore.set('payload-token', result.token, await getPayloadTokenCookieOptions())
 
     return Response.json({
       message: 'Login successful.',
