@@ -58,9 +58,9 @@ export const Media: CollectionConfig = {
       type: 'relationship',
       relationTo: 'users',
       access: {
-        create: ({ req: { user } }) => isAdminUser(user),
+        create: ({ req: { user } }) => Boolean(user),
         read: ({ req: { user } }) => isAdminUser(user),
-        update: ({ req: { user } }) => isAdminUser(user),
+        update: ({ req: { user } }) => Boolean(user),
       },
       admin: {
         hidden: true,
@@ -71,9 +71,9 @@ export const Media: CollectionConfig = {
       type: 'relationship',
       relationTo: 'profiles',
       access: {
-        create: ({ req: { user } }) => isAdminUser(user),
+        create: ({ req: { user } }) => Boolean(user),
         read: ({ req: { user } }) => isAdminUser(user),
-        update: ({ req: { user } }) => isAdminUser(user),
+        update: ({ req: { user } }) => Boolean(user),
       },
       admin: {
         hidden: true,
