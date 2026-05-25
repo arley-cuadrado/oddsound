@@ -4,12 +4,14 @@ import { isAdminUser } from '@/utilities/isAdminUser'
 import { isSuperAdminUser } from '@/utilities/isSuperAdminUser'
 
 export const ensureCreatorDefaults: CollectionBeforeChangeHook = async ({
+  context,
   data,
   operation,
   originalDoc,
   req,
 }) => {
   if (operation !== 'create' && operation !== 'update') return data
+  if (context?.allowAdminPromotion) return data
 
   const isAdminRequest = isAdminUser(req.user)
   const isSuperAdminRequest = isSuperAdminUser(req.user)
