@@ -22,7 +22,7 @@ type EmailTemplateOptions = {
 }
 
 const SITE_URL = getServerSideURL()
-const EMAIL_FOUNDER_AVATAR_URL = new URL('/media/arlo_cuadrado.png', SITE_URL).toString()
+const EMAIL_FOUNDER_AVATAR_URL = new URL('/home-images/arlo_cuadrado.png', SITE_URL).toString()
 const EMAIL_FOUNDER_INSTAGRAM_URL = 'https://www.instagram.com/arlo_cuadrado/'
 const EMAIL_PRIVACY_URL = new URL('/privacy-policy', SITE_URL).toString()
 const EMAIL_TERMS_URL = new URL('/terms-and-conditions', SITE_URL).toString()
