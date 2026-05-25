@@ -1,5 +1,6 @@
 import { mongooseAdapter } from '@payloadcms/db-mongodb'
 import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
+import { vercelBlobStorage } from '@payloadcms/storage-vercel-blob'
 import { es } from '@payloadcms/translations/languages/es'
 import sharp from 'sharp'
 import path from 'path'
@@ -21,6 +22,7 @@ import { getServerSideURL } from './utilities/getURL'
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 const hasSMTPConfig = Boolean(process.env.SMTP_HOST && process.env.SMTP_PASS)
+const hasBlobToken = Boolean(process.env.BLOB_READ_WRITE_TOKEN)
 
 export default buildConfig({
   serverURL: getServerSideURL(),
@@ -111,7 +113,20 @@ export default buildConfig({
       es,
     },
   },
-  plugins,
+  plugins: [
+    ...plugins,
+    ...(hasBlobToken
+      ? [
+          vercelBlobStorage({
+            clientUploads: true,
+            collections: {
+              media: true,
+            },
+            token: process.env.BLOB_READ_WRITE_TOKEN || '',
+          }),
+        ]
+      : []),
+  ],
   secret: process.env.PAYLOAD_SECRET,
   sharp,
   typescript: {
