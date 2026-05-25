@@ -1,4 +1,4 @@
-import type { CollectionConfig } from 'payload'
+import type { CollectionAfterReadHook, CollectionConfig } from 'payload'
 
 import {
   FixedToolbarFeature,
@@ -11,9 +11,70 @@ import { fileURLToPath } from 'url'
 import { authenticated } from '../access/authenticated'
 import { assignOwnership } from '@/hooks/assignOwnership'
 import { isAdminUser } from '@/utilities/isAdminUser'
+import { getServerSideURL } from '@/utilities/getURL'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
+const LEGACY_MEDIA_API_SEGMENT = '/api/media/file/'
+
+function buildLegacyStaticMediaURL(fileName?: null | string) {
+  if (!fileName) return fileName
+
+  return new URL(`/media/${encodeURIComponent(fileName)}`, getServerSideURL()).toString()
+}
+
+const normalizeLegacyMediaURLs: CollectionAfterReadHook = ({ doc }) => {
+  if (!doc || typeof doc !== 'object') return doc
+
+  const nextDoc = { ...doc } as typeof doc & {
+    filename?: null | string
+    sizes?: Record<string, null | { filename?: null | string; url?: null | string }>
+    thumbnailURL?: null | string
+    url?: null | string
+  }
+
+  if (typeof nextDoc.url === 'string' && nextDoc.url.includes(LEGACY_MEDIA_API_SEGMENT)) {
+    nextDoc.url = buildLegacyStaticMediaURL(nextDoc.filename)
+  }
+
+  if (typeof nextDoc.thumbnailURL === 'string' && nextDoc.thumbnailURL.includes(LEGACY_MEDIA_API_SEGMENT)) {
+    const thumbnailFilename =
+      typeof nextDoc.sizes?.thumbnail === 'object' ? nextDoc.sizes.thumbnail?.filename : null
+
+    nextDoc.thumbnailURL = buildLegacyStaticMediaURL(thumbnailFilename || nextDoc.filename)
+  }
+
+  if (nextDoc.sizes && typeof nextDoc.sizes === 'object') {
+    const sizes = nextDoc.sizes as Record<
+      string,
+      | null
+      | {
+          filename?: null | string
+          url?: null | string
+        }
+    >
+
+    nextDoc.sizes = Object.fromEntries(
+      Object.entries(sizes).map(([key, value]) => {
+        if (!value || typeof value !== 'object') return [key, value]
+
+        if (typeof value.url === 'string' && value.url.includes(LEGACY_MEDIA_API_SEGMENT)) {
+          return [
+            key,
+            {
+              ...value,
+              url: buildLegacyStaticMediaURL(value.filename),
+            },
+          ]
+        }
+
+        return [key, value]
+      }),
+    )
+  }
+
+  return nextDoc
+}
 
 export const Media: CollectionConfig = {
   slug: 'media',
@@ -134,6 +195,7 @@ export const Media: CollectionConfig = {
     ],
   },
   hooks: {
+    afterRead: [normalizeLegacyMediaURLs],
     beforeChange: [assignOwnership],
   },
 }
