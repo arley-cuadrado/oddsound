@@ -401,14 +401,14 @@ function buildEmailTemplate({
                                         <td valign="middle" style="padding-right: 12px;">
                                           <img
                                             src="${EMAIL_FOUNDER_AVATAR_URL}"
-                                            width="52"
-                                            height="52"
+                                            width="32"
+                                            height="32"
                                             alt="${EMAIL_SIGNATURE_HANDLE}"
-                                            style="border-radius: 26px; display: block;"
+                                            style="width: 32px; height: 32px; border-radius: 16px; display: block;"
                                           />
                                         </td>
                                         <td valign="middle" style="font-family: Arial, Helvetica, sans-serif;">
-                                          <p style="margin: 0; font-size: 12px; line-height: 20px; color: #111111; font-weight: 800;">${EMAIL_SIGNATURE_HANDLE}</p>
+                                          <p style="margin: 0; font-size: 12px; line-height: 20px; color: #d74a82; font-weight: 800;">${EMAIL_SIGNATURE_HANDLE}</p>
                                           <p style="margin: 0; font-size: 12px; line-height: 19px; color: #6f6f6f; font-weight: 400; white-space: nowrap;">${EMAIL_SIGNATURE_ROLE}</p>
                                         </td>
                                       </tr>
