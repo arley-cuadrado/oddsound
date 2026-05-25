@@ -48,6 +48,17 @@ function getOwnerId(page: Page) {
   return page.owner.id
 }
 
+function getOwnerName(page: Page) {
+  if (!page.owner || typeof page.owner === 'string') return null
+  return page.owner.name || null
+}
+
+function isAdminOwnedRelease(page: Page) {
+  if (!page.owner || typeof page.owner === 'string') return false
+
+  return page.owner.role === 'admin'
+}
+
 function getMediaUrl(media: Media | null | string | undefined) {
   if (!media || typeof media === 'string') return null
 
@@ -103,29 +114,32 @@ function mapSearchRelease(
 ): SearchRelease | null {
   // Resolve the creator profile from the page first, then fall back to the owner relation.
   const profile = getProfileValue(page.profile) || profilesByOwnerId.get(getOwnerId(page) || '')
+  const ownerName = getOwnerName(page)
+  const isAdminRelease = isAdminOwnedRelease(page)
 
-  if (!profile || !page.slug) return null
+  if (!page.slug) return null
+  if (!profile && !isAdminRelease) return null
 
   const isLowImpactRelease = page.hero?.type === 'lowImpact'
   const albumImage = getMediaUrl(page.hero?.albumImage as Media | null | string | undefined)
   const pageImage = getMediaUrl(page.meta?.image as Media | null | string | undefined)
   const heroImage = getMediaUrl(page.hero?.media as Media | null | string | undefined)
-  const coverImage = getMediaUrl(profile.coverImage as Media | null | string | undefined)
-  const avatarImage = getMediaUrl(profile.avatar as Media | null | string | undefined)
+  const coverImage = getMediaUrl(profile?.coverImage as Media | null | string | undefined)
+  const avatarImage = getMediaUrl(profile?.avatar as Media | null | string | undefined)
   const imageUrl = isLowImpactRelease
     ? albumImage || pageImage || FALLBACK_RELEASE_IMAGE
     : pageImage || albumImage || heroImage || coverImage || avatarImage || FALLBACK_RELEASE_IMAGE
 
   return {
-    country: profile.location || '',
-    creatorName: profile.displayName || page.title,
+    country: isAdminRelease ? '' : profile?.location || '',
+    creatorName: isAdminRelease ? 'oddsound' : profile?.displayName || ownerName || page.title,
     description:
       page.meta?.description?.trim() ||
       extractRichTextText(page.hero?.richText || null) ||
-      profile.bio?.trim() ||
+      profile?.bio?.trim() ||
       page.title,
     // Search cards inherit the creator genre from the profile created at signup.
-    genre: profile.genre?.trim() || '',
+    genre: profile?.genre?.trim() || '',
     imageUrl,
     slug: page.slug,
     title: page.title,
@@ -224,9 +238,11 @@ export default async function Page({ searchParams: searchParamsPromise }: Args) 
                                     <span className="text-white/85"> · {release.genre}</span>
                                   ) : null}
                                 </p>
-                                <p className="text-[10px] text-white sm:shrink-0">
-                                  {release.country || 'Country'}
-                                </p>
+                                {release.country ? (
+                                  <p className="text-[10px] text-white sm:shrink-0">
+                                    {release.country}
+                                  </p>
+                                ) : null}
                               </div>
                             </div>
                           </div>

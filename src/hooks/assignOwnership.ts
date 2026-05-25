@@ -46,7 +46,14 @@ async function resolveUserProfileId(req: Parameters<CollectionBeforeChangeHook>[
 }
 
 export const assignOwnership: CollectionBeforeChangeHook = async ({ data, req }) => {
-  if (!req.user || isAdminUser(req.user)) return data
+  if (!req.user) return data
+
+  if (isAdminUser(req.user)) {
+    return {
+      ...data,
+      owner: req.user.id,
+    }
+  }
 
   const profileId = await resolveUserProfileId(req)
 

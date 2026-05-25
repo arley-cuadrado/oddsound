@@ -1,4 +1,4 @@
-import type { CollectionConfig } from 'payload'
+import type { CollectionConfig, TextFieldSingleValidation } from 'payload'
 
 import { authenticated } from '@/access/authenticated'
 import { hasFreshAdminAccess } from '@/access/hasFreshAdminAccess'
@@ -125,6 +125,14 @@ export const Profiles: CollectionConfig = {
     {
       name: 'location',
       type: 'text',
+      validate: ((value, options) => {
+        if (options.req.user?.role !== 'creator') return true
+        if (options.operation === 'create') return true
+
+        return typeof value === 'string' && value.trim().length > 0
+          ? true
+          : 'El país es obligatorio para creadores.'
+      }) as TextFieldSingleValidation,
     },
     {
       name: 'genre',

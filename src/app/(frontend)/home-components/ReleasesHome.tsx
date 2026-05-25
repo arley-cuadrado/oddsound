@@ -146,7 +146,7 @@ export default function ReleasesHome({ releases }: { releases: ReleaseItem[] }) 
                         <span className="text-white/85"> · {release.genre}</span>
                       ) : null}
                     </p>
-                    <p className="text-sm text-white">{release.country || 'Pais'}</p>
+                    {release.country ? <p className="text-sm text-white">{release.country}</p> : null}
                   </div>
                 </div>
                 <div className="flex w-full flex-col pr-2">
