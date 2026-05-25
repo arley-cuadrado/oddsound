@@ -11,6 +11,10 @@ import Link from 'next/link'
 export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
   const navItems = data?.navItems || []
   const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const fallbackLoginLink = {
+    label: 'Iniciar sesión',
+    url: '/creator/login',
+  }
 
   useEffect(() => {
     let isMounted = true
@@ -65,6 +69,8 @@ export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
   }
 
   const topNavItems = navItems.filter(({ link }) => isLoginLink(link.label, link.url))
+  const loginNavItems =
+    topNavItems.length > 0 ? topNavItems : [{ link: fallbackLoginLink as typeof navItems[number]['link'] }]
 
   return (
     <nav
@@ -82,7 +88,7 @@ export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
           </Link>
           {!isAuthenticated ? (
             <div className="hidden max-[975px]:flex max-[975px]:items-center max-[975px]:gap-4">
-              {topNavItems.map(({ link }, i) => {
+              {loginNavItems.map(({ link }, i) => {
                 return (
                   <CMSLink
                     key={i}
@@ -125,6 +131,15 @@ export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
               </div>
             )
           })}
+          {!isAuthenticated && topNavItems.length === 0 ? (
+            <div className="w-full text-left max-[975px]:hidden">
+              <CMSLink
+                {...fallbackLoginLink}
+                appearance="inline"
+                className="block w-full text-[13px] text-left hover:underline max-[975px]:w-auto"
+              />
+            </div>
+          ) : null}
         </div>
         <div className="hidden max-[975px]:block max-[975px]:shrink-0">
           <Link href="/about-us" className="block text-[13px] text-left hover:underline">

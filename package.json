@@ -16,7 +16,7 @@
     "lint": "cross-env NODE_OPTIONS=--no-deprecation eslint .",
     "lint:fix": "cross-env NODE_OPTIONS=--no-deprecation eslint . --fix",
     "payload": "cross-env NODE_OPTIONS=--no-deprecation payload",
-    "promote:admin": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" node scripts/promote-admin.mts",
+    "promote:admin": "cross-env NODE_OPTIONS=\"--no-deprecation --import=dotenv/config --import=tsx/esm\" node scripts/promote-admin.mts",
     "node:reset-password": "cross-env NODE_OPTIONS=\"--no-deprecation --import=dotenv/config --import=tsx/esm\" node scripts/reset-user-password.mts",
     "reinstall": "cross-env NODE_OPTIONS=--no-deprecation rm -rf node_modules && rm pnpm-lock.yaml && pnpm --ignore-workspace install",
     "start": "cross-env NODE_OPTIONS=--no-deprecation next start",
