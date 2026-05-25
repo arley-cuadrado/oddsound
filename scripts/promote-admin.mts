@@ -38,9 +38,6 @@ if (user.role === 'admin') {
 
 await payload.update({
   collection: 'users',
-  context: {
-    allowAdminPromotion: true,
-  },
   id: user.id,
   data: {
     role: 'admin',
