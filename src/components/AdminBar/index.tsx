@@ -82,7 +82,7 @@ const LocalizedPayloadAdminBar: React.FC<LocalizedPayloadAdminBarProps> = (props
 
   if (!user) return null
 
-  const { id: userID, email } = user
+  const { id: userID } = user
   const isCreatorUser = (user as PayloadMeUser & { role?: null | string })?.role === 'creator'
 
   const handleCreatorLogout = async () => {
@@ -108,16 +108,6 @@ const LocalizedPayloadAdminBar: React.FC<LocalizedPayloadAdminBarProps> = (props
         {logo || 'Payload CMS'}
       </a>
 
-      <a
-        className={classNames?.user}
-        href={`${cmsURL}${adminPath}/collections/${authCollectionSlug}/${userID}`}
-        rel="noopener noreferrer"
-        target="_blank"
-        {...userProps}
-      >
-        <span>{email || 'Perfil'}</span>
-      </a>
-
       <div className={classNames?.controls} {...divProps}>
         {collectionSlug && docID ? (
           <a
@@ -139,7 +129,7 @@ const LocalizedPayloadAdminBar: React.FC<LocalizedPayloadAdminBarProps> = (props
             target="_blank"
             {...createProps}
           >
-            <span>{`Nuevo ${collectionLabels?.singular || 'página'}`}</span>
+            <span>{collectionLabels?.singular || 'página'}</span>
           </a>
         ) : null}
 
@@ -200,6 +190,7 @@ export const AdminBar: React.FC<{
         block: show,
         hidden: !show,
       })}
+      style={{ fontSize: '13px' }}
     >
       <div className="container">
         <LocalizedPayloadAdminBar
@@ -224,6 +215,7 @@ export const AdminBar: React.FC<{
             style: {
               alignItems: 'center',
               display: 'flex',
+              fontSize: '13px',
               flexGrow: 1,
               flexShrink: 1,
               justifyContent: 'flex-end',
@@ -236,6 +228,7 @@ export const AdminBar: React.FC<{
               alignItems: 'center',
               color: 'inherit',
               display: 'flex',
+              fontSize: '13px',
               flexShrink: 0,
               height: '20px',
               marginRight: '10px',
@@ -256,7 +249,7 @@ export const AdminBar: React.FC<{
               color: 'inherit',
               cursor: 'pointer',
               fontFamily: 'inherit',
-              fontSize: 'inherit',
+              fontSize: '13px',
               marginLeft: '10px',
               padding: 0,
             },
