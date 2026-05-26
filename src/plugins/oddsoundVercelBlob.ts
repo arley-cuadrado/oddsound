@@ -37,8 +37,8 @@ const defaultAccess = ({ req }: { req: any }) => !!req.user
 // hero, home releases, and search flows do not change when storage internals
 // are hardened for Vercel Blob.
 
-const FRESH_UPLOAD_MAX_ATTEMPTS = 5
-const FRESH_UPLOAD_RETRY_MS = 250
+const FRESH_UPLOAD_MAX_ATTEMPTS = 20
+const FRESH_UPLOAD_RETRY_MS = 500
 
 function wait(ms: number) {
   return new Promise((resolve) => {
@@ -280,6 +280,14 @@ async function getBlobFile({
     })
 
     if (!response || !response.ok || !response.body) {
+      req.payload.logger.error({
+        clientUploadContext,
+        fileUrl,
+        msg: 'Blob fetch did not return a readable response while resolving media upload',
+        ok: response?.ok ?? false,
+        status: response?.status ?? 0,
+      })
+
       return new Response(null, {
         status: 204,
         statusText: 'No Content',
@@ -294,6 +302,13 @@ async function getBlobFile({
     })
   } catch (err) {
     if (err instanceof BlobNotFoundError) {
+      req.payload.logger.error({
+        clientUploadContext,
+        err,
+        fileUrl: typeof filename === 'string' ? filename : null,
+        msg: 'Blob not found while resolving media upload',
+      })
+
       return new Response(null, {
         status: 404,
         statusText: 'Not Found',
