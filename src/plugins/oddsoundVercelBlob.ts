@@ -37,6 +37,15 @@ const defaultAccess = ({ req }: { req: any }) => !!req.user
 // hero, home releases, and search flows do not change when storage internals
 // are hardened for Vercel Blob.
 
+const FRESH_UPLOAD_MAX_ATTEMPTS = 5
+const FRESH_UPLOAD_RETRY_MS = 250
+
+function wait(ms: number) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms)
+  })
+}
+
 function formatStorageError(error: unknown) {
   const message = error instanceof Error ? error.message : String(error)
 
@@ -76,6 +85,61 @@ function generateBlobURL({
   const fileKeyWithEncodedFilename = dir === '.' ? encodedFilename : path.posix.join(dir, encodedFilename)
 
   return `${baseUrl}/${fileKeyWithEncodedFilename}`
+}
+
+async function headBlobWithRetry({
+  attempts = 1,
+  fileUrl,
+  token,
+}: {
+  attempts?: number
+  fileUrl: string
+  token: string
+}) {
+  let lastError: unknown
+
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    try {
+      return await head(fileUrl, { token })
+    } catch (error) {
+      lastError = error
+
+      if (!(error instanceof BlobNotFoundError) || attempt === attempts) {
+        throw error
+      }
+
+      await wait(FRESH_UPLOAD_RETRY_MS)
+    }
+  }
+
+  throw lastError
+}
+
+async function fetchBlobWithRetry({
+  attempts = 1,
+  fileUrl,
+  headers,
+}: {
+  attempts?: number
+  fileUrl: string
+  headers: HeadersInit
+}) {
+  let lastResponse: Response | null = null
+
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    const response = await fetch(fileUrl, { headers })
+    lastResponse = response
+
+    if (response.ok && response.body) {
+      return response
+    }
+
+    if (attempt < attempts) {
+      await wait(FRESH_UPLOAD_RETRY_MS)
+    }
+  }
+
+  return lastResponse
 }
 
 async function deleteBlobFile({
@@ -147,7 +211,12 @@ async function getBlobFile({
     })
 
     const etagFromHeaders = req.headers.get('etag') || req.headers.get('if-none-match')
-    const blobMetadata = await head(fileUrl, { token })
+    const isFreshClientUpload = Boolean(clientUploadContext)
+    const blobMetadata = await headBlobWithRetry({
+      attempts: isFreshClientUpload ? FRESH_UPLOAD_MAX_ATTEMPTS : 1,
+      fileUrl,
+      token,
+    })
     const { contentDisposition, contentType, size, uploadedAt } = blobMetadata
     const uploadedAtString = uploadedAt.toISOString()
     const fileKeyForETag = fileUrl.replace(`${baseUrl}/`, '')
@@ -196,7 +265,9 @@ async function getBlobFile({
       })
     }
 
-    const response = await fetch(`${fileUrl}?${uploadedAtString}`, {
+    const response = await fetchBlobWithRetry({
+      attempts: isFreshClientUpload ? FRESH_UPLOAD_MAX_ATTEMPTS : 1,
+      fileUrl: `${fileUrl}?${uploadedAtString}`,
       headers: {
         'Cache-Control': 'no-store, no-cache, must-revalidate',
         Pragma: 'no-cache',
@@ -208,7 +279,7 @@ async function getBlobFile({
       },
     })
 
-    if (!response.ok || !response.body) {
+    if (!response || !response.ok || !response.body) {
       return new Response(null, {
         status: 204,
         statusText: 'No Content',
