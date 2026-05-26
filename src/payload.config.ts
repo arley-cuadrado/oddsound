@@ -1,6 +1,5 @@
 import { mongooseAdapter } from '@payloadcms/db-mongodb'
 import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
-import { vercelBlobStorage } from '@payloadcms/storage-vercel-blob'
 import { es } from '@payloadcms/translations/languages/es'
 import sharp from 'sharp'
 import path from 'path'
@@ -15,6 +14,7 @@ import { Posts } from './collections/Posts'
 import { Users } from './collections/Users'
 import { Footer } from './Footer/config'
 import { Header } from './Header/config'
+import { oddsoundVercelBlobStorage } from './plugins/oddsoundVercelBlob'
 import { plugins } from './plugins'
 import { defaultLexical } from '@/fields/defaultLexical'
 import { getServerSideURL } from './utilities/getURL'
@@ -119,7 +119,7 @@ export default buildConfig({
     ...plugins,
     ...(hasBlobToken
       ? [
-          vercelBlobStorage({
+          oddsoundVercelBlobStorage({
             clientUploads: true,
             collections: {
               media: true,

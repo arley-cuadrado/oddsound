@@ -5,6 +5,7 @@ import {
   InlineToolbarFeature,
   lexicalEditor,
 } from '@payloadcms/richtext-lexical'
+import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
@@ -16,16 +17,41 @@ import { isAdminUser } from '@/utilities/isAdminUser'
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 const LEGACY_MEDIA_API_SEGMENT = '/api/media/file/'
+const LOCAL_MEDIA_DIR = path.resolve(dirname, '../../public/media')
+
+function getLocalMediaPath(fileName?: null | string) {
+  if (!fileName) return null
+
+  return path.resolve(LOCAL_MEDIA_DIR, fileName)
+}
+
+function localMediaFileExists(fileName?: null | string) {
+  const localPath = getLocalMediaPath(fileName)
+
+  return localPath ? fs.existsSync(localPath) : false
+}
 
 function rewriteLegacyMediaURL(url?: null | string) {
   if (!url || !url.includes(LEGACY_MEDIA_API_SEGMENT)) return url
 
   try {
     const parsedURL = new URL(url)
+    const fileName = decodeURIComponent(path.basename(parsedURL.pathname))
+
+    if (!localMediaFileExists(fileName)) {
+      return `${parsedURL.pathname}${parsedURL.search}`
+    }
+
     parsedURL.pathname = parsedURL.pathname.replace(LEGACY_MEDIA_API_SEGMENT, '/media/')
 
     return `${parsedURL.pathname}${parsedURL.search}`
   } catch {
+    const fileName = decodeURIComponent(path.basename(url))
+
+    if (!localMediaFileExists(fileName)) {
+      return url
+    }
+
     return url.replace(LEGACY_MEDIA_API_SEGMENT, '/media/')
   }
 }

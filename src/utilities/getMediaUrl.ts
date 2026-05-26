@@ -1,3 +1,5 @@
+import type { Media } from '@/payload-types'
+
 import { getServerSideURL } from './getURL'
 
 /**
@@ -36,4 +38,20 @@ export const getMediaUrl = (url: string | null | undefined, cacheTag?: string | 
   }
 
   return cacheTag ? `${normalizedURL}${normalizedURL.includes('?') ? '&' : '?'}${cacheTag}` : normalizedURL
+}
+
+export function getMediaResourceURL(media: Media | null | string | undefined, cacheTag?: string | null) {
+  if (!media || typeof media === 'string') return null
+
+  const preferredURL =
+    media.sizes?.medium?.url ||
+    media.sizes?.small?.url ||
+    media.sizes?.thumbnail?.url ||
+    media.url ||
+    (media.sizes?.medium?.filename ? `/media/${media.sizes.medium.filename}` : null) ||
+    (media.sizes?.small?.filename ? `/media/${media.sizes.small.filename}` : null) ||
+    (media.sizes?.thumbnail?.filename ? `/media/${media.sizes.thumbnail.filename}` : null) ||
+    (media.filename ? `/media/${media.filename}` : null)
+
+  return preferredURL ? getMediaUrl(preferredURL, cacheTag) : null
 }

@@ -9,7 +9,7 @@ import React from 'react'
 import type { Props as MediaProps } from '../types'
 
 import { cssVariables } from '@/cssVariables'
-import { getMediaUrl } from '@/utilities/getMediaUrl'
+import { getMediaResourceURL } from '@/utilities/getMediaUrl'
 
 const { breakpoints } = cssVariables
 
@@ -72,7 +72,7 @@ export const ImageMedia: React.FC<MediaProps> = (props) => {
 
     const cacheTag = resource.updatedAt
 
-    src = getMediaUrl(url, cacheTag)
+    src = getMediaResourceURL(resource, cacheTag) || url || ''
   }
 
   const loading = loadingFromProps || (!priority ? 'lazy' : undefined)

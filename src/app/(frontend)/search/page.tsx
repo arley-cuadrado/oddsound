@@ -6,6 +6,7 @@ import { getPayload } from 'payload'
 import React from 'react'
 import { Search } from '@/search/Component'
 import Link from 'next/link'
+import { getMediaResourceURL } from '@/utilities/getMediaUrl'
 
 import PageClient from './page.client'
 
@@ -60,22 +61,7 @@ function isAdminOwnedRelease(page: Page) {
 }
 
 function getMediaUrl(media: Media | null | string | undefined) {
-  if (!media || typeof media === 'string') return null
-
-  const buildPublicMediaUrl = (filename: null | string | undefined) =>
-    filename ? `/media/${filename}` : null
-
-  return (
-    buildPublicMediaUrl(media.sizes?.medium?.filename) ||
-    buildPublicMediaUrl(media.sizes?.small?.filename) ||
-    buildPublicMediaUrl(media.sizes?.thumbnail?.filename) ||
-    buildPublicMediaUrl(media.filename) ||
-    media.sizes?.medium?.url ||
-    media.sizes?.small?.url ||
-    media.sizes?.thumbnail?.url ||
-    media.url ||
-    null
-  )
+  return getMediaResourceURL(media, media && typeof media === 'object' ? media.updatedAt : null)
 }
 
 function extractRichTextText(

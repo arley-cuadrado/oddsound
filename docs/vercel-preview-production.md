@@ -76,6 +76,7 @@ Eso ayuda a que:
 - `next build` no dependa de conectividad saliente para compilar
 - la verificación fuerte quede reservada para `Production` en Vercel
 
+
 ## Valores por entorno
 
 ### Preview
