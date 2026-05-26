@@ -66,6 +66,16 @@ Esto reduce fricción en Vercel porque:
 - emails, sitemaps y metadata usan la URL del deployment actual si no definiste una explícita
 - `Production` sigue pudiendo fijarse manualmente con `NEXT_PUBLIC_SERVER_URL`
 
+## SMTP en builds
+
+La app ahora evita verificar el transporte SMTP durante builds locales y `Preview`.
+
+Eso ayuda a que:
+
+- una preview no falle por DNS o reachability temporal del proveedor SMTP
+- `next build` no dependa de conectividad saliente para compilar
+- la verificación fuerte quede reservada para `Production` en Vercel
+
 ## Valores por entorno
 
 ### Preview
@@ -120,6 +130,37 @@ Eso evita contaminar producción con:
 - probar correo de reset real
 - validar que `NEXT_PUBLIC_SERVER_URL` del entorno correcto coincida con la URL pública
 - revisar que el dominio de Resend siga verificado
+
+## Checklist técnico Vercel
+
+### Preview
+
+- confirmar que `NEXT_PUBLIC_SERVER_URL` apunte al deployment preview o dejar que Vercel resuelva `VERCEL_URL`
+- usar base de datos separada de producción
+- verificar registro creator
+- verificar login creator
+- verificar correo de verificación
+- verificar reset de contraseña
+- verificar `/next/preview` con `PREVIEW_SECRET`
+- verificar que imágenes y media carguen desde `/media` o Blob sin enlaces rotos
+- verificar que sitemap y metadata salgan con el host preview correcto
+
+### Production
+
+- confirmar `NEXT_PUBLIC_SERVER_URL` con el dominio final
+- definir `SUPER_ADMIN_EMAILS`
+- confirmar `CRON_SECRET` y `PREVIEW_SECRET`
+- confirmar credenciales SMTP reales
+- confirmar dominio remitente verificado
+- validar acceso a `/dashboard`
+- validar logout creator y admin
+- validar una publicación real y su revalidación
+
+## Si `next build` queda bloqueado localmente
+
+- revisar si quedó `.next/lock` de una compilación anterior
+- borrar o mover ese lock antes de reintentar
+- si hay SMTP configurado, recordar que la app sólo fuerza verificación del transporte en `Production` de Vercel
 
 ## Comandos útiles
 

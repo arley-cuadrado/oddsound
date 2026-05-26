@@ -23,6 +23,8 @@ const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 const hasSMTPConfig = Boolean(process.env.SMTP_HOST && process.env.SMTP_PASS)
 const hasBlobToken = Boolean(process.env.BLOB_READ_WRITE_TOKEN)
+const shouldVerifySMTPTransport =
+  hasSMTPConfig && process.env.NODE_ENV === 'production' && process.env.VERCEL_ENV === 'production'
 
 export default buildConfig({
   serverURL: getServerSideURL(),
@@ -85,7 +87,7 @@ export default buildConfig({
   email: nodemailerAdapter({
     defaultFromAddress: process.env.EMAIL_FROM_ADDRESS || 'hello@oddsound.co',
     defaultFromName: process.env.EMAIL_FROM_NAME || 'oddsound',
-    skipVerify: !hasSMTPConfig,
+    skipVerify: !shouldVerifySMTPTransport,
     ...(hasSMTPConfig
       ? {
           transportOptions: {

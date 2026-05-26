@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 
+import { getExpiredPayloadTokenCookieOptions } from '@/utilities/payloadAuthCookie'
 import { getServerSideURL } from '@/utilities/getURL'
 
 type MeResponse = {
@@ -38,13 +39,7 @@ export async function GET() {
 
   const response = NextResponse.redirect(new URL(redirectPath, getServerSideURL()))
 
-  response.cookies.set('payload-token', '', {
-    expires: new Date(0),
-    httpOnly: true,
-    path: '/',
-    sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
-  })
+  response.cookies.set('payload-token', '', await getExpiredPayloadTokenCookieOptions())
 
   return response
 }

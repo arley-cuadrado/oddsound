@@ -12,16 +12,22 @@ import { authenticated } from '../access/authenticated'
 import { hasFreshAdminAccess } from '@/access/hasFreshAdminAccess'
 import { assignOwnership } from '@/hooks/assignOwnership'
 import { isAdminUser } from '@/utilities/isAdminUser'
-import { getServerSideURL } from '@/utilities/getURL'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 const LEGACY_MEDIA_API_SEGMENT = '/api/media/file/'
 
-function buildLegacyStaticMediaURL(fileName?: null | string) {
-  if (!fileName) return fileName
+function rewriteLegacyMediaURL(url?: null | string) {
+  if (!url || !url.includes(LEGACY_MEDIA_API_SEGMENT)) return url
 
-  return new URL(`/media/${encodeURIComponent(fileName)}`, getServerSideURL()).toString()
+  try {
+    const parsedURL = new URL(url)
+    parsedURL.pathname = parsedURL.pathname.replace(LEGACY_MEDIA_API_SEGMENT, '/media/')
+
+    return `${parsedURL.pathname}${parsedURL.search}`
+  } catch {
+    return url.replace(LEGACY_MEDIA_API_SEGMENT, '/media/')
+  }
 }
 
 const normalizeLegacyMediaURLs: CollectionAfterReadHook = ({ doc }) => {
@@ -35,14 +41,11 @@ const normalizeLegacyMediaURLs: CollectionAfterReadHook = ({ doc }) => {
   }
 
   if (typeof nextDoc.url === 'string' && nextDoc.url.includes(LEGACY_MEDIA_API_SEGMENT)) {
-    nextDoc.url = buildLegacyStaticMediaURL(nextDoc.filename)
+    nextDoc.url = rewriteLegacyMediaURL(nextDoc.url)
   }
 
   if (typeof nextDoc.thumbnailURL === 'string' && nextDoc.thumbnailURL.includes(LEGACY_MEDIA_API_SEGMENT)) {
-    const thumbnailFilename =
-      typeof nextDoc.sizes?.thumbnail === 'object' ? nextDoc.sizes.thumbnail?.filename : null
-
-    nextDoc.thumbnailURL = buildLegacyStaticMediaURL(thumbnailFilename || nextDoc.filename)
+    nextDoc.thumbnailURL = rewriteLegacyMediaURL(nextDoc.thumbnailURL)
   }
 
   if (nextDoc.sizes && typeof nextDoc.sizes === 'object') {
@@ -64,7 +67,7 @@ const normalizeLegacyMediaURLs: CollectionAfterReadHook = ({ doc }) => {
             key,
             {
               ...value,
-              url: buildLegacyStaticMediaURL(value.filename),
+              url: rewriteLegacyMediaURL(value.url),
             },
           ]
         }
