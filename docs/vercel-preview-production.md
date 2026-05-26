@@ -48,6 +48,23 @@ Este proyecto usa actualmente estas variables para desplegar correctamente:
 - `EMAIL_FROM_NAME`
 - `CRON_SECRET`
 - `PREVIEW_SECRET`
+- `SUPER_ADMIN_EMAILS` opcional, separada por comas
+
+## Resolución de URL pública
+
+La app ahora resuelve la URL pública en este orden:
+
+1. `NEXT_PUBLIC_SERVER_URL`
+2. `VERCEL_URL`
+3. `VERCEL_BRANCH_URL`
+4. `VERCEL_PROJECT_PRODUCTION_URL`
+5. `http://localhost:3000`
+
+Esto reduce fricción en Vercel porque:
+
+- `Preview` puede funcionar sin apuntar por error al dominio de producción
+- emails, sitemaps y metadata usan la URL del deployment actual si no definiste una explícita
+- `Production` sigue pudiendo fijarse manualmente con `NEXT_PUBLIC_SERVER_URL`
 
 ## Valores por entorno
 
@@ -57,6 +74,7 @@ Este proyecto usa actualmente estas variables para desplegar correctamente:
 - `DATABASE_URL`: idealmente una base separada de producción
 - `SMTP_*`: puede usar Resend, pero prueba con cuentas de correo controladas
 - `EMAIL_FROM_ADDRESS`: remitente válido del dominio verificado en Resend
+- `SUPER_ADMIN_EMAILS`: lista de cuentas admin que no deben depender de un hardcode local
 
 ### Production
 
@@ -64,6 +82,7 @@ Este proyecto usa actualmente estas variables para desplegar correctamente:
 - `DATABASE_URL`: base real de producción
 - `SMTP_*`: credenciales definitivas
 - `EMAIL_FROM_ADDRESS`: remitente final
+- `SUPER_ADMIN_EMAILS`: lista final de superadministradores
 
 ## Recomendación de base de datos
 

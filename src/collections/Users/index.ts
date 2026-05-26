@@ -5,7 +5,7 @@ import { hasFreshAdminAccess } from '@/access/hasFreshAdminAccess'
 import { isAdmin } from '@/access/isAdmin'
 import { isAdminOrSelf } from '@/access/isAdminOrSelf'
 import { isAdminUser } from '@/utilities/isAdminUser'
-import { isSuperAdminUser } from '@/utilities/isSuperAdminUser'
+import { isConfiguredSuperAdminEmail, isSuperAdminUser } from '@/utilities/isSuperAdminUser'
 import {
   CREATOR_RESET_PASSWORD_EXPIRATION_MS,
   generateCreatorResetPasswordEmailHTML,
@@ -113,7 +113,7 @@ export const Users: CollectionConfig = {
       admin: {
         condition: (_data, siblingData, { user }) =>
           isAdminUser(user as { role?: null | string } | null | undefined) &&
-          siblingData?.email?.trim?.().toLowerCase?.() !== 'arley.cuadrado@icloud.com' &&
+          !isConfiguredSuperAdminEmail(siblingData?.email) &&
           siblingData?.role === 'admin',
         description: 'Esta cuenta es administrativa y no puede cambiarse a creador.',
         readOnly: true,
@@ -128,7 +128,7 @@ export const Users: CollectionConfig = {
       admin: {
         condition: (data, siblingData, { user }) =>
           isAdminUser(user as { role?: null | string } | null | undefined) &&
-          data?.email?.trim?.().toLowerCase?.() === 'arley.cuadrado@icloud.com' &&
+          isConfiguredSuperAdminEmail(data?.email) &&
           siblingData?.role === 'admin',
         description: 'Esta cuenta es la única superadministradora y puede crear otras cuentas administrativas.',
         readOnly: true,

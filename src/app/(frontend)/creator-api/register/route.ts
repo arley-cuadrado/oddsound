@@ -1,87 +1,42 @@
-import config from '@payload-config'
-import { getPayload } from 'payload'
+import { registerCreatorAccount } from '@/utilities/creatorAuth'
 
 type RegisterBody = {
+  acceptedLegal?: boolean
   accountType?: 'artist' | 'band' | 'label'
+  country?: string
   email?: string
+  genre?: string
   name?: string
   password?: string
 }
 
 export async function POST(request: Request) {
-  try {
-    const payload = await getPayload({ config })
-    const body = (await request.json()) as RegisterBody
+  const body = (await request.json()) as RegisterBody
+  const result = await registerCreatorAccount({
+    acceptedLegal: body.acceptedLegal === true,
+    accountType: body.accountType || 'artist',
+    country: body.country || '',
+    email: body.email || '',
+    genre: body.genre || '',
+    name: body.name || '',
+    password: body.password || '',
+  })
 
-    if (!body.email || !body.password || !body.name) {
-      return Response.json({ message: 'Name, email, and password are required.' }, { status: 400 })
-    }
+  if (!result.ok) {
+    const status = result.message === 'Este usuario ya está registrado.' ? 409 : 400
 
-    const normalizedEmail = body.email.trim().toLowerCase()
-
-    const existingUser = await payload.find({
-      collection: 'users',
-      depth: 0,
-      limit: 1,
-      overrideAccess: true,
-      pagination: false,
-      showHiddenFields: true,
-      where: {
-        email: {
-          equals: normalizedEmail,
-        },
-      },
-    })
-
-    const user = existingUser.docs[0] as
-      | {
-          _verified?: boolean | null
-          email: string
-        }
-      | undefined
-
-    if (user?._verified) {
-      return Response.json({ message: 'This user is already registered.' }, { status: 409 })
-    }
-
-    if (user) {
-      return Response.json(
-        {
-          message: 'Account already exists and is pending verification.',
-          user: {
-            email: user.email,
-          },
-        },
-        { status: 202 },
-      )
-    }
-
-    const createdUser = await payload.create({
-      collection: 'users',
-      data: {
-        accountType: body.accountType || 'artist',
-        email: normalizedEmail,
-        name: body.name.trim(),
-        password: body.password,
-        role: 'creator',
-      },
-      draft: false,
-      overrideAccess: true,
-    })
-
-    return Response.json(
-      {
-        message: 'Account created successfully. Check your email to verify it.',
-        user: {
-          email: createdUser.email,
-          id: createdUser.id,
-        },
-      },
-      { status: 201 },
-    )
-  } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unable to create account.'
-
-    return Response.json({ message }, { status: 400 })
+    return Response.json({ message: result.message }, { status })
   }
+
+  const status = result.message === 'Tu cuenta fue creada. Revisa tu correo para activarla.' ? 201 : 202
+
+  return Response.json(
+    {
+      message: result.message,
+      user: {
+        email: result.email,
+      },
+    },
+    { status },
+  )
 }

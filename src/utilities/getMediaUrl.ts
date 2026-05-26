@@ -1,3 +1,5 @@
+import { getServerSideURL } from './getURL'
+
 /**
  * Processes media resource URL to ensure proper formatting
  * @param url The original URL from the resource
@@ -15,11 +17,7 @@ export const getMediaUrl = (url: string | null | undefined, cacheTag?: string | 
 
   try {
     const parsedURL = new URL(url)
-    const serverURL =
-      process.env.NEXT_PUBLIC_SERVER_URL ||
-      (process.env.VERCEL_PROJECT_PRODUCTION_URL
-        ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-        : null)
+    const serverURL = getServerSideURL()
 
     if (serverURL) {
       const parsedServerURL = new URL(serverURL)
