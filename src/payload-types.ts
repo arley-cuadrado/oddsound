@@ -157,7 +157,10 @@ export interface Page {
   profile?: (string | null) | Profile;
   title: string;
   hero: {
-    type: 'none' | 'highImpact' | 'mediumImpact' | 'lowImpact';
+    type: 'highImpact' | 'mediumImpact' | 'lowImpact';
+    /**
+     * Visible solo en el detalle del release de bajo impacto. La imagen del álbum se usa únicamente en la card del home.
+     */
     richText?: {
       root: {
         type: string;
@@ -174,7 +177,7 @@ export interface Page {
       [k: string]: unknown;
     } | null;
     /**
-     * Obligatoria para las cards de releases, incluso cuando el hero de bajo impacto no muestra imagen visible.
+     * Obligatoria para la card del home. Esta imagen no se muestra en el detalle del release de bajo impacto.
      */
     albumImage?: (string | null) | Media;
     links?:
@@ -201,6 +204,9 @@ export interface Page {
           id?: string | null;
         }[]
       | null;
+    /**
+     * Obligatoria para releases de alto y medio impacto. Esta imagen se muestra tanto en la card del home como en el detalle.
+     */
     media?: (string | null) | Media;
   };
   layout: (

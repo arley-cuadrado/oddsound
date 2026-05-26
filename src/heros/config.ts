@@ -20,10 +20,6 @@ export const hero: Field = {
       label: 'Tipo',
       options: [
         {
-          label: 'Ninguno',
-          value: 'none',
-        },
-        {
           label: 'Alto impacto',
           value: 'highImpact',
         },
@@ -43,6 +39,8 @@ export const hero: Field = {
       type: 'richText',
       admin: {
         condition: (_, { type } = {}) => type === 'lowImpact',
+        description:
+          'Visible solo en el detalle del release de bajo impacto. La imagen del álbum se usa únicamente en la card del home.',
       },
       editor: lexicalEditor({
         features: ({ rootFeatures }) => {
@@ -61,7 +59,8 @@ export const hero: Field = {
       type: 'upload',
       admin: {
         condition: (_, { type } = {}) => type === 'lowImpact',
-        description: 'Obligatoria para las cards de releases, incluso cuando el hero de bajo impacto no muestra imagen visible.',
+        description:
+          'Obligatoria para la card del home. Esta imagen no se muestra en el detalle del release de bajo impacto.',
       },
       relationTo: 'media',
       validate: (
@@ -83,9 +82,18 @@ export const hero: Field = {
       type: 'upload',
       admin: {
         condition: (_, { type } = {}) => ['highImpact', 'mediumImpact'].includes(type),
+        description:
+          'Obligatoria para releases de alto y medio impacto. Esta imagen se muestra tanto en la card del home como en el detalle.',
       },
       relationTo: 'media',
-      required: true,
+      validate: (
+        value: unknown,
+        { siblingData }: { siblingData?: { type?: null | string } },
+      ) => {
+        if (!['highImpact', 'mediumImpact'].includes(siblingData?.type || '')) return true
+
+        return value ? true : 'La imagen principal es obligatoria para los releases de alto y medio impacto.'
+      },
     },
   ],
   label: false,

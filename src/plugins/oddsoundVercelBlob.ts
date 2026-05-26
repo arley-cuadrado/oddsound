@@ -1,13 +1,15 @@
 import { APIError, Forbidden, Plugin } from 'payload'
+import { getRangeRequestInfo } from 'payload/internal'
 import path from 'path'
 
-import { handleUpload } from '../../node_modules/.pnpm/node_modules/@vercel/blob/dist/client.js'
-import { cloudStoragePlugin } from '../../node_modules/.pnpm/@payloadcms+plugin-cloud-storage@3.84.1_@types+react@19.2.14_monaco-editor@0.55.1_next@_8b1bf8b11c8414d2565a0af7c54bb3cf/node_modules/@payloadcms/plugin-cloud-storage/dist/index.js'
-import { getFileKey, initClientUploads } from '../../node_modules/.pnpm/@payloadcms+plugin-cloud-storage@3.84.1_@types+react@19.2.14_monaco-editor@0.55.1_next@_8b1bf8b11c8414d2565a0af7c54bb3cf/node_modules/@payloadcms/plugin-cloud-storage/dist/exports/utilities.js'
-import { put } from '../../node_modules/.pnpm/node_modules/@vercel/blob/dist/index.js'
-import { deleteFile } from '../../node_modules/@payloadcms/storage-vercel-blob/dist/deleteFile.js'
-import { generateURL } from '../../node_modules/@payloadcms/storage-vercel-blob/dist/generateURL.js'
-import { getFile } from '../../node_modules/@payloadcms/storage-vercel-blob/dist/getFile.js'
+import { cloudStoragePlugin } from '@payloadcms/plugin-cloud-storage'
+import {
+  getFileKey,
+  getFilePrefix as getDocumentPrefix,
+  initClientUploads,
+} from '@payloadcms/plugin-cloud-storage/utilities'
+import { BlobNotFoundError, del, head, put } from '@vercel/blob'
+import { handleUpload } from '@vercel/blob/client'
 
 type OddsoundVercelBlobStorageOptions = {
   access?: 'public'
@@ -42,6 +44,195 @@ function formatStorageError(error: unknown) {
   return new APIError(
     'oddsound no pudo procesar esta imagen en este momento. Intenta nuevamente en unos segundos.',
   )
+}
+
+function generateBlobURL({
+  baseUrl,
+  collectionPrefix = '',
+  filename,
+  prefix,
+  useCompositePrefixes = false,
+}: {
+  baseUrl: string
+  collectionPrefix?: string
+  filename: string
+  prefix?: string
+  useCompositePrefixes?: boolean
+}) {
+  const { fileKey: fileKeyWithPrefix } = getFileKey({
+    collectionPrefix,
+    docPrefix: prefix,
+    filename,
+    useCompositePrefixes,
+  })
+
+  const dir = path.posix.dirname(fileKeyWithPrefix)
+  const encodedFilename = encodeURIComponent(path.posix.basename(fileKeyWithPrefix))
+  const fileKeyWithEncodedFilename = dir === '.' ? encodedFilename : path.posix.join(dir, encodedFilename)
+
+  return `${baseUrl}/${fileKeyWithEncodedFilename}`
+}
+
+async function deleteBlobFile({
+  baseUrl,
+  collectionPrefix = '',
+  docPrefix,
+  filename,
+  token,
+  useCompositePrefixes = false,
+}: {
+  baseUrl: string
+  collectionPrefix?: string
+  docPrefix?: string
+  filename: string
+  token: string
+  useCompositePrefixes?: boolean
+}) {
+  const fileUrl = generateBlobURL({
+    baseUrl,
+    collectionPrefix,
+    filename,
+    prefix: docPrefix,
+    useCompositePrefixes,
+  })
+
+  await del(fileUrl, { token })
+}
+
+async function getBlobFile({
+  baseUrl,
+  cacheControlMaxAge,
+  clientUploadContext,
+  collection,
+  collectionPrefix = '',
+  filename,
+  incomingHeaders,
+  prefixQueryParam,
+  req,
+  token,
+  useCompositePrefixes = false,
+}: {
+  baseUrl: string
+  cacheControlMaxAge: number
+  clientUploadContext: string | null | undefined
+  collection: any
+  collectionPrefix?: string
+  filename: string
+  incomingHeaders: Headers
+  prefixQueryParam?: string
+  req: any
+  token: string
+  useCompositePrefixes?: boolean
+}) {
+  try {
+    const docPrefix = await getDocumentPrefix({
+      clientUploadContext,
+      collection,
+      filename,
+      prefixQueryParam,
+      req,
+    })
+
+    const fileUrl = generateBlobURL({
+      baseUrl,
+      collectionPrefix,
+      filename,
+      prefix: docPrefix,
+      useCompositePrefixes,
+    })
+
+    const etagFromHeaders = req.headers.get('etag') || req.headers.get('if-none-match')
+    const blobMetadata = await head(fileUrl, { token })
+    const { contentDisposition, contentType, size, uploadedAt } = blobMetadata
+    const uploadedAtString = uploadedAt.toISOString()
+    const fileKeyForETag = fileUrl.replace(`${baseUrl}/`, '')
+    const ETag = `"${fileKeyForETag}-${uploadedAtString}"`
+
+    const rangeHeader = req.headers.get('range')
+    const rangeResult = getRangeRequestInfo({
+      fileSize: size,
+      rangeHeader,
+    })
+
+    if (rangeResult.type === 'invalid') {
+      return new Response(null, {
+        headers: new Headers(rangeResult.headers),
+        status: rangeResult.status,
+      })
+    }
+
+    let headers = new Headers(incomingHeaders)
+
+    for (const [key, value] of Object.entries(rangeResult.headers)) {
+      headers.append(key, value)
+    }
+
+    headers.append('Cache-Control', `public, max-age=${cacheControlMaxAge}`)
+    headers.append('Content-Disposition', contentDisposition)
+    headers.append('Content-Type', contentType)
+    headers.append('ETag', ETag)
+
+    if (contentType === 'image/svg+xml') {
+      headers.append('Content-Security-Policy', "script-src 'none'")
+    }
+
+    if (
+      collection.upload &&
+      typeof collection.upload === 'object' &&
+      typeof collection.upload.modifyResponseHeaders === 'function'
+    ) {
+      headers = collection.upload.modifyResponseHeaders({ headers }) || headers
+    }
+
+    if (etagFromHeaders && etagFromHeaders === ETag) {
+      return new Response(null, {
+        headers,
+        status: 304,
+      })
+    }
+
+    const response = await fetch(`${fileUrl}?${uploadedAtString}`, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate',
+        Pragma: 'no-cache',
+        ...(rangeResult.type === 'partial'
+          ? {
+              Range: `bytes=${rangeResult.rangeStart}-${rangeResult.rangeEnd}`,
+            }
+          : {}),
+      },
+    })
+
+    if (!response.ok || !response.body) {
+      return new Response(null, {
+        status: 204,
+        statusText: 'No Content',
+      })
+    }
+
+    headers.append('Last-Modified', uploadedAtString)
+
+    return new Response(response.body, {
+      headers,
+      status: rangeResult.status,
+    })
+  } catch (err) {
+    if (err instanceof BlobNotFoundError) {
+      return new Response(null, {
+        status: 404,
+        statusText: 'Not Found',
+      })
+    }
+
+    req.payload.logger.error({
+      err,
+      msg: 'Unexpected error in staticHandler',
+    })
+
+    return new Response('Internal Server Error', {
+      status: 500,
+    })
+  }
 }
 
 function getClientUploadRoute({
@@ -161,7 +352,7 @@ function createOddsoundVercelBlobAdapter({
     name: 'vercel-blob',
     clientUploads,
     generateURL: ({ filename, prefix: urlPrefix = '' }: { filename: string; prefix?: string }) =>
-      generateURL({
+      generateBlobURL({
         baseUrl,
         collectionPrefix: prefix,
         filename,
@@ -169,7 +360,7 @@ function createOddsoundVercelBlobAdapter({
         useCompositePrefixes,
       }),
     handleDelete: ({ doc: { prefix: docPrefix = '' }, filename }: { doc: any; filename: string }) =>
-      deleteFile({
+      deleteBlobFile({
         baseUrl,
         collectionPrefix: prefix,
         docPrefix,
@@ -207,7 +398,7 @@ function createOddsoundVercelBlobAdapter({
       req: any,
       { headers, params: { clientUploadContext, filename, prefix: prefixQueryParam } }: any,
     ) =>
-      getFile({
+      getBlobFile({
         baseUrl,
         cacheControlMaxAge,
         clientUploadContext,

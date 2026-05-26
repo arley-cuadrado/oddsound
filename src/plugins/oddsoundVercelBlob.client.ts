@@ -2,9 +2,9 @@
 
 import { formatAdminURL } from 'payload/shared'
 
-import { upload } from '../../node_modules/.pnpm/node_modules/@vercel/blob/dist/client.js'
-import { createClientUploadHandler } from '../../node_modules/.pnpm/@payloadcms+plugin-cloud-storage@3.84.1_@types+react@19.2.14_monaco-editor@0.55.1_next@_8b1bf8b11c8414d2565a0af7c54bb3cf/node_modules/@payloadcms/plugin-cloud-storage/dist/exports/client.js'
-import { getFileKey } from '../../node_modules/.pnpm/@payloadcms+plugin-cloud-storage@3.84.1_@types+react@19.2.14_monaco-editor@0.55.1_next@_8b1bf8b11c8414d2565a0af7c54bb3cf/node_modules/@payloadcms/plugin-cloud-storage/dist/exports/utilities.js'
+import { createClientUploadHandler } from '@payloadcms/plugin-cloud-storage/client'
+import { getFileKey } from '@payloadcms/plugin-cloud-storage/utilities'
+import { upload } from '@vercel/blob/client'
 
 function posixBasename(key: string) {
   const normalized = key.replace(/^\/+/, '')

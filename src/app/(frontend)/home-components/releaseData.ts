@@ -70,6 +70,32 @@ export function getMediaUrl(media: Media | null | string | undefined) {
   return getMediaResourceURL(media, media && typeof media === 'object' ? media.updatedAt : null)
 }
 
+function getReleaseCardImage({
+  albumImage,
+  avatarImage,
+  coverImage,
+  heroImage,
+  page,
+  pageImage,
+}: {
+  albumImage: string | null
+  avatarImage: string | null
+  coverImage: string | null
+  heroImage: string | null
+  page: Page
+  pageImage: string | null
+}) {
+  switch (page.hero?.type) {
+    case 'lowImpact':
+      return albumImage || pageImage || coverImage || avatarImage || FALLBACK_RELEASE_IMAGE
+    case 'mediumImpact':
+    case 'highImpact':
+      return heroImage || pageImage || coverImage || avatarImage || albumImage || FALLBACK_RELEASE_IMAGE
+    default:
+      return pageImage || heroImage || albumImage || coverImage || avatarImage || FALLBACK_RELEASE_IMAGE
+  }
+}
+
 function getProfileValue(profile: null | Profile | string | undefined) {
   if (!profile || typeof profile === 'string') return null
 
@@ -130,7 +156,6 @@ export function mapRelease(page: Page, profilesByOwnerId: Map<string, Profile>):
   if (!page.slug) return null
   if (!profile && !isAdminRelease) return null
 
-  const isLowImpactRelease = page.hero?.type === 'lowImpact'
   const pageImage = getMediaUrl(page.meta?.image as Media | null | string | undefined)
   const albumImage = getMediaUrl(page.hero?.albumImage as Media | null | string | undefined)
   const heroImage = getMediaUrl(page.hero?.media as Media | null | string | undefined)
@@ -152,9 +177,14 @@ export function mapRelease(page: Page, profilesByOwnerId: Map<string, Profile>):
     creatorName: isAdminRelease ? 'oddsound' : profile?.displayName || ownerName || page.title,
     description,
     genre: profile?.genre || '',
-    imageUrl: isLowImpactRelease
-      ? albumImage || pageImage || null
-      : pageImage || albumImage || heroImage || coverImage || avatarImage || FALLBACK_RELEASE_IMAGE,
+    imageUrl: getReleaseCardImage({
+      albumImage,
+      avatarImage,
+      coverImage,
+      heroImage,
+      page,
+      pageImage,
+    }),
     releaseSlug: page.slug,
     releaseTitle: page.title,
     spotifyURL: getSpotifyURL(page),

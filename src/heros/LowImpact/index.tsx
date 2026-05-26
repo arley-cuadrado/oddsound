@@ -2,12 +2,10 @@ import React from 'react'
 
 import type { Page } from '@/payload-types'
 
-import { Media } from '@/components/Media'
 import RichText from '@/components/RichText'
 
 type LowImpactHeroType =
   | {
-      albumImage?: Page['hero']['albumImage']
       children?: React.ReactNode
       creatorCountry?: string
       creatorGenre?: string
@@ -25,7 +23,6 @@ type LowImpactHeroType =
     })
 
 export const LowImpactHero: React.FC<LowImpactHeroType> = ({
-  albumImage,
   children,
   richText,
   pageTitle,
@@ -35,19 +32,7 @@ export const LowImpactHero: React.FC<LowImpactHeroType> = ({
 }) => {
   return (
     <div className="container mt-16 px-4 md:px-6">
-      <div className="grid items-start gap-8 md:grid-cols-[minmax(18rem,24rem)_minmax(0,1fr)] md:gap-12">
-        {albumImage && typeof albumImage === 'object' ? (
-          <div className="order-2 md:order-1">
-            <Media
-              className="overflow-hidden rounded-lg bg-slate-100 dark:bg-slate-900"
-              imgClassName="h-full w-full object-cover rounded-lg"
-              priority
-              resource={albumImage}
-            />
-          </div>
-        ) : null}
-
-        <div className={albumImage && typeof albumImage === 'object' ? 'order-1 md:order-2' : 'max-w-[48rem]'}>
+      <div className="max-w-[48rem]">
         {(creatorName || creatorGenre || creatorCountry) && (
           <div className="mb-4 space-y-1">
             {creatorName && (
@@ -66,7 +51,6 @@ export const LowImpactHero: React.FC<LowImpactHeroType> = ({
           {pageTitle}
         </h1>
         {children || (richText && <RichText data={richText} enableGutter={false} />)}
-        </div>
       </div>
     </div>
   )
