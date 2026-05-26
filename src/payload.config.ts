@@ -17,7 +17,7 @@ import { Header } from './Header/config'
 import { oddsoundVercelBlobStorage } from './plugins/oddsoundVercelBlob'
 import { plugins } from './plugins'
 import { defaultLexical } from '@/fields/defaultLexical'
-import { getServerSideURL } from './utilities/getURL'
+import { collectTrustedServerURLs, getServerSideURL } from './utilities/getURL'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -25,9 +25,11 @@ const hasSMTPConfig = Boolean(process.env.SMTP_HOST && process.env.SMTP_PASS)
 const hasBlobToken = Boolean(process.env.BLOB_READ_WRITE_TOKEN)
 const shouldVerifySMTPTransport =
   hasSMTPConfig && process.env.NODE_ENV === 'production' && process.env.VERCEL_ENV === 'production'
+const trustedServerURLs = collectTrustedServerURLs()
 
 export default buildConfig({
   serverURL: getServerSideURL(),
+  csrf: trustedServerURLs,
   routes: {
     admin: '/dashboard',
   },
@@ -107,7 +109,7 @@ export default buildConfig({
         }),
   }),
   collections: [Pages, Posts, Media, Categories, Profiles, Users],
-  cors: [getServerSideURL()].filter(Boolean),
+  cors: trustedServerURLs,
   globals: [Header, Footer],
   i18n: {
     fallbackLanguage: 'es',

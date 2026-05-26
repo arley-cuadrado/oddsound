@@ -1,6 +1,6 @@
 import canUseDOM from './canUseDOM'
 
-function normalizeURL(value: string) {
+export function normalizeURL(value: string) {
   const trimmedValue = value.trim()
 
   if (!trimmedValue) return ''
@@ -15,14 +15,29 @@ function normalizeURL(value: string) {
   return `${protocol}://${trimmedValue}`.replace(/\/+$/, '')
 }
 
-export function resolvePublicServerURL() {
-  const candidates = [
+function getServerURLCandidates() {
+  return [
     process.env.NEXT_PUBLIC_SERVER_URL,
     process.env.VERCEL_URL,
     process.env.VERCEL_BRANCH_URL,
     process.env.VERCEL_PROJECT_PRODUCTION_URL,
     'http://localhost:3000',
   ]
+}
+
+export function collectTrustedServerURLs() {
+  return Array.from(
+    new Set(
+      getServerURLCandidates()
+        .filter(Boolean)
+        .map((candidate) => normalizeURL(candidate as string))
+        .filter(Boolean),
+    ),
+  )
+}
+
+export function resolvePublicServerURL() {
+  const candidates = getServerURLCandidates()
 
   for (const candidate of candidates) {
     if (!candidate) continue
