@@ -187,3 +187,50 @@ Vale la pena recién cuando ocurra alguna de estas:
 - necesitas QA persistente antes de producción
 - quieres una URL fija tipo `staging.oddsound.co`
 - necesitas procesos de aprobación antes de publicar
+## Preview Smoke Test Checklist
+
+Use this checklist on the first Vercel Preview deploy after changes to media, heroes, or editor blocks.
+
+### Dashboard and hero fields
+
+1. Open `/dashboard` and edit an existing release.
+2. Switch between `Alto impacto`, `Impacto medio`, and `Bajo impacto`.
+3. Confirm only the expected fields are visible:
+   - `highImpact` and `mediumImpact`: `media`
+   - `lowImpact`: `albumImage` and `richText`
+
+### Media upload and overwrite
+
+1. Upload a new image in `media`.
+2. Upload another image with the same file name.
+3. Confirm the upload succeeds without a raw Vercel Blob error.
+4. Confirm the asset preview still renders inside the `media` document.
+
+### Release rendering
+
+1. Save a `highImpact` release and verify:
+   - the card renders on home
+   - the image renders on the release detail page
+2. Save a `mediumImpact` release and verify:
+   - the card renders on home
+   - the image renders on the release detail page
+3. Save a `lowImpact` release and verify:
+   - the card renders on home using `albumImage`
+   - the detail page does not render the image
+   - the detail page still shows title, artist, genre, country, and intro text
+
+### Editor blocks
+
+1. Open the `Contenido` tab in the release editor.
+2. Add at least one block and save the release.
+3. Confirm the dashboard does not get stuck in an infinite module-loading loop.
+
+### Failure signals
+
+Treat any of the following as a deployment regression:
+
+- infinite spinner in the dashboard when opening tabs or adding blocks
+- upload succeeds but no media preview is rendered
+- image renders on home but breaks on detail
+- overwrite by same filename shows a raw infrastructure error
+- dashboard loads but components from the import map never resolve
