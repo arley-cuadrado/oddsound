@@ -1,12 +1,12 @@
 import type { Metadata } from 'next/types'
 
 import configPromise from '@payload-config'
-import type { Media, Page, Profile } from '@/payload-types'
+import type { Page, Profile } from '@/payload-types'
 import { getPayload } from 'payload'
 import React from 'react'
 import { Search } from '@/search/Component'
 import Link from 'next/link'
-import { getMediaResourceURL } from '@/utilities/getMediaUrl'
+import { getReleaseCardImage } from '@/utilities/getReleaseCardImage'
 
 import PageClient from './page.client'
 
@@ -25,8 +25,6 @@ type SearchRelease = {
   slug: string
   title: string
 }
-
-const FALLBACK_RELEASE_IMAGE = '/home-images/hero.jpeg'
 
 function normalizeSearchValue(value: string) {
   // Normalize text so searches like "mexico" still match stored values like "México".
@@ -58,36 +56,6 @@ function isAdminOwnedRelease(page: Page) {
   if (!page.owner || typeof page.owner === 'string') return false
 
   return page.owner.role === 'admin'
-}
-
-function getMediaUrl(media: Media | null | string | undefined) {
-  return getMediaResourceURL(media, media && typeof media === 'object' ? media.updatedAt : null)
-}
-
-function getReleaseCardImage({
-  albumImage,
-  avatarImage,
-  coverImage,
-  heroImage,
-  page,
-  pageImage,
-}: {
-  albumImage: string | null
-  avatarImage: string | null
-  coverImage: string | null
-  heroImage: string | null
-  page: Page
-  pageImage: string | null
-}) {
-  switch (page.hero?.type) {
-    case 'lowImpact':
-      return albumImage || pageImage || coverImage || avatarImage || FALLBACK_RELEASE_IMAGE
-    case 'mediumImpact':
-    case 'highImpact':
-      return heroImage || pageImage || coverImage || avatarImage || albumImage || FALLBACK_RELEASE_IMAGE
-    default:
-      return pageImage || heroImage || albumImage || coverImage || avatarImage || FALLBACK_RELEASE_IMAGE
-  }
 }
 
 function extractRichTextText(
@@ -132,19 +100,7 @@ function mapSearchRelease(
   if (!page.slug) return null
   if (!profile && !isAdminRelease) return null
 
-  const albumImage = getMediaUrl(page.hero?.albumImage as Media | null | string | undefined)
-  const pageImage = getMediaUrl(page.meta?.image as Media | null | string | undefined)
-  const heroImage = getMediaUrl(page.hero?.media as Media | null | string | undefined)
-  const coverImage = getMediaUrl(profile?.coverImage as Media | null | string | undefined)
-  const avatarImage = getMediaUrl(profile?.avatar as Media | null | string | undefined)
-  const imageUrl = getReleaseCardImage({
-    albumImage,
-    avatarImage,
-    coverImage,
-    heroImage,
-    page,
-    pageImage,
-  })
+  const imageUrl = getReleaseCardImage({ page, profile })
 
   return {
     country: isAdminRelease ? '' : profile?.location || '',

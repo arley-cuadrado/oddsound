@@ -38,6 +38,8 @@ function rewriteLegacyMediaURL(url?: null | string) {
     const parsedURL = new URL(url)
     const fileName = decodeURIComponent(path.basename(parsedURL.pathname))
 
+    // Blob-backed uploads do not exist in public/media, so in that case we must
+    // preserve the original Payload/Blob URL instead of forcing a local path.
     if (!localMediaFileExists(fileName)) {
       return `${parsedURL.pathname}${parsedURL.search}`
     }
@@ -191,7 +193,9 @@ export const Media: CollectionConfig = {
     },
   ],
   upload: {
-    // Upload to the public/media directory in Next.js making them publicly accessible even outside of Payload
+    // Local storage remains configured for development and legacy records. When
+    // the Blob plugin is enabled in production, Payload disables local storage
+    // for this collection and serves files through the custom Blob adapter.
     staticDir: path.resolve(dirname, '../../public/media'),
     adminThumbnail: 'thumbnail',
     focalPoint: true,

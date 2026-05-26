@@ -32,6 +32,10 @@ const defaultUploadOptions = {
 
 const defaultAccess = ({ req }: { req: any }) => !!req.user
 
+// This adapter intentionally preserves Payload's media document shape so the
+// hero, home releases, and search flows do not change when storage internals
+// are hardened for Vercel Blob.
+
 function formatStorageError(error: unknown) {
   const message = error instanceof Error ? error.message : String(error)
 

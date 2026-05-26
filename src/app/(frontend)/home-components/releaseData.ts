@@ -1,9 +1,7 @@
-import type { Media, Page, Profile } from '@/payload-types'
-import { getMediaResourceURL } from '@/utilities/getMediaUrl'
+import type { Page, Profile } from '@/payload-types'
+import { getReleaseCardImage } from '@/utilities/getReleaseCardImage'
 
 import type { ReleaseItem } from './types'
-
-const FALLBACK_RELEASE_IMAGE = '/home-images/hero.jpeg'
 
 function extractRichTextText(
   node: null | {
@@ -66,36 +64,6 @@ function removeRepeatedTitle(text: string, title: string) {
   return text.replace(titlePattern, '').trim()
 }
 
-export function getMediaUrl(media: Media | null | string | undefined) {
-  return getMediaResourceURL(media, media && typeof media === 'object' ? media.updatedAt : null)
-}
-
-function getReleaseCardImage({
-  albumImage,
-  avatarImage,
-  coverImage,
-  heroImage,
-  page,
-  pageImage,
-}: {
-  albumImage: string | null
-  avatarImage: string | null
-  coverImage: string | null
-  heroImage: string | null
-  page: Page
-  pageImage: string | null
-}) {
-  switch (page.hero?.type) {
-    case 'lowImpact':
-      return albumImage || pageImage || coverImage || avatarImage || FALLBACK_RELEASE_IMAGE
-    case 'mediumImpact':
-    case 'highImpact':
-      return heroImage || pageImage || coverImage || avatarImage || albumImage || FALLBACK_RELEASE_IMAGE
-    default:
-      return pageImage || heroImage || albumImage || coverImage || avatarImage || FALLBACK_RELEASE_IMAGE
-  }
-}
-
 function getProfileValue(profile: null | Profile | string | undefined) {
   if (!profile || typeof profile === 'string') return null
 
@@ -156,11 +124,6 @@ export function mapRelease(page: Page, profilesByOwnerId: Map<string, Profile>):
   if (!page.slug) return null
   if (!profile && !isAdminRelease) return null
 
-  const pageImage = getMediaUrl(page.meta?.image as Media | null | string | undefined)
-  const albumImage = getMediaUrl(page.hero?.albumImage as Media | null | string | undefined)
-  const heroImage = getMediaUrl(page.hero?.media as Media | null | string | undefined)
-  const coverImage = getMediaUrl(profile?.coverImage as Media | null | string | undefined)
-  const avatarImage = getMediaUrl(profile?.avatar as Media | null | string | undefined)
   const contentDescription = removeRepeatedTitle(extractLayoutText(page), page.title)
   const heroDescription = removeRepeatedTitle(extractRichTextText(page.hero?.richText || null), page.title)
   const profileDescription = removeRepeatedTitle(profile?.bio?.trim() || '', page.title)
@@ -177,14 +140,7 @@ export function mapRelease(page: Page, profilesByOwnerId: Map<string, Profile>):
     creatorName: isAdminRelease ? 'oddsound' : profile?.displayName || ownerName || page.title,
     description,
     genre: profile?.genre || '',
-    imageUrl: getReleaseCardImage({
-      albumImage,
-      avatarImage,
-      coverImage,
-      heroImage,
-      page,
-      pageImage,
-    }),
+    imageUrl: getReleaseCardImage({ page, profile }),
     releaseSlug: page.slug,
     releaseTitle: page.title,
     spotifyURL: getSpotifyURL(page),
