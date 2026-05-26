@@ -1,5 +1,4 @@
 import { APIError, Forbidden, Plugin } from 'payload'
-import { getRangeRequestInfo } from 'payload/internal'
 import path from 'path'
 
 import { cloudStoragePlugin } from '@payloadcms/plugin-cloud-storage'
@@ -10,6 +9,8 @@ import {
 } from '@payloadcms/plugin-cloud-storage/utilities'
 import { BlobNotFoundError, del, head, put } from '@vercel/blob'
 import { handleUpload } from '@vercel/blob/client'
+
+import { getBlobRangeRequestInfo } from './blobRange'
 
 type OddsoundVercelBlobStorageOptions = {
   access?: 'public'
@@ -153,7 +154,7 @@ async function getBlobFile({
     const ETag = `"${fileKeyForETag}-${uploadedAtString}"`
 
     const rangeHeader = req.headers.get('range')
-    const rangeResult = getRangeRequestInfo({
+    const rangeResult = getBlobRangeRequestInfo({
       fileSize: size,
       rangeHeader,
     })
