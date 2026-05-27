@@ -27,6 +27,26 @@ function safelyRevalidate(args: {
   }
 }
 
+function revalidateHomeFeed(args: {
+  payload: {
+    logger: {
+      info: (message: string) => void
+      warn: (message: string) => void
+    }
+  }
+  sitemapTag: string
+}) {
+  const { payload, sitemapTag } = args
+
+  payload.logger.info('Revalidating home releases feed at path: /')
+
+  safelyRevalidate({
+    path: '/',
+    payload,
+    sitemapTag,
+  })
+}
+
 export const revalidatePage: CollectionAfterChangeHook<Page> = ({
   doc,
   previousDoc,
@@ -43,6 +63,13 @@ export const revalidatePage: CollectionAfterChangeHook<Page> = ({
         payload,
         sitemapTag: 'pages-sitemap',
       })
+
+      if (doc.slug !== 'home') {
+        revalidateHomeFeed({
+          payload,
+          sitemapTag: 'pages-sitemap',
+        })
+      }
     }
 
     // If the page was previously published, we need to revalidate the old path
@@ -56,6 +83,13 @@ export const revalidatePage: CollectionAfterChangeHook<Page> = ({
         payload,
         sitemapTag: 'pages-sitemap',
       })
+
+      if (previousDoc.slug !== 'home') {
+        revalidateHomeFeed({
+          payload,
+          sitemapTag: 'pages-sitemap',
+        })
+      }
     }
   }
   return doc
@@ -72,6 +106,13 @@ export const revalidateDelete: CollectionAfterDeleteHook<Page> = ({
       payload,
       sitemapTag: 'pages-sitemap',
     })
+
+    if (doc?.slug !== 'home') {
+      revalidateHomeFeed({
+        payload,
+        sitemapTag: 'pages-sitemap',
+      })
+    }
   }
 
   return doc
