@@ -122,7 +122,6 @@ export default buildConfig({
     ...(hasBlobToken
       ? [
           oddsoundVercelBlobStorage({
-            clientUploads: true,
             collections: {
               media: true,
             },
