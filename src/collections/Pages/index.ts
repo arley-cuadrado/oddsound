@@ -163,6 +163,10 @@ export const Pages: CollectionConfig<'pages'> = {
               name: 'layout',
               type: 'blocks',
               blocks: editorialBlocks,
+              filterOptions: () =>
+                editorialBlocks
+                  .map((block) => block.slug)
+                  .filter((slug): slug is string => Boolean(slug) && slug !== 'formBlock'),
               required: true,
               admin: {
                 initCollapsed: true,
