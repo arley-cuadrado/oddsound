@@ -43,7 +43,7 @@ export default function AboutUsPage() {
       intro={aboutUsIntro}
       introTitle={aboutUsIntroTitle}
       sections={sections}
-      title="About Oddsound"
+      title="Sobre Oddsound"
       updatedAt={aboutUsUpdatedAt}
     />
   )
