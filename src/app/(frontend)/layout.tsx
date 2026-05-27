@@ -48,9 +48,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
 export const metadata: Metadata = {
   metadataBase: new URL(getServerSideURL()),
+  title: 'Oddsound - Be heard. Stay odd.',
+  description: 'Oddsound - Be heard. Stay odd.',
   openGraph: mergeOpenGraph(),
   twitter: {
     card: 'summary_large_image',
-    creator: '@payloadcms',
+    title: 'Oddsound - Be heard. Stay odd.',
+    description: 'Oddsound - Be heard. Stay odd.',
+    images: [`${getServerSideURL()}/oddsound_main_share_image.jpg`],
   },
 }
