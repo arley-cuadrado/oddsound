@@ -82,7 +82,7 @@ export function RegisterForm() {
           className="h-12 w-full border border-border bg-background px-4 text-[13px] text-foreground outline-none placeholder:text-[13px]"
           id="name"
           name="name"
-          placeholder="Nombre de tu artista, banda o sello"
+          placeholder="Artista o Banda"
           required
           type="text"
         />
@@ -102,7 +102,6 @@ export function RegisterForm() {
         >
           <option value="artist">Artista</option>
           <option value="band">Banda</option>
-          <option value="label">Sello</option>
         </select>
       </div>
 
@@ -142,7 +141,7 @@ export function RegisterForm() {
           className="h-12 w-full border border-border bg-background px-4 text-[13px] text-foreground outline-none placeholder:text-[13px]"
           id="email"
           name="email"
-          placeholder="name@example.com"
+          placeholder="name@mail.com"
           required
           type="email"
         />

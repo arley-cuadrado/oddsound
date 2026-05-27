@@ -101,10 +101,6 @@ export const Profiles: CollectionConfig = {
           label: 'Banda',
           value: 'band',
         },
-        {
-          label: 'Sello',
-          value: 'label',
-        },
       ],
       required: true,
     },

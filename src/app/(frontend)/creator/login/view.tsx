@@ -22,7 +22,7 @@ export default async function CreatorLoginView() {
           </Link>
         </p>
       }
-      intro={<p className="text-[13px] text-foreground/80">Bienvenid@ a tu espacio, inicia sesión aquí.</p>}
+      intro={<p className="text-[13px] text-foreground/80">Bienvenid@, inicia sesión aquí.</p>}
     >
       <CreatorLoginForm />
     </CreatorAuthShell>

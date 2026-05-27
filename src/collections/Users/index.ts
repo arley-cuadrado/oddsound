@@ -152,10 +152,6 @@ export const Users: CollectionConfig = {
           label: 'Banda',
           value: 'band',
         },
-        {
-          label: 'Sello',
-          value: 'label',
-        },
       ],
       required: true,
     },

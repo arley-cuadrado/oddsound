@@ -23,9 +23,7 @@ export default async function CreatorRegisterView() {
         </p>
       }
       intro={
-        <p className="text-[13px] text-foreground/80">
-          Bienvenid@ al espacio de <strong>oddsound</strong>, crea tu cuenta aquí.
-        </p>
+        <p className="text-[13px] text-foreground/80">Bienvenid@, crea tu cuenta aquí.</p>
       }
     >
       <RegisterForm />
