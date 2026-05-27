@@ -3,7 +3,8 @@ import { createLocalReq, getPayload } from 'payload'
 
 import { ensureCreatorProfile } from '@/utilities/creatorProfiles'
 
-export type AccountType = 'artist' | 'band' | 'label'
+export type AccountType = 'artist' | 'band'
+export type LegacyAccountType = AccountType | 'label'
 
 export type CreatorAuthStatus =
   | 'logged_in'
@@ -153,7 +154,7 @@ export async function loginCreatorAccount(input: {
   CreatorAuthResult & {
     token?: string
     user?: {
-      accountType?: null | AccountType
+      accountType?: null | LegacyAccountType
       email: string
       id: string
       name?: null | string

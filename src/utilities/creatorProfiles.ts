@@ -94,7 +94,7 @@ export async function ensureCreatorProfile({
   const profile = await payload.create({
     collection: 'profiles',
     data: {
-      accountType: user.accountType || 'artist',
+      accountType: user.accountType === 'band' ? 'band' : 'artist',
       contactEmail: user.email || undefined,
       displayName,
       owner: user.id,

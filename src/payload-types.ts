@@ -254,7 +254,7 @@ export interface User {
    * Esta cuenta es la única superadministradora y puede crear otras cuentas administrativas.
    */
   superAdminRoleLabel?: string | null;
-  accountType?: ('artist' | 'band' | 'label') | null;
+  accountType?: ('artist' | 'band') | null;
   profile?: (string | null) | Profile;
   isActive?: boolean | null;
   /**
@@ -292,7 +292,7 @@ export interface Profile {
   id: string;
   owner: string | User;
   displayName: string;
-  accountType: 'artist' | 'band' | 'label';
+  accountType: 'artist' | 'band';
   bio?: string | null;
   avatar?: (string | null) | Media;
   coverImage?: (string | null) | Media;

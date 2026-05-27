@@ -12,9 +12,11 @@ type RegisterBody = {
 
 export async function POST(request: Request) {
   const body = (await request.json()) as RegisterBody
+  const accountType = body.accountType === 'band' ? 'band' : 'artist'
+
   const result = await registerCreatorAccount({
     acceptedLegal: body.acceptedLegal === true,
-    accountType: body.accountType || 'artist',
+    accountType,
     country: body.country || '',
     email: body.email || '',
     genre: body.genre || '',
