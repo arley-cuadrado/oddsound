@@ -40,6 +40,7 @@ Este proyecto usa actualmente estas variables para desplegar correctamente:
 - `DATABASE_URL`
 - `PAYLOAD_SECRET`
 - `NEXT_PUBLIC_SERVER_URL`
+- `BLOB_READ_WRITE_TOKEN`
 - `SMTP_HOST`
 - `SMTP_PORT`
 - `SMTP_USER`
@@ -83,6 +84,7 @@ Eso ayuda a que:
 
 - `NEXT_PUBLIC_SERVER_URL`: URL preview pública de Vercel o dominio preview que vayas a usar
 - `DATABASE_URL`: idealmente una base separada de producción
+- `BLOB_READ_WRITE_TOKEN`: obligatorio para que la colección `media` use Vercel Blob en lugar de intentar escribir en disco local
 - `SMTP_*`: puede usar Resend, pero prueba con cuentas de correo controladas
 - `EMAIL_FROM_ADDRESS`: remitente válido del dominio verificado en Resend
 - `SUPER_ADMIN_EMAILS`: lista de cuentas admin que no deben depender de un hardcode local
@@ -91,6 +93,7 @@ Eso ayuda a que:
 
 - `NEXT_PUBLIC_SERVER_URL`: dominio final, por ejemplo `https://oddsound.co`
 - `DATABASE_URL`: base real de producción
+- `BLOB_READ_WRITE_TOKEN`: obligatorio en producción para uploads de `media`
 - `SMTP_*`: credenciales definitivas
 - `EMAIL_FROM_ADDRESS`: remitente final
 - `SUPER_ADMIN_EMAILS`: lista final de superadministradores
@@ -178,6 +181,55 @@ pnpm start
 - El auth de creator vive separado del shell público
 - Los emails dependen de `NEXT_PUBLIC_SERVER_URL` para construir links absolutos
 - Resend se usa vía SMTP desde Payload
+- La colección `media` depende de `BLOB_READ_WRITE_TOKEN` para activar el storage adapter de Vercel Blob
+
+## Incidente resuelto: uploads de media con error 500 en Vercel
+
+El fallo real no estaba en el dashboard, en los heroes `highImpact` / `mediumImpact` / `lowImpact`, ni en los bloques del editor.
+
+La causa raíz era que el proyecto correcto de Vercel no tenía definida la variable `BLOB_READ_WRITE_TOKEN`.
+
+Cuando esa variable falta:
+
+- el plugin de storage para Blob no se activa
+- Payload deja la colección `media` en modo upload local
+- en Vercel el runtime intenta escribir en `/var/task/public`
+- el `POST /api/media` termina en `500`
+
+Síntomas observados:
+
+- la imagen se previsualiza localmente en el modal de creación de `media`
+- al guardar aparece `Something went wrong`
+- en DevTools se ve `POST /api/media ... 500`
+- en logs de Vercel aparecen errores tipo:
+  - `Collections with uploads enabled require a storage adapter when deploying to Vercel`
+  - `ENOENT: no such file or directory, mkdir '/var/task/public'`
+
+Resolución aplicada:
+
+1. Relink del proyecto Vercel correcto con `vercel link`
+2. Verificación de entornos reales con `vercel env ls`
+3. Alta de `BLOB_READ_WRITE_TOKEN` en `Preview`
+4. Alta de `BLOB_READ_WRITE_TOKEN` en `Production`
+5. Redeploy de `Preview`
+6. Redeploy de `Production`
+
+Resultado esperado tras la corrección:
+
+- la colección `media` usa Vercel Blob
+- deja de intentar guardar archivos en disco local en Vercel
+- el modal de creación de media permite guardar sin `500`
+- las previews, cards de home y detalle de releases siguen funcionando con el flujo actual
+
+## Qué revisar si vuelve a pasar
+
+1. Confirmar que el deployment nuevo tenga `BLOB_READ_WRITE_TOKEN` en el entorno correcto
+2. Revisar logs de Vercel para `POST /api/media`
+3. Buscar estas señales:
+   - falta de storage adapter para `media`
+   - errores `ENOENT` en `/var/task/public`
+   - respuestas `500` del endpoint `/api/media`
+4. Si el token fue agregado después, redeployar; los env nuevos no corrigen deployments ya creados
 
 ## Cuándo sí crear un staging real
 
