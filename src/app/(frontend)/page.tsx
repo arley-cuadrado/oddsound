@@ -46,10 +46,9 @@ export default async function HomePage() {
         </div>
       ) : null}
       <main className="text-sm container">
-        {/* justify-center w-auto h-screen  */}
-        <div className="flex justify-between">
-          <section className="pt-4 pb-4 md:pr-24 pr-0">
-            <div className="w-auto md:w-full">
+        <div className="flex flex-col justify-between md:flex-row">
+          <section className="w-full min-w-0 pt-4 pb-4 pr-0 md:pr-24">
+            <div className="w-full min-w-0">
               <Suspense
                 fallback={
                   <p className="py-8 text-sm text-[#777] dark:text-[#858c98]">

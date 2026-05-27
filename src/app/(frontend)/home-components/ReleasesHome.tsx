@@ -79,14 +79,14 @@ export default function ReleasesHome({ releases }: { releases: ReleaseItem[] }) 
   }, [activeSpotifyReleaseId])
 
   return (
-    <>
+    <div className="flex w-full min-w-0 flex-col items-start">
       {visibleReleases.map((release) => {
         const spotifyEmbedURL = release.spotifyURL ? getSpotifyEmbedURL(release.spotifyURL) : null
         const isSpotifyVisible = activeSpotifyReleaseId === release.id
         const isSpotifyAnimated = animatedSpotifyReleaseId === release.id
 
         return (
-          <article key={release.id} className="w-full max-w-[28rem] max-[767.98px]:max-w-none">
+          <article key={release.id} className="w-full min-w-0 max-w-[28rem] max-[767.98px]:max-w-none">
             <section className="flex w-full flex-col items-start gap-2 pt-4 pb-4">
               <Link className="w-full" href={`/${release.releaseSlug}`}>
                 <div className="relative h-[28rem] w-full overflow-hidden bg-slate-100 dark:bg-slate-900 rounded-lg">
@@ -163,7 +163,7 @@ export default function ReleasesHome({ releases }: { releases: ReleaseItem[] }) 
         )
       })}
 
-      {visibleCount < releases.length && <p className="text-center py-4">Loading more...</p>}
-    </>
+      {visibleCount < releases.length && <p className="w-full py-4 text-center">Loading more...</p>}
+    </div>
   )
 }
