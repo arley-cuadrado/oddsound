@@ -114,7 +114,7 @@ export default function ReleasesHome({ releases }: { releases: ReleaseItem[] }) 
                         type="button"
                       >
                         <span aria-hidden="true" className="leading-none title">
-                          Listen
+                          Escucha
                         </span>
                       </button>
                     </div>
