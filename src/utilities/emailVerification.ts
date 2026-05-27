@@ -100,6 +100,8 @@ function buildEmailTemplate({
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="x-apple-disable-message-reformatting" />
     <meta name="format-detection" content="telephone=no,address=no,email=no,date=no,url=no" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="supported-color-schemes" content="light dark" />
     <title>${escapeHtml(title)}</title>
     <!--[if mso]>
       <xml>
@@ -152,6 +154,14 @@ function buildEmailTemplate({
 
       p {
         margin: 0;
+      }
+
+      .hero-title,
+      .hero-tagline,
+      .hero-credit-label,
+      .hero-credit-name {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
       }
 
       .ExternalClass {
@@ -250,6 +260,35 @@ function buildEmailTemplate({
           line-height: 18px !important;
           word-break: break-all !important;
         }
+
+        .hero-title,
+        .hero-tagline,
+        .hero-credit-label,
+        .hero-credit-name {
+          color: #ffffff !important;
+          -webkit-text-fill-color: #ffffff !important;
+          text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45) !important;
+        }
+      }
+
+      @media (prefers-color-scheme: dark) {
+        .hero-title,
+        .hero-tagline,
+        .hero-credit-label,
+        .hero-credit-name {
+          color: #ffffff !important;
+          -webkit-text-fill-color: #ffffff !important;
+          text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45) !important;
+        }
+      }
+
+      [data-ogsc] .hero-title,
+      [data-ogsc] .hero-tagline,
+      [data-ogsc] .hero-credit-label,
+      [data-ogsc] .hero-credit-name {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45) !important;
       }
     </style>
   </head>
@@ -288,10 +327,10 @@ function buildEmailTemplate({
                       >
                         <tr>
                           <td align="center" style="padding: 70px 20px 0 20px;">
-                            <p style="margin: 0; font-family: Arial, Helvetica, sans-serif; font-size: 29px; line-height: 30px; color: #ffffff; font-weight: 400; letter-spacing: -0.4px;">
+                            <p class="hero-title" style="margin: 0; font-family: Arial, Helvetica, sans-serif; font-size: 29px; line-height: 30px; color: #ffffff; font-weight: 400; letter-spacing: -0.4px;">
                               <span style="font-weight: 900;">odd</span>sound
                             </p>
-                            <p style="margin: 4px 0 0 0; font-family: Arial, Helvetica, sans-serif; font-size: 11px; line-height: 13px; color: #ffffff; font-weight: 100;">
+                            <p class="hero-tagline" style="margin: 4px 0 0 0; font-family: Arial, Helvetica, sans-serif; font-size: 11px; line-height: 13px; color: #ffffff; font-weight: 100;">
                               Be heard. Stay odd.
                             </p>
                           </td>
@@ -310,8 +349,8 @@ function buildEmailTemplate({
                                   />
                                 </td>
                                 <td valign="middle" style="font-family: Arial, Helvetica, sans-serif; text-align: left;">
-                                  <p style="margin: 0; font-size: 6px; line-height: 10px; color: #484848;">Photo by</p>
-                                  <p style="margin: 0; font-size: 8px; color: #606060;">${escapeHtml(heroPhotographerName)}</p>
+                                  <p class="hero-credit-label" style="margin: 0; font-size: 6px; line-height: 10px; color: #ffffff;">Photo by</p>
+                                  <p class="hero-credit-name" style="margin: 0; font-size: 8px; color: #ffffff;">${escapeHtml(heroPhotographerName)}</p>
                                 </td>
                               </tr>
                             </table>
