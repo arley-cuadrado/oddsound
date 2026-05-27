@@ -49,7 +49,7 @@ export const Search: React.FC = () => {
           value={value}
         />
         <Button
-          className="h-full min-w-[88px] rounded-none rounded-r-md border-l border-input bg-white px-5 text-[13px] font-medium text-black hover:bg-white/95 sm:min-w-[96px]"
+          className="h-full min-w-[88px] cursor-pointer rounded-none rounded-r-md border-l border-input bg-white px-5 text-[13px] font-medium text-black hover:bg-white/95 sm:min-w-[96px]"
           size="clear"
           type="submit"
         >
