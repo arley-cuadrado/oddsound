@@ -1,72 +1,63 @@
-import { formatDateTime } from 'src/utilities/formatDateTime'
-import React from 'react'
+'use client'
+import React, { useEffect } from 'react'
+
+import { useHeaderTheme } from '@/providers/HeaderTheme'
 
 import type { Post } from '@/payload-types'
 
 import { Media } from '@/components/Media'
 import { formatAuthors } from '@/utilities/formatAuthors'
+import { formatRelativePublishedAt } from '@/utilities/formatRelativePublishedAt'
 
 export const PostHero: React.FC<{
   post: Post
 }> = ({ post }) => {
   const { categories, heroImage, populatedAuthors, publishedAt, title } = post
+  const { setHeaderTheme } = useHeaderTheme()
 
   const hasAuthors =
     populatedAuthors && populatedAuthors.length > 0 && formatAuthors(populatedAuthors) !== ''
 
+  useEffect(() => {
+    setHeaderTheme('dark')
+  }, [setHeaderTheme])
+
   return (
-    <div className="relative -mt-[10.4rem] flex items-end">
-      <div className="container z-10 relative lg:grid lg:grid-cols-[1fr_48rem_1fr] text-white pb-8">
-        <div className="col-start-1 col-span-1 md:col-start-2 md:col-span-2">
-          <div className="uppercase text-sm mb-6">
-            {categories?.map((category, index) => {
-              if (typeof category === 'object' && category !== null) {
-                const { title: categoryTitle } = category
+    <div className="relative mt-8 overflow-hidden text-white container" data-theme="dark">
+      <div className="relative h-[400px] select-none">
+        {heroImage && typeof heroImage !== 'string' && (
+          <Media fill imgClassName="-z-10 object-cover rounded-lg" priority resource={heroImage} />
+        )}
+        <div className="absolute inset-x-0 bottom-0 h-[200px] bg-gradient-to-t from-black/20 via-black/10 to-transparent backdrop-blur-md [mask-image:linear-gradient(to_top,black_45%,transparent_100%)] rounded-lg" />
+      </div>
 
-                const titleToUse = categoryTitle || 'Untitled category'
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex justify-center px-4">
+        <div className="w-full max-w-4xl">
+          <div className="px-5 pb-2 text-center md:px-8 md:pb-3">
+            {categories?.length ? (
+              <p className="mb-2 text-xs uppercase tracking-[0.14em] text-white/85">
+                {categories
+                  ?.map((category) =>
+                    typeof category === 'object' && category !== null
+                      ? (category.title || 'Untitled category')
+                      : null,
+                  )
+                  .filter(Boolean)
+                  .join(' · ')}
+              </p>
+            ) : null}
+            <h1 className="text-3xl font-black leading-none tracking-tight md:text-5xl lg:text-6xl">
+              {title}
+            </h1>
 
-                const isLast = index === categories.length - 1
-
-                return (
-                  <React.Fragment key={index}>
-                    {titleToUse}
-                    {!isLast && <React.Fragment>, &nbsp;</React.Fragment>}
-                  </React.Fragment>
-                )
-              }
-              return null
-            })}
-          </div>
-
-          <div className="">
-            <h1 className="mb-6 text-3xl md:text-5xl lg:text-6xl">{title}</h1>
-          </div>
-
-          <div className="flex flex-col md:flex-row gap-4 md:gap-16">
-            {hasAuthors && (
-              <div className="flex flex-col gap-4">
-                <div className="flex flex-col gap-1">
-                  <p className="text-sm">Author</p>
-
-                  <p>{formatAuthors(populatedAuthors)}</p>
-                </div>
-              </div>
-            )}
-            {publishedAt && (
-              <div className="flex flex-col gap-1">
-                <p className="text-sm">Date Published</p>
-
-                <time dateTime={publishedAt}>{formatDateTime(publishedAt)}</time>
-              </div>
-            )}
+            <div className="pointer-events-auto mt-4 flex flex-col items-center gap-2 text-sm text-white/85 md:flex-row md:justify-center md:gap-6">
+              {hasAuthors ? <p>{formatAuthors(populatedAuthors)}</p> : null}
+              {publishedAt ? (
+                <time dateTime={publishedAt}>Publicado: {formatRelativePublishedAt(publishedAt)}</time>
+              ) : null}
+            </div>
           </div>
         </div>
-      </div>
-      <div className="min-h-[80vh] select-none">
-        {heroImage && typeof heroImage !== 'string' && (
-          <Media fill priority imgClassName="-z-10 object-cover" resource={heroImage} />
-        )}
-        <div className="absolute pointer-events-none left-0 bottom-0 w-full h-1/2 bg-linear-to-t from-black to-transparent" />
       </div>
     </div>
   )
