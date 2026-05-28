@@ -1,11 +1,15 @@
 import type { Metadata } from 'next'
 
 import configPromise from '@payload-config'
-import type { Profile } from '@/payload-types'
+import type { Page, Profile } from '@/payload-types'
 import { getPayload } from 'payload'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 
+import {
+  PROFILE_SELECT,
+  RELEASE_PAGE_SELECT,
+} from '../../home-components/getPublishedReleaseContext'
 import { buildProfilesByOwnerId, mapRelease } from '../../home-components/releaseData'
 import type { ReleaseItem } from '../../home-components/types'
 
@@ -41,6 +45,7 @@ async function queryProfileBySlug(slug: string) {
     limit: 1,
     overrideAccess: true,
     pagination: false,
+    select: PROFILE_SELECT,
     where: {
       slug: {
         equals: slug,
@@ -74,10 +79,11 @@ export default async function ArtistReleasesPage({ params: paramsPromise }: Args
   const payload = await getPayload({ config: configPromise })
   const pagesResult = await payload.find({
     collection: 'pages',
-    depth: 2,
+    depth: 1,
     limit: 100,
     overrideAccess: true,
     pagination: false,
+    select: RELEASE_PAGE_SELECT,
     sort: '-publishedAt',
     where: {
       and: [
@@ -96,7 +102,7 @@ export default async function ArtistReleasesPage({ params: paramsPromise }: Args
   })
 
   const profilesByOwnerId = buildProfilesByOwnerId([profile as Profile])
-  const releases = pagesResult.docs
+  const releases = (pagesResult.docs as Page[])
     .map((page) => mapRelease(page, profilesByOwnerId))
     .filter((release): release is ReleaseItem => Boolean(release))
 

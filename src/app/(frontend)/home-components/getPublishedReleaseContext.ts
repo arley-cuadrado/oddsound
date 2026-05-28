@@ -8,7 +8,7 @@ type PublishedReleaseContext = {
   profilesByOwnerId: Map<string, Profile>
 }
 
-const RELEASE_PAGE_SELECT = {
+export const RELEASE_PAGE_SELECT = {
   hero: true,
   layout: true,
   meta: true,
@@ -19,7 +19,7 @@ const RELEASE_PAGE_SELECT = {
   title: true,
 } as const
 
-const PROFILE_SELECT = {
+export const PROFILE_SELECT = {
   avatar: true,
   bio: true,
   coverImage: true,

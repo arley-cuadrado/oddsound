@@ -13,6 +13,7 @@ import { RenderHero } from '@/heros/RenderHero'
 import { generateMeta } from '@/utilities/generateMeta'
 import PageClient from './page.client'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
+import { RELEASE_PAGE_SELECT } from '../home-components/getPublishedReleaseContext'
 
 export async function generateStaticParams() {
   if (process.env.NODE_ENV === 'development') {
@@ -124,11 +125,12 @@ const queryPageBySlug = cache(async ({ slug }: { slug: string }) => {
 
   const result = await payload.find({
     collection: 'pages',
-    depth: 2,
+    depth: 1,
     draft,
     limit: 1,
     pagination: false,
     overrideAccess: true,
+    select: RELEASE_PAGE_SELECT,
     where: {
       and: [
         {
