@@ -26,6 +26,26 @@ function safelyRevalidate(args: {
   }
 }
 
+function revalidateHomeHero(args: {
+  payload: {
+    logger: {
+      info: (message: string) => void
+      warn: (message: string) => void
+    }
+  }
+  sitemapTag: string
+}) {
+  const { payload, sitemapTag } = args
+
+  payload.logger.info('Revalidating home featured posts at path: /')
+
+  safelyRevalidate({
+    path: '/',
+    payload,
+    sitemapTag,
+  })
+}
+
 export const revalidatePost: CollectionAfterChangeHook<Post> = ({
   doc,
   previousDoc,
@@ -42,6 +62,11 @@ export const revalidatePost: CollectionAfterChangeHook<Post> = ({
         payload,
         sitemapTag: 'posts-sitemap',
       })
+
+      revalidateHomeHero({
+        payload,
+        sitemapTag: 'posts-sitemap',
+      })
     }
 
     // If the post was previously published, we need to revalidate the old path
@@ -52,6 +77,11 @@ export const revalidatePost: CollectionAfterChangeHook<Post> = ({
 
       safelyRevalidate({
         path: oldPath,
+        payload,
+        sitemapTag: 'posts-sitemap',
+      })
+
+      revalidateHomeHero({
         payload,
         sitemapTag: 'posts-sitemap',
       })
@@ -69,6 +99,11 @@ export const revalidateDelete: CollectionAfterDeleteHook<Post> = ({
 
     safelyRevalidate({
       path,
+      payload,
+      sitemapTag: 'posts-sitemap',
+    })
+
+    revalidateHomeHero({
       payload,
       sitemapTag: 'posts-sitemap',
     })
