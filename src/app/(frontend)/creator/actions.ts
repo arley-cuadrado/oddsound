@@ -89,7 +89,7 @@ export async function resendVerificationEmail(input: {
 
   try {
     const payload = await getPayload({ config })
-    const user = await findUserByEmail(email)
+    const user = await findUserByEmail(email, payload)
 
     if (!user) {
       return {
@@ -173,7 +173,7 @@ export async function requestCreatorPasswordReset(input: {
 
   try {
     const payload = await getPayload({ config })
-    const user = await findUserByEmail(email)
+    const user = await findUserByEmail(email, payload)
 
     if (!user || user.role !== 'creator') {
       return {

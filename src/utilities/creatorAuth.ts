@@ -35,8 +35,11 @@ export type VerificationUser = {
 export const CREATOR_LEGAL_VERSION = '2026-05-14'
 export const CREATOR_VERIFICATION_ERROR_MESSAGE = 'Debes confirmar tu correo antes de iniciar sesión.'
 
-export async function findUserByEmail(email: string): Promise<null | VerificationUser> {
-  const payload = await getPayload({ config })
+export async function findUserByEmail(
+  email: string,
+  payloadArg?: Awaited<ReturnType<typeof getPayload>>,
+): Promise<null | VerificationUser> {
+  const payload = payloadArg || (await getPayload({ config }))
   const existingUser = await payload.find({
     collection: 'users',
     depth: 0,
@@ -84,7 +87,7 @@ export async function registerCreatorAccount(input: {
       }
     }
 
-    const existingUser = await findUserByEmail(email)
+    const existingUser = await findUserByEmail(email, payload)
 
     if (existingUser && existingUser._verified !== false) {
       return {
@@ -165,7 +168,8 @@ export async function loginCreatorAccount(input: {
 > {
   try {
     const email = input.email.trim().toLowerCase()
-    const existingUser = await findUserByEmail(email)
+    const payload = await getPayload({ config })
+    const existingUser = await findUserByEmail(email, payload)
 
     if (!existingUser) {
       return {
@@ -174,7 +178,6 @@ export async function loginCreatorAccount(input: {
       }
     }
 
-    const payload = await getPayload({ config })
     const payloadReq = await createLocalReq({}, payload)
 
     const result = await payload.login({

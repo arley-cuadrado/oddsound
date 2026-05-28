@@ -1,5 +1,10 @@
 import type { CollectionBeforeChangeHook } from 'payload'
 import { isAdminUser } from '@/utilities/isAdminUser'
+import { findCreatorProfileByOwner } from '@/utilities/creatorProfiles'
+
+type RequestContextWithProfileCache = {
+  creatorProfileIdByOwner?: Map<string | number, null | string>
+}
 
 async function resolveUserProfileId(req: Parameters<CollectionBeforeChangeHook>[0]['req']) {
   const user = req.user
@@ -14,35 +19,23 @@ async function resolveUserProfileId(req: Parameters<CollectionBeforeChangeHook>[
     return user.profile.id
   }
 
-  const freshUser = await req.payload.findByID({
-    collection: 'users',
-    id: user.id,
-    depth: 0,
-  })
+  const context = (req.context || {}) as RequestContextWithProfileCache
+  const cache = context.creatorProfileIdByOwner || new Map<string | number, null | string>()
 
-  if (typeof freshUser.profile === 'string' || typeof freshUser.profile === 'number') {
-    return freshUser.profile
+  context.creatorProfileIdByOwner = cache
+
+  if (cache.has(user.id)) {
+    return cache.get(user.id) || null
   }
 
-  if (freshUser.profile && typeof freshUser.profile === 'object' && 'id' in freshUser.profile) {
-    return freshUser.profile.id
-  }
-
-  const profiles = await req.payload.find({
-    collection: 'profiles',
-    depth: 0,
-    limit: 1,
-    overrideAccess: true,
-    pagination: false,
-    where: {
-      owner: {
-        equals: user.id,
-      },
-    },
+  const profileId = await findCreatorProfileByOwner({
+    ownerID: String(user.id),
+    payload: req.payload,
   })
 
-  return profiles.docs[0]?.id || null
+  cache.set(user.id, profileId)
 
+  return profileId
 }
 
 export const assignOwnership: CollectionBeforeChangeHook = async ({ data, req }) => {

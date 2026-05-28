@@ -9,6 +9,12 @@ type CreatorLike = {
   role?: null | string
 }
 
+function getInlineProfileId(user: CreatorLike | null | undefined) {
+  if (!user) return null
+
+  return typeof user.profile === 'string' ? user.profile : user.profile?.id || null
+}
+
 function toSlug(value: string) {
   return value
     .toLowerCase()
@@ -43,6 +49,29 @@ async function resolveUniqueProfileSlug(payload: Payload, seed: string) {
   }
 }
 
+export async function findCreatorProfileByOwner({
+  ownerID,
+  payload,
+}: {
+  ownerID: string
+  payload: Payload
+}) {
+  const existingProfiles = await payload.find({
+    collection: 'profiles',
+    depth: 0,
+    limit: 1,
+    overrideAccess: true,
+    pagination: false,
+    where: {
+      owner: {
+        equals: ownerID,
+      },
+    },
+  })
+
+  return existingProfiles.docs[0]?.id || null
+}
+
 export async function ensureCreatorProfile({
   payload,
   req,
@@ -54,24 +83,14 @@ export async function ensureCreatorProfile({
 }) {
   if (user.role !== 'creator') return user.profile || null
 
-  const inlineProfileId = typeof user.profile === 'string' ? user.profile : user.profile?.id
+  const inlineProfileId = getInlineProfileId(user)
 
   if (inlineProfileId) return inlineProfileId
 
-  const existingProfiles = await payload.find({
-    collection: 'profiles',
-    depth: 0,
-    limit: 1,
-    overrideAccess: true,
-    pagination: false,
-    where: {
-      owner: {
-        equals: user.id,
-      },
-    },
+  const existingProfileId = await findCreatorProfileByOwner({
+    ownerID: user.id,
+    payload,
   })
-
-  const existingProfileId = existingProfiles.docs[0]?.id
 
   if (existingProfileId) {
     await payload.update({
