@@ -8,6 +8,12 @@ import { slugField } from 'payload'
 
 export const Profiles: CollectionConfig = {
   slug: 'profiles',
+  indexes: [
+    {
+      fields: ['owner'],
+      unique: true,
+    },
+  ],
   access: {
     admin: authenticated,
     create: authenticated,

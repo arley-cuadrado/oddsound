@@ -33,6 +33,17 @@ import { slugField } from 'payload'
 
 export const Posts: CollectionConfig<'posts'> = {
   slug: 'posts',
+  indexes: [
+    {
+      fields: ['_status', 'publishedAt'],
+    },
+    {
+      fields: ['profile', '_status', 'publishedAt'],
+    },
+    {
+      fields: ['owner', 'updatedAt'],
+    },
+  ],
   access: {
     admin: authenticated,
     create: async ({ req }) => hasFreshAdminAccess(req as any),

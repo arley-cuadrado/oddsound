@@ -23,6 +23,17 @@ import {
 
 export const Pages: CollectionConfig<'pages'> = {
   slug: 'pages',
+  indexes: [
+    {
+      fields: ['_status', 'publishedAt'],
+    },
+    {
+      fields: ['profile', '_status', 'publishedAt'],
+    },
+    {
+      fields: ['owner', 'updatedAt'],
+    },
+  ],
   labels: {
     plural: 'Lanzamientos',
     singular: 'Lanzamiento',
