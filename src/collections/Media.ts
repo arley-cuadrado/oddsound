@@ -18,6 +18,7 @@ const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 const LEGACY_MEDIA_API_SEGMENT = '/api/media/file/'
 const LOCAL_MEDIA_DIR = path.resolve(dirname, '../../public/media')
+const localMediaExistsCache = new Map<string, boolean>()
 
 function getLocalMediaPath(fileName?: null | string) {
   if (!fileName) return null
@@ -26,12 +27,24 @@ function getLocalMediaPath(fileName?: null | string) {
 }
 
 function localMediaFileExists(fileName?: null | string) {
+  if (!fileName) return false
+
+  const cached = localMediaExistsCache.get(fileName)
+
+  if (typeof cached === 'boolean') {
+    return cached
+  }
+
   const localPath = getLocalMediaPath(fileName)
 
-  return localPath ? fs.existsSync(localPath) : false
+  const exists = localPath ? fs.existsSync(localPath) : false
+
+  localMediaExistsCache.set(fileName, exists)
+
+  return exists
 }
 
-function rewriteLegacyMediaURL(url?: null | string) {
+export function rewriteLegacyMediaURL(url?: null | string) {
   if (!url || !url.includes(LEGACY_MEDIA_API_SEGMENT)) return url
 
   try {
@@ -110,6 +123,14 @@ const normalizeLegacyMediaURLs: CollectionAfterReadHook = ({ doc }) => {
 
 export const Media: CollectionConfig = {
   slug: 'media',
+  indexes: [
+    {
+      fields: ['owner', 'updatedAt'],
+    },
+    {
+      fields: ['profile', 'updatedAt'],
+    },
+  ],
   access: {
     admin: authenticated,
     create: authenticated,
