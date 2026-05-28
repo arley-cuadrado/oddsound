@@ -7,6 +7,7 @@ import React from 'react'
 import { Search } from '@/search/Component'
 import Link from 'next/link'
 import { getReleaseCardImage } from '@/utilities/getReleaseCardImage'
+import { getPublishedReleaseContext } from '../home-components/getPublishedReleaseContext'
 
 import PageClient from './page.client'
 
@@ -121,51 +122,22 @@ function mapSearchRelease(
 export default async function Page({ searchParams: searchParamsPromise }: Args) {
   const { q: rawQuery } = await searchParamsPromise
   const query = normalizeSearchValue(rawQuery || '')
-  const payload = await getPayload({ config: configPromise })
+  let releases: SearchRelease[] = []
 
-  // The general frontend search intentionally queries only published creator release pages, never posts.
-  const [pagesResult, profilesResult] = await Promise.all([
-    payload.find({
-      collection: 'pages',
-      depth: 2,
-      limit: 100,
-      overrideAccess: true,
-      pagination: false,
-      sort: '-publishedAt',
-      where: {
-        _status: {
-          equals: 'published',
-        },
-      },
-    }),
-    payload.find({
-      collection: 'profiles',
-      depth: 1,
-      limit: 100,
-      overrideAccess: true,
-      pagination: false,
-    }),
-  ])
+  if (query) {
+    const payload = await getPayload({ config: configPromise })
+    const { pages, profilesByOwnerId } = await getPublishedReleaseContext(payload, { limit: 100 })
 
-  const profilesByOwnerId = new Map<string, Profile>()
-
-  profilesResult.docs.forEach((profile) => {
-    if (typeof profile.owner === 'object' && profile.owner?.id) {
-      profilesByOwnerId.set(profile.owner.id, profile)
-    }
-  })
-
-  const releases = pagesResult.docs
-    .map((page) => mapSearchRelease(page, profilesByOwnerId))
-    .filter((release): release is SearchRelease => Boolean(release))
-    .filter((release) => {
-      if (!query) return true
-
-      // Match the discover input against genre, country, band/creator name, and album/release title.
-      return [release.genre, release.country, release.creatorName, release.title].some((value) =>
-        normalizeSearchValue(value).includes(query),
-      )
-    })
+    releases = pages
+      .map((page) => mapSearchRelease(page, profilesByOwnerId))
+      .filter((release): release is SearchRelease => Boolean(release))
+      .filter((release) => {
+        // Match the discover input against genre, country, band/creator name, and album/release title.
+        return [release.genre, release.country, release.creatorName, release.title].some((value) =>
+          normalizeSearchValue(value).includes(query),
+        )
+      })
+  }
 
   return (
     <div className="pt-24 pb-24">
