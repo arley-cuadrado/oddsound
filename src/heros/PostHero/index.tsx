@@ -39,7 +39,7 @@ export const PostHero: React.FC<{
                 {categories
                   ?.map((category) =>
                     typeof category === 'object' && category !== null
-                      ? (category.title || 'Untitled category')
+                      ? category.title || 'Untitled category'
                       : null,
                   )
                   .filter(Boolean)
@@ -53,7 +53,9 @@ export const PostHero: React.FC<{
             <div className="pointer-events-auto mt-4 flex flex-col items-center gap-2 text-sm text-white/85 md:flex-row md:justify-center md:gap-6">
               {hasAuthors ? <p>{formatAuthors(populatedAuthors)}</p> : null}
               {publishedAt ? (
-                <time dateTime={publishedAt}>Publicado: {formatRelativePublishedAt(publishedAt)}</time>
+                <time dateTime={publishedAt}>
+                  Publicado: {formatRelativePublishedAt(publishedAt)}
+                </time>
               ) : null}
             </div>
           </div>

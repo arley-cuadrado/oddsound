@@ -42,14 +42,18 @@ export const VideoBlock: React.FC<Props> = ({ disableInnerContainer, video }) =>
 
   if (!embedURL) {
     return (
-      <p className={cn('text-sm text-[#777] dark:text-[#858c98]', { container: !disableInnerContainer })}>
+      <p
+        className={cn('text-sm text-[#777] dark:text-[#858c98]', {
+          container: !disableInnerContainer,
+        })}
+      >
         Invalid video URL
       </p>
     )
   }
 
   return (
-    <section className={cn('w-auto pt-16 pb-16', { container: !disableInnerContainer })}>
+    <section className={cn('w-auto pt-8 pb-8', { container: !disableInnerContainer })}>
       <iframe
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
         allowFullScreen
