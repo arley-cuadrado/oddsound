@@ -78,7 +78,7 @@ export default async function Page({ params: paramsPromise }: Args) {
     : []
 
   return (
-    <article className="mx-auto max-w-4xl pb-24 [&_p]:text-[13px]">
+    <article className="mx-auto max-w-4xl pb-0 [&_p]:text-[13px]">
       <PageClient />
       {/* Allows redirects for valid pages too */}
       <PayloadRedirects disableNotFound url={url} />
@@ -93,7 +93,7 @@ export default async function Page({ params: paramsPromise }: Args) {
         pageTitle={page.title}
       />
       {creatorProfile?.slug ? (
-        <div className="flex justify-center px-4 pb-8 pt-6 md:px-0">
+        <div className="flex justify-center px-4 pb-6 pt-6 md:px-0">
           <Link
             href={`/${creatorProfile.slug}/releases`}
             className="inline-flex items-center text-[13px] font-medium text-[#777] underline underline-offset-4 dark:text-[#858c98]"

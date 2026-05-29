@@ -24,7 +24,7 @@ export const EventsBlock: React.FC<Props> = (props) => {
   if (!events?.length) return null
 
   return (
-    <section className={cn('my-16', { container: !disableInnerContainer })}>
+    <section className={cn('my-8', { container: !disableInnerContainer })}>
       <div className="space-y-6">
         {title ? <h2 className="text-3xl font-semibold tracking-tight">{title}</h2> : null}
 
@@ -35,8 +35,8 @@ export const EventsBlock: React.FC<Props> = (props) => {
 
             return (
               <article className="bg-transparent px-5 shadow-none" key={index}>
-                <div className="flex flex-col gap-6 py-4 md:flex-row md:items-start md:justify-between">
-                  <div className="grid gap-5 md:grid-cols-[52px_minmax(0,140px)_minmax(0,220px)] md:items-start md:gap-8">
+                <div className="flex flex-col gap-6 py-4 lg:flex-row lg:items-start lg:justify-between">
+                  <div className="grid grid-cols-[52px_minmax(0,1fr)_minmax(0,1fr)] items-start gap-5 md:gap-8 lg:grid-cols-[52px_minmax(0,140px)_minmax(0,220px)]">
                     <div className="w-[52px]">
                       <div className="flex w-[52px] flex-col overflow-hidden rounded-[4px] border border-border text-center">
                         <span className="h-[18px] bg-black px-2 text-[10px] font-semibold leading-[18px] uppercase tracking-[0.16em] text-white">
@@ -58,10 +58,10 @@ export const EventsBlock: React.FC<Props> = (props) => {
                     </div>
 
                     <div>
-                      <p className="flex h-[18px] items-center text-[11px] font-medium uppercase tracking-[0.18em] text-[#777] dark:text-[#858c98]">
+                      <p className="flex h-[18px] items-center justify-end text-[11px] font-medium uppercase tracking-[0.18em] text-[#777] dark:text-[#858c98]">
                         Lugar
                       </p>
-                      <p className="flex h-[40px] items-center text-[18px] font-semibold leading-tight text-[#777] dark:text-[#858c98]">
+                      <p className="flex h-[40px] items-center justify-end text-[18px] font-semibold leading-tight text-[#777] dark:text-[#858c98]">
                         {venue}
                       </p>
                     </div>
@@ -71,7 +71,7 @@ export const EventsBlock: React.FC<Props> = (props) => {
                     <CMSLink
                       {...ticketLink}
                       appearance={ticketLink?.appearance ?? 'default'}
-                      className="w-full justify-center md:mt-2 md:w-auto"
+                      className="w-full justify-center lg:mt-2 lg:w-auto"
                       label="Comprar entradas"
                     />
                   ) : null}
