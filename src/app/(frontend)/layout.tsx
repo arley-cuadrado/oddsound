@@ -35,7 +35,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             />
 
             <Header />
-            <main className="w-full pt-[var(--admin-bar-offset,0px)] max-[975px]:pt-[calc(var(--admin-bar-offset,0px)+5rem)] max-[975px]:pb-24">
+            <main className="w-full pt-[var(--admin-bar-offset,0px)] max-[975px]:pt-[calc(var(--admin-bar-offset,0px)+5rem)] max-[975px]:pb-[var(--mobile-page-bottom-offset,6rem)]">
               {children}
             </main>
             {/*<Footer />*/}

@@ -16,7 +16,7 @@ export const SocialMediaBlock: React.FC<Props> = ({ socialLinks }) => {
   if (visibleLinks.length === 0) return null
 
   return (
-    <ul className="flex w-auto grid-cols-1 flex-col items-center justify-center gap-8 border-t pt-4 sm:mt-10 md:flex-row lg:mx-0 lg:max-w-none lg:grid-cols-3">
+    <ul className="flex w-auto flex-wrap items-center justify-center gap-8 border-t pt-4 sm:mt-10 lg:mx-0 lg:max-w-none">
       {visibleLinks.map((item, index) => (
         <li key={item.id || `${item.platform}-${index}`}>
           <Link

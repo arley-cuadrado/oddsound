@@ -8,6 +8,14 @@ const PageClient: React.FC = () => {
 
   useEffect(() => {
     setHeaderTheme('light')
+
+    const root = document.documentElement
+
+    root.style.setProperty('--mobile-page-bottom-offset', '0px')
+
+    return () => {
+      root.style.removeProperty('--mobile-page-bottom-offset')
+    }
   }, [setHeaderTheme])
   return <React.Fragment />
 }
