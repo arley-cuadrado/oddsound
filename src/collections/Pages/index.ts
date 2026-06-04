@@ -174,10 +174,17 @@ export const Pages: CollectionConfig<'pages'> = {
               name: 'layout',
               type: 'blocks',
               blocks: editorialBlocks,
-              filterOptions: () =>
-                editorialBlocks
+              filterOptions: ({ req }) => {
+                const hiddenBlocks = new Set(['formBlock'])
+
+                if (req.user?.role === 'creator') {
+                  hiddenBlocks.add('archive')
+                }
+
+                return editorialBlocks
                   .map((block) => block.slug)
-                  .filter((slug): slug is string => Boolean(slug) && slug !== 'formBlock'),
+                  .filter((slug): slug is string => Boolean(slug) && !hiddenBlocks.has(slug))
+              },
               required: true,
               admin: {
                 initCollapsed: true,
