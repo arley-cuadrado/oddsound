@@ -23,8 +23,8 @@ export const VideoBlock: Block = {
   slug: 'videoBlock',
   interfaceName: 'VideoBlock',
   labels: {
-    plural: 'Videos',
-    singular: 'Video',
+    plural: 'YouTube',
+    singular: 'YouTube',
   },
   fields: [
     {

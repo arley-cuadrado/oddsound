@@ -67,8 +67,8 @@ export const Content: Block = {
   slug: 'content',
   interfaceName: 'ContentBlock',
   labels: {
-    plural: 'Contenido',
-    singular: 'Contenido',
+    plural: 'Textos',
+    singular: 'Texto',
   },
   fields: [
     {

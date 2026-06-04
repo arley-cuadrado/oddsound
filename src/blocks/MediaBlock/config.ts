@@ -4,8 +4,8 @@ export const MediaBlock: Block = {
   slug: 'mediaBlock',
   interfaceName: 'MediaBlock',
   labels: {
-    plural: 'Medios',
-    singular: 'Medio',
+    plural: 'Imágenes',
+    singular: 'Imagen',
   },
   fields: [
     {
