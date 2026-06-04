@@ -20,15 +20,15 @@ export const hero: Field = {
       label: 'Tipo',
       options: [
         {
-          label: 'Alto impacto',
+          label: 'Completo',
           value: 'highImpact',
         },
         {
-          label: 'Impacto medio',
+          label: 'Dividido',
           value: 'mediumImpact',
         },
         {
-          label: 'Bajo impacto',
+          label: 'Minimal',
           value: 'lowImpact',
         },
       ],
