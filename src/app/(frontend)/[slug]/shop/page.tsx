@@ -151,6 +151,9 @@ export default async function ArtistShopPage({ params: paramsPromise }: Args) {
                 <p className="text-xs uppercase tracking-[0.18em] text-[#777] dark:text-[#858c98]">
                   Shop
                 </p>
+                <h1 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white md:text-5xl">
+                  {profile.displayName || 'Artista'}
+                </h1>
                 <div className="flex flex-wrap gap-3">
                   <Link
                     href={`/${profile.slug}/releases`}
