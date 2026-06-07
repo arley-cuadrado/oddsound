@@ -71,7 +71,6 @@ export const Profiles: CollectionConfig = {
   },
   admin: {
     defaultColumns: ['displayName', 'accountType', 'slug', 'updatedAt'],
-    hidden: ({ user }) => !isAdminUser(user as { role?: null | string } | null | undefined),
     useAsTitle: 'displayName',
   },
   fields: [

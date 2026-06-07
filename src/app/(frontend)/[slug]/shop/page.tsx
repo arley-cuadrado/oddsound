@@ -163,7 +163,7 @@ export default async function ArtistShopPage({ params: paramsPromise }: Args) {
                 </div>
                 <div className="flex flex-wrap gap-3">
                   <Link
-                    href={`/${profile.slug}`}
+                    href={`/${profile.slug}/releases`}
                     className="inline-flex items-center rounded-full border border-white/15 px-4 py-2 text-[13px] font-medium text-white transition hover:border-white/30 hover:bg-white/5"
                   >
                     Volver al perfil de {profile.displayName}
