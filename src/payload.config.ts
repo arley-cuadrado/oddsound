@@ -46,7 +46,11 @@ export default buildConfig({
     components: {
       afterLogin: ['@/components/CreatorRegisterLink'],
       afterDashboard: ['@/components/BeforeDashboard'],
-      afterNavLinks: ['@/components/EmailPreviewNavLink', '@/components/ScheduledPublishesNavLink'],
+      afterNavLinks: [
+        '@/components/CreatorNavLabelOverrides',
+        '@/components/EmailPreviewNavLink',
+        '@/components/ScheduledPublishesNavLink',
+      ],
       graphics: {
         Icon: '@/components/AdminIcon',
         Logo: '@/components/AdminLogo',

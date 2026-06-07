@@ -85,7 +85,7 @@ export const Products: CollectionConfig = {
         },
       },
     },
-    defaultColumns: ['title', 'status', 'productType', 'price', 'updatedAt'],
+    defaultColumns: ['title', 'status', 'price', 'updatedAt'],
     useAsTitle: 'title',
   },
   defaultPopulate: {
@@ -168,20 +168,12 @@ export const Products: CollectionConfig = {
               defaultValue: 'physical',
               label: 'Tipo de producto',
               admin: {
-                description: 'Define si vendes mercancía física, un archivo digital o tickets para un evento.',
+                hidden: true,
               },
               options: [
                 {
                   label: 'Físico',
                   value: 'physical',
-                },
-                {
-                  label: 'Digital',
-                  value: 'digital',
-                },
-                {
-                  label: 'Ticket',
-                  value: 'ticket',
                 },
               ],
               required: true,

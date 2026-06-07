@@ -946,10 +946,7 @@ export interface Product {
         id?: string | null;
       }[]
     | null;
-  /**
-   * Define si vendes mercancía física, un archivo digital o tickets para un evento.
-   */
-  productType: 'physical' | 'digital' | 'ticket';
+  productType: 'physical';
   /**
    * Borrador no aparece en la tienda. Activo se publica en la tienda pública del artista o la banda.
    */

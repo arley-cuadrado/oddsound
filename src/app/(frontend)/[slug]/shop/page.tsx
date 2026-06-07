@@ -25,7 +25,6 @@ const PRODUCT_SHOP_SELECT = {
   externalCheckoutURL: true,
   images: true,
   price: true,
-  productType: true,
   slug: true,
   title: true,
 } as const
@@ -139,10 +138,6 @@ export default async function ArtistShopPage({ params: paramsPromise }: Args) {
   })
 
   const products = productsResult.docs
-  const ticketCount = products.filter((product) => product.productType === 'ticket').length
-  const digitalCount = products.filter((product) => product.productType === 'digital').length
-  const physicalCount = products.filter((product) => product.productType === 'physical').length
-
   return (
     <div className="mx-auto max-w-6xl pb-24 pt-16 md:pt-20">
       <div className="container">
@@ -172,24 +167,12 @@ export default async function ArtistShopPage({ params: paramsPromise }: Args) {
               </div>
 
               <div className="grid gap-3 rounded-[1.5rem] border border-white/10 bg-white/5 p-4 backdrop-blur-sm">
-                <div className="grid grid-cols-3 gap-3">
-                  <div className="rounded-2xl bg-white/5 px-3 py-4 text-center">
-                    <p className="text-[11px] uppercase tracking-[0.18em] text-white/55">Activos</p>
-                    <p className="mt-2 text-2xl font-semibold text-white">{products.length}</p>
-                  </div>
-                  <div className="rounded-2xl bg-white/5 px-3 py-4 text-center">
-                    <p className="text-[11px] uppercase tracking-[0.18em] text-white/55">Digital</p>
-                    <p className="mt-2 text-2xl font-semibold text-white">{digitalCount}</p>
-                  </div>
-                  <div className="rounded-2xl bg-white/5 px-3 py-4 text-center">
-                    <p className="text-[11px] uppercase tracking-[0.18em] text-white/55">Ticket</p>
-                    <p className="mt-2 text-2xl font-semibold text-white">{ticketCount}</p>
-                  </div>
-                </div>
+                <p className="text-[11px] uppercase tracking-[0.18em] text-white/55">Productos</p>
+                <p className="text-2xl font-semibold text-white">{products.length}</p>
                 <p className="text-[12px] leading-6 text-white/55">
-                  {physicalCount > 0
-                    ? `${physicalCount} producto${physicalCount === 1 ? '' : 's'} físico${physicalCount === 1 ? '' : 's'} disponible${physicalCount === 1 ? '' : 's'}.`
-                    : 'Este catálogo puede crecer con productos físicos, digitales o tickets.'}
+                  {products.length > 0
+                    ? `${products.length} producto${products.length === 1 ? '' : 's'} disponible${products.length === 1 ? '' : 's'} en esta tienda.`
+                    : 'Esta tienda está preparando su primera colección de productos.'}
                 </p>
               </div>
             </div>
@@ -229,11 +212,7 @@ export default async function ArtistShopPage({ params: paramsPromise }: Args) {
                     )}
                     <div className="absolute inset-x-0 top-0 flex items-start justify-between p-4">
                       <span className="inline-flex rounded-full bg-white/92 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-900">
-                        {product.productType === 'ticket'
-                          ? 'Ticket'
-                          : product.productType === 'digital'
-                            ? 'Digital'
-                            : 'Producto'}
+                        Producto
                       </span>
                     </div>
                   </div>
