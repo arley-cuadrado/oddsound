@@ -139,28 +139,60 @@ export default async function ArtistShopPage({ params: paramsPromise }: Args) {
   })
 
   const products = productsResult.docs
+  const ticketCount = products.filter((product) => product.productType === 'ticket').length
+  const digitalCount = products.filter((product) => product.productType === 'digital').length
+  const physicalCount = products.filter((product) => product.productType === 'physical').length
 
   return (
-    <div className="mx-auto max-w-5xl pb-24 pt-24">
+    <div className="mx-auto max-w-6xl pb-24 pt-16 md:pt-20">
       <div className="container">
-        <header className="mb-12 text-center">
-          <p className="text-[12px] uppercase tracking-[0.18em] text-[#777] dark:text-[#858c98]">
-            Shop
-          </p>
-          <h1 className="mt-3 text-4xl font-semibold tracking-tight text-slate-900 dark:text-white">
-            {profile.shopHeadline || `Tienda de ${profile.displayName}`}
-          </h1>
-          <p className="mx-auto mt-4 max-w-2xl text-sm text-[#777] dark:text-[#858c98]">
-            {profile.shopDescription ||
-              `Explora los productos disponibles de ${profile.displayName}.`}
-          </p>
-          <div className="mt-6">
-            <Link
-              href={`/${profile.slug}`}
-              className="inline-flex items-center text-[13px] font-medium text-[#777] underline underline-offset-4 dark:text-[#858c98]"
-            >
-              Volver al perfil de {profile.displayName}
-            </Link>
+        <header className="mb-12 overflow-hidden rounded-[2rem] border border-white/10 bg-[#0c0c0f] text-white shadow-[0_30px_90px_rgba(0,0,0,0.24)]">
+          <div className="relative px-6 py-10 md:px-10 md:py-12">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(236,72,153,0.20),_transparent_38%),radial-gradient(circle_at_bottom_right,_rgba(59,130,246,0.16),_transparent_32%)]" />
+            <div className="relative grid gap-8 lg:grid-cols-[minmax(0,1fr)_240px] lg:items-end">
+              <div className="grid gap-5">
+                <p className="text-[12px] uppercase tracking-[0.28em] text-white/55">Shop</p>
+                <div className="grid gap-4">
+                  <h1 className="max-w-3xl text-4xl font-semibold tracking-tight text-white md:text-5xl">
+                    {profile.shopHeadline || `Tienda de ${profile.displayName}`}
+                  </h1>
+                  <p className="max-w-2xl text-sm leading-7 text-white/72 md:text-[15px]">
+                    {profile.shopDescription ||
+                      `Explora los productos disponibles de ${profile.displayName}.`}
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-3">
+                  <Link
+                    href={`/${profile.slug}`}
+                    className="inline-flex items-center rounded-full border border-white/15 px-4 py-2 text-[13px] font-medium text-white transition hover:border-white/30 hover:bg-white/5"
+                  >
+                    Volver al perfil de {profile.displayName}
+                  </Link>
+                </div>
+              </div>
+
+              <div className="grid gap-3 rounded-[1.5rem] border border-white/10 bg-white/5 p-4 backdrop-blur-sm">
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="rounded-2xl bg-white/5 px-3 py-4 text-center">
+                    <p className="text-[11px] uppercase tracking-[0.18em] text-white/55">Activos</p>
+                    <p className="mt-2 text-2xl font-semibold text-white">{products.length}</p>
+                  </div>
+                  <div className="rounded-2xl bg-white/5 px-3 py-4 text-center">
+                    <p className="text-[11px] uppercase tracking-[0.18em] text-white/55">Digital</p>
+                    <p className="mt-2 text-2xl font-semibold text-white">{digitalCount}</p>
+                  </div>
+                  <div className="rounded-2xl bg-white/5 px-3 py-4 text-center">
+                    <p className="text-[11px] uppercase tracking-[0.18em] text-white/55">Ticket</p>
+                    <p className="mt-2 text-2xl font-semibold text-white">{ticketCount}</p>
+                  </div>
+                </div>
+                <p className="text-[12px] leading-6 text-white/55">
+                  {physicalCount > 0
+                    ? `${physicalCount} producto${physicalCount === 1 ? '' : 's'} físico${physicalCount === 1 ? '' : 's'} disponible${physicalCount === 1 ? '' : 's'}.`
+                    : 'Este catálogo puede crecer con productos físicos, digitales o tickets.'}
+                </p>
+              </div>
+            </div>
           </div>
         </header>
 
@@ -180,31 +212,37 @@ export default async function ArtistShopPage({ params: paramsPromise }: Args) {
               return (
                 <article
                   key={product.id}
-                  className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950"
+                  className="group overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-[0_16px_50px_rgba(15,23,42,0.08)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_70px_rgba(15,23,42,0.14)] dark:border-slate-800 dark:bg-slate-950"
                 >
-                  <div className="aspect-square w-full overflow-hidden bg-slate-100 dark:bg-slate-900">
+                  <div className="relative aspect-square w-full overflow-hidden bg-slate-100 dark:bg-slate-900">
                     {imageURL ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
                         alt={product.title}
-                        className="h-full w-full object-cover"
+                        className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
                         src={imageURL}
                       />
-                    ) : null}
-                  </div>
-                  <div className="grid gap-4 p-5">
-                    <div className="grid gap-2">
-                      <p className="text-[12px] uppercase tracking-[0.18em] text-[#777] dark:text-[#858c98]">
+                    ) : (
+                      <div className="flex h-full items-center justify-center bg-[radial-gradient(circle_at_top,_rgba(236,72,153,0.16),_transparent_40%),linear-gradient(180deg,#111827_0%,#1f2937_100%)] px-8 text-center text-sm text-white/70">
+                        Imagen del producto próximamente
+                      </div>
+                    )}
+                    <div className="absolute inset-x-0 top-0 flex items-start justify-between p-4">
+                      <span className="inline-flex rounded-full bg-white/92 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-900">
                         {product.productType === 'ticket'
                           ? 'Ticket'
                           : product.productType === 'digital'
                             ? 'Digital'
                             : 'Producto'}
-                      </p>
-                      <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
+                      </span>
+                    </div>
+                  </div>
+                  <div className="grid gap-5 p-5">
+                    <div className="grid gap-3">
+                      <h2 className="text-xl font-semibold leading-tight text-slate-900 dark:text-white">
                         {product.title}
                       </h2>
-                      <p className="text-sm font-medium text-slate-900 dark:text-white">
+                      <p className="text-lg font-semibold text-slate-900 dark:text-white">
                         {formatPrice({
                           currency: product.currency || profile.shopCurrency || 'COP',
                           price: product.price,
@@ -232,9 +270,18 @@ export default async function ArtistShopPage({ params: paramsPromise }: Args) {
             })}
           </div>
         ) : (
-          <p className="py-8 text-center text-sm text-[#777] dark:text-[#858c98]">
-            Aún no hay productos activos en esta tienda.
-          </p>
+          <div className="rounded-[1.75rem] border border-dashed border-slate-300 bg-white/70 px-6 py-12 text-center dark:border-slate-700 dark:bg-slate-950/50">
+            <p className="text-[12px] uppercase tracking-[0.22em] text-[#777] dark:text-[#858c98]">
+              Shop
+            </p>
+            <h2 className="mt-3 text-2xl font-semibold text-slate-900 dark:text-white">
+              Aún no hay productos activos
+            </h2>
+            <p className="mx-auto mt-4 max-w-xl text-sm leading-7 text-[#777] dark:text-[#858c98]">
+              Esta tienda todavía está preparando su primer drop. Vuelve pronto para descubrir
+              nuevos productos, lanzamientos especiales o tickets.
+            </p>
+          </div>
         )}
       </div>
     </div>
