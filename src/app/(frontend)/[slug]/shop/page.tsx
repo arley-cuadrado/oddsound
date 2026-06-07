@@ -148,6 +148,9 @@ export default async function ArtistShopPage({ params: paramsPromise }: Args) {
           <div className="relative">
             <div className="relative grid gap-8 lg:items-end">
               <div className="grid gap-5">
+                <p className="text-xs uppercase tracking-[0.18em] text-[#777] dark:text-[#858c98]">
+                  Shop
+                </p>
                 <div className="flex flex-wrap gap-3">
                   <Link
                     href={`/${profile.slug}/releases`}
