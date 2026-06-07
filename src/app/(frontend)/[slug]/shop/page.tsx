@@ -148,16 +148,6 @@ export default async function ArtistShopPage({ params: paramsPromise }: Args) {
           <div className="relative">
             <div className="relative grid gap-8 lg:grid-cols-[minmax(0,1fr)_240px] lg:items-end">
               <div className="grid gap-5">
-                <p className="text-[12px] uppercase tracking-[0.28em] text-white/55">Shop</p>
-                <div className="grid gap-4">
-                  <h1 className="max-w-3xl text-4xl font-semibold tracking-tight text-white md:text-5xl">
-                    {profile.shopHeadline || `Tienda de ${profile.displayName}`}
-                  </h1>
-                  <p className="max-w-2xl text-sm leading-7 text-white/72 md:text-[15px]">
-                    {profile.shopDescription ||
-                      `Explora los productos disponibles de ${profile.displayName}.`}
-                  </p>
-                </div>
                 <div className="flex flex-wrap gap-3">
                   <Link
                     href={`/${profile.slug}/releases`}
