@@ -144,8 +144,8 @@ export default async function ArtistShopPage({ params: paramsPromise }: Args) {
   return (
     <div className="mx-auto max-w-6xl pb-24 pt-16 md:pt-20">
       <div className="container">
-        <header className="mb-12 overflow-hidden rounded-[2rem] border border-white/10 bg-[#0c0c0f] text-white shadow-[0_30px_90px_rgba(0,0,0,0.24)]">
-          <div className="relative px-6 py-10 md:px-10 md:py-12">
+        <header className="mb-12 overflow-hidden rounded-[2rem] bg-[#0c0c0f] text-white shadow-[0_30px_90px_rgba(0,0,0,0.24)]">
+          <div className="relative">
             <div className="relative grid gap-8 lg:grid-cols-[minmax(0,1fr)_240px] lg:items-end">
               <div className="grid gap-5">
                 <p className="text-[12px] uppercase tracking-[0.28em] text-white/55">Shop</p>
