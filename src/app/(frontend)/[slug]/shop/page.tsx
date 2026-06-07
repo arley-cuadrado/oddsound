@@ -182,7 +182,7 @@ export default async function ArtistShopPage({ params: paramsPromise }: Args) {
         </header>
 
         {products.length > 0 ? (
-          <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
             {products.map((product) => {
               const firstImage =
                 Array.isArray(product.images) && product.images[0] && typeof product.images[0] === 'object'
