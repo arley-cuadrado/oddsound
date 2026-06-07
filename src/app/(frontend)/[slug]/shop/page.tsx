@@ -146,7 +146,7 @@ export default async function ArtistShopPage({ params: paramsPromise }: Args) {
       <div className="container">
         <header className="mb-12 overflow-hidden rounded-[2rem] bg-[#0c0c0f] text-white shadow-[0_30px_90px_rgba(0,0,0,0.24)]">
           <div className="relative">
-            <div className="relative grid gap-8 lg:grid-cols-[minmax(0,1fr)_240px] lg:items-end">
+            <div className="relative grid gap-8 lg:items-end">
               <div className="grid gap-5">
                 <div className="flex flex-wrap gap-3">
                   <Link
@@ -156,16 +156,6 @@ export default async function ArtistShopPage({ params: paramsPromise }: Args) {
                     Volver al perfil de {profile.displayName}
                   </Link>
                 </div>
-              </div>
-
-              <div className="grid gap-3 rounded-[1.5rem] border border-white/10 bg-white/5 p-4 backdrop-blur-sm">
-                <p className="text-[11px] uppercase tracking-[0.18em] text-white/55">Productos</p>
-                <p className="text-2xl font-semibold text-white">{products.length}</p>
-                <p className="text-[12px] leading-6 text-white/55">
-                  {products.length > 0
-                    ? `${products.length} producto${products.length === 1 ? '' : 's'} disponible${products.length === 1 ? '' : 's'} en esta tienda.`
-                    : 'Esta tienda está preparando su primera colección de productos.'}
-                </p>
               </div>
             </div>
           </div>
