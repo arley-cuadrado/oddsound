@@ -197,7 +197,7 @@ export default async function ArtistShopPage({ params: paramsPromise }: Args) {
               return (
                 <article
                   key={product.id}
-                  className="group overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-[0_16px_50px_rgba(15,23,42,0.08)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_70px_rgba(15,23,42,0.14)] dark:border-slate-800 dark:bg-slate-950"
+                  className="group overflow-hidden rounded-[0.625rem] border border-slate-200 bg-white shadow-[0_16px_50px_rgba(15,23,42,0.08)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_70px_rgba(15,23,42,0.14)] dark:border-slate-800 dark:bg-slate-950"
                 >
                   <div className="relative aspect-square w-full overflow-hidden bg-slate-100 dark:bg-slate-900">
                     {imageURL ? (
