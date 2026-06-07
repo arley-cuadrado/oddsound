@@ -160,6 +160,48 @@ export const Profiles: CollectionConfig = {
         },
       ],
     },
+    {
+      name: 'shopEnabled',
+      type: 'checkbox',
+      defaultValue: false,
+      label: 'Tienda activa',
+    },
+    {
+      name: 'shopHeadline',
+      type: 'text',
+      label: 'Título de la tienda',
+    },
+    {
+      name: 'shopDescription',
+      type: 'textarea',
+      label: 'Descripción de la tienda',
+    },
+    {
+      name: 'shopCurrency',
+      type: 'select',
+      defaultValue: 'COP',
+      label: 'Moneda de la tienda',
+      options: [
+        {
+          label: 'COP',
+          value: 'COP',
+        },
+        {
+          label: 'USD',
+          value: 'USD',
+        },
+        {
+          label: 'EUR',
+          value: 'EUR',
+        },
+      ],
+    },
+    {
+      name: 'shopExternalCheckoutOnly',
+      type: 'checkbox',
+      defaultValue: true,
+      label: 'Usar checkout externo',
+    },
     slugField({
       useAsSlug: 'displayName',
     }),

@@ -69,6 +69,7 @@ export interface Config {
   collections: {
     pages: Page;
     posts: Post;
+    products: Product;
     media: Media;
     categories: Category;
     profiles: Profile;
@@ -87,6 +88,7 @@ export interface Config {
   collectionsSelect: {
     pages: PagesSelect<false> | PagesSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
+    products: ProductsSelect<false> | ProductsSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     profiles: ProfilesSelect<false> | ProfilesSelect<true>;
@@ -306,6 +308,11 @@ export interface Profile {
         id?: string | null;
       }[]
     | null;
+  shopEnabled?: boolean | null;
+  shopHeadline?: string | null;
+  shopDescription?: string | null;
+  shopCurrency?: ('COP' | 'USD' | 'EUR') | null;
+  shopExternalCheckoutOnly?: boolean | null;
   /**
    * When enabled, the slug will auto-generate from the title field on save and autosave.
    */
@@ -910,6 +917,39 @@ export interface Form {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "products".
+ */
+export interface Product {
+  id: string;
+  owner?: (string | null) | User;
+  profile?: (string | null) | Profile;
+  title: string;
+  description?: string | null;
+  images?:
+    | {
+        image: string | Media;
+        id?: string | null;
+      }[]
+    | null;
+  productType: 'physical' | 'digital' | 'ticket';
+  status: 'draft' | 'active' | 'archived';
+  price: number;
+  currency: 'COP' | 'USD' | 'EUR';
+  inventoryMode?: ('unlimited' | 'limited') | null;
+  inventoryQuantity?: number | null;
+  fulfillmentType?: ('external' | 'manual' | 'digital_delivery') | null;
+  externalCheckoutURL?: string | null;
+  publishedAt?: string | null;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects".
  */
 export interface Redirect {
@@ -1105,6 +1145,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'posts';
         value: string | Post;
+      } | null)
+    | ({
+        relationTo: 'products';
+        value: string | Product;
       } | null)
     | ({
         relationTo: 'media';
@@ -1430,6 +1474,35 @@ export interface PostsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "products_select".
+ */
+export interface ProductsSelect<T extends boolean = true> {
+  owner?: T;
+  profile?: T;
+  title?: T;
+  description?: T;
+  images?:
+    | T
+    | {
+        image?: T;
+        id?: T;
+      };
+  productType?: T;
+  status?: T;
+  price?: T;
+  currency?: T;
+  inventoryMode?: T;
+  inventoryQuantity?: T;
+  fulfillmentType?: T;
+  externalCheckoutURL?: T;
+  publishedAt?: T;
+  generateSlug?: T;
+  slug?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "media_select".
  */
 export interface MediaSelect<T extends boolean = true> {
@@ -1564,6 +1637,11 @@ export interface ProfilesSelect<T extends boolean = true> {
         url?: T;
         id?: T;
       };
+  shopEnabled?: T;
+  shopHeadline?: T;
+  shopDescription?: T;
+  shopCurrency?: T;
+  shopExternalCheckoutOnly?: T;
   generateSlug?: T;
   slug?: T;
   updatedAt?: T;
