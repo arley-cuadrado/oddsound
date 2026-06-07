@@ -18,9 +18,6 @@ export const Products: CollectionConfig = {
     {
       fields: ['owner', 'updatedAt'],
     },
-    {
-      fields: ['slug'],
-    },
   ],
   labels: {
     plural: 'Productos',
