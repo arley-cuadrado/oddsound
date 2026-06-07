@@ -7,6 +7,10 @@ import { slugField } from 'payload'
 
 export const Profiles: CollectionConfig = {
   slug: 'profiles',
+  labels: {
+    plural: 'Perfiles',
+    singular: 'Perfil',
+  },
   indexes: [
     {
       fields: ['owner'],
@@ -184,7 +188,8 @@ export const Profiles: CollectionConfig = {
       defaultValue: false,
       label: 'Tienda activa',
       admin: {
-        description: 'Activa esta opción para mostrar la tienda pública del artista o la banda.',
+        description:
+          'Activa esta opción para mostrar la tienda pública del artista o la banda. Luego crea o activa productos en la colección Productos.',
       },
     },
     {
@@ -193,6 +198,7 @@ export const Profiles: CollectionConfig = {
       label: 'Título de la tienda',
       admin: {
         condition: (_data, siblingData) => Boolean(siblingData?.shopEnabled),
+        description: 'Opcional. Si lo dejas vacío, oddsound mostrará un título por defecto.',
       },
     },
     {
@@ -201,6 +207,7 @@ export const Profiles: CollectionConfig = {
       label: 'Descripción de la tienda',
       admin: {
         condition: (_data, siblingData) => Boolean(siblingData?.shopEnabled),
+        description: 'Opcional. Úsala para contar qué vende el artista o la banda.',
       },
     },
     {
@@ -233,7 +240,8 @@ export const Profiles: CollectionConfig = {
       label: 'Usar checkout externo',
       admin: {
         condition: (_data, siblingData) => Boolean(siblingData?.shopEnabled),
-        description: 'Mantén esta opción activa mientras oddsound use enlaces externos de compra.',
+        description:
+          'Mantén esta opción activa mientras oddsound use enlaces externos de compra como Stripe u otra plataforma.',
       },
     },
     slugField({

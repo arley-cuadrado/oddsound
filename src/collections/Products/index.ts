@@ -147,6 +147,7 @@ export const Products: CollectionConfig = {
               name: 'images',
               type: 'array',
               admin: {
+                description: 'La primera imagen será la portada principal del producto en la tienda pública.',
                 initCollapsed: true,
               },
               fields: [
@@ -166,6 +167,9 @@ export const Products: CollectionConfig = {
               type: 'select',
               defaultValue: 'physical',
               label: 'Tipo de producto',
+              admin: {
+                description: 'Define si vendes mercancía física, un archivo digital o tickets para un evento.',
+              },
               options: [
                 {
                   label: 'Físico',
@@ -187,6 +191,10 @@ export const Products: CollectionConfig = {
               type: 'select',
               defaultValue: 'draft',
               label: 'Estado',
+              admin: {
+                description:
+                  'Borrador no aparece en la tienda. Activo se publica en la tienda pública del artista o la banda.',
+              },
               options: [
                 {
                   label: 'Borrador',
@@ -296,7 +304,8 @@ export const Products: CollectionConfig = {
               type: 'text',
               admin: {
                 condition: (_data, siblingData) => siblingData?.fulfillmentType === 'external',
-                description: 'Pega aquí la URL de compra del proveedor externo.',
+                description:
+                  'Pega aquí la URL de compra del proveedor externo. Ese será el botón Comprar en la tienda pública.',
               },
               label: 'URL de compra externa',
               validate: (
@@ -325,7 +334,9 @@ export const Products: CollectionConfig = {
       type: 'date',
       label: 'Fecha de activación',
       admin: {
+        description: 'Se completa automáticamente cuando el producto pasa a estado Activo.',
         position: 'sidebar',
+        readOnly: true,
       },
     },
     slugField({

@@ -309,14 +309,20 @@ export interface Profile {
       }[]
     | null;
   /**
-   * Activa esta opción para mostrar la tienda pública del artista o la banda.
+   * Activa esta opción para mostrar la tienda pública del artista o la banda. Luego crea o activa productos en la colección Productos.
    */
   shopEnabled?: boolean | null;
+  /**
+   * Opcional. Si lo dejas vacío, oddsound mostrará un título por defecto.
+   */
   shopHeadline?: string | null;
+  /**
+   * Opcional. Úsala para contar qué vende el artista o la banda.
+   */
   shopDescription?: string | null;
   shopCurrency?: ('COP' | 'USD' | 'EUR') | null;
   /**
-   * Mantén esta opción activa mientras oddsound use enlaces externos de compra.
+   * Mantén esta opción activa mientras oddsound use enlaces externos de compra como Stripe u otra plataforma.
    */
   shopExternalCheckoutOnly?: boolean | null;
   /**
@@ -931,13 +937,22 @@ export interface Product {
   profile?: (string | null) | Profile;
   title: string;
   description?: string | null;
+  /**
+   * La primera imagen será la portada principal del producto en la tienda pública.
+   */
   images?:
     | {
         image: string | Media;
         id?: string | null;
       }[]
     | null;
+  /**
+   * Define si vendes mercancía física, un archivo digital o tickets para un evento.
+   */
   productType: 'physical' | 'digital' | 'ticket';
+  /**
+   * Borrador no aparece en la tienda. Activo se publica en la tienda pública del artista o la banda.
+   */
   status: 'draft' | 'active' | 'archived';
   price: number;
   currency: 'COP' | 'USD' | 'EUR';
@@ -948,9 +963,12 @@ export interface Product {
   inventoryQuantity?: number | null;
   fulfillmentType?: ('external' | 'manual' | 'digital_delivery') | null;
   /**
-   * Pega aquí la URL de compra del proveedor externo.
+   * Pega aquí la URL de compra del proveedor externo. Ese será el botón Comprar en la tienda pública.
    */
   externalCheckoutURL?: string | null;
+  /**
+   * Se completa automáticamente cuando el producto pasa a estado Activo.
+   */
   publishedAt?: string | null;
   /**
    * When enabled, the slug will auto-generate from the title field on save and autosave.
