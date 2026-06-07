@@ -93,13 +93,21 @@ export default async function Page({ params: paramsPromise }: Args) {
         pageTitle={page.title}
       />
       {creatorProfile?.slug ? (
-        <div className="flex justify-center px-4 pb-6 pt-6 md:px-0">
+        <div className="flex flex-wrap justify-center gap-x-6 gap-y-3 px-4 pb-6 pt-6 md:px-0">
           <Link
             href={`/${creatorProfile.slug}/releases`}
             className="inline-flex items-center text-[13px] font-medium text-[#777] underline underline-offset-4 dark:text-[#858c98]"
           >
             Ver lanzamientos de {creatorProfile.displayName || page.title}
           </Link>
+          {creatorProfile.shopEnabled ? (
+            <Link
+              href={`/${creatorProfile.slug}/shop`}
+              className="inline-flex items-center text-[13px] font-medium text-[#777] underline underline-offset-4 dark:text-[#858c98]"
+            >
+              Ver tienda de {creatorProfile.displayName || page.title}
+            </Link>
+          ) : null}
         </div>
       ) : null}
       <RenderBlocks blocks={artistLayout} />

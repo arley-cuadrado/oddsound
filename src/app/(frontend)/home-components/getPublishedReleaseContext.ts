@@ -27,6 +27,7 @@ export const PROFILE_SELECT = {
   genre: true,
   location: true,
   owner: true,
+  shopEnabled: true,
   slug: true,
 } as const
 
