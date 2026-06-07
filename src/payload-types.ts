@@ -308,10 +308,16 @@ export interface Profile {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Activa esta opción para mostrar la tienda pública del artista o la banda.
+   */
   shopEnabled?: boolean | null;
   shopHeadline?: string | null;
   shopDescription?: string | null;
   shopCurrency?: ('COP' | 'USD' | 'EUR') | null;
+  /**
+   * Mantén esta opción activa mientras oddsound use enlaces externos de compra.
+   */
   shopExternalCheckoutOnly?: boolean | null;
   /**
    * When enabled, the slug will auto-generate from the title field on save and autosave.
@@ -936,8 +942,14 @@ export interface Product {
   price: number;
   currency: 'COP' | 'USD' | 'EUR';
   inventoryMode?: ('unlimited' | 'limited') | null;
+  /**
+   * Obligatoria cuando el inventario es limitado.
+   */
   inventoryQuantity?: number | null;
   fulfillmentType?: ('external' | 'manual' | 'digital_delivery') | null;
+  /**
+   * Pega aquí la URL de compra del proveedor externo.
+   */
   externalCheckoutURL?: string | null;
   publishedAt?: string | null;
   /**

@@ -116,156 +116,198 @@ export const Products: CollectionConfig = {
       },
     },
     {
-      name: 'title',
-      type: 'text',
-      label: 'Título',
-      required: true,
-    },
-    {
-      name: 'description',
-      type: 'textarea',
-      label: 'Descripción',
-    },
-    {
-      name: 'images',
-      type: 'array',
-      admin: {
-        initCollapsed: true,
-      },
-      fields: [
+      type: 'tabs',
+      tabs: [
         {
-          name: 'image',
-          type: 'upload',
-          label: 'Imagen',
-          relationTo: 'media',
-          required: true,
+          label: 'Producto',
+          fields: [
+            {
+              name: 'title',
+              type: 'text',
+              label: 'Título',
+              required: true,
+            },
+            {
+              name: 'description',
+              type: 'textarea',
+              label: 'Descripción',
+            },
+            {
+              name: 'images',
+              type: 'array',
+              admin: {
+                initCollapsed: true,
+              },
+              fields: [
+                {
+                  name: 'image',
+                  type: 'upload',
+                  label: 'Imagen',
+                  relationTo: 'media',
+                  required: true,
+                },
+              ],
+              label: 'Imágenes',
+              minRows: 1,
+            },
+            {
+              name: 'productType',
+              type: 'select',
+              defaultValue: 'physical',
+              label: 'Tipo de producto',
+              options: [
+                {
+                  label: 'Físico',
+                  value: 'physical',
+                },
+                {
+                  label: 'Digital',
+                  value: 'digital',
+                },
+                {
+                  label: 'Ticket',
+                  value: 'ticket',
+                },
+              ],
+              required: true,
+            },
+            {
+              name: 'status',
+              type: 'select',
+              defaultValue: 'draft',
+              label: 'Estado',
+              options: [
+                {
+                  label: 'Borrador',
+                  value: 'draft',
+                },
+                {
+                  label: 'Activo',
+                  value: 'active',
+                },
+                {
+                  label: 'Archivado',
+                  value: 'archived',
+                },
+              ],
+              required: true,
+            },
+          ],
+        },
+        {
+          label: 'Venta',
+          fields: [
+            {
+              name: 'price',
+              type: 'number',
+              label: 'Precio',
+              min: 0,
+              required: true,
+            },
+            {
+              name: 'currency',
+              type: 'select',
+              defaultValue: 'COP',
+              label: 'Moneda',
+              options: [
+                {
+                  label: 'COP',
+                  value: 'COP',
+                },
+                {
+                  label: 'USD',
+                  value: 'USD',
+                },
+                {
+                  label: 'EUR',
+                  value: 'EUR',
+                },
+              ],
+              required: true,
+            },
+            {
+              name: 'inventoryMode',
+              type: 'select',
+              defaultValue: 'unlimited',
+              label: 'Inventario',
+              options: [
+                {
+                  label: 'Ilimitado',
+                  value: 'unlimited',
+                },
+                {
+                  label: 'Limitado',
+                  value: 'limited',
+                },
+              ],
+            },
+            {
+              name: 'inventoryQuantity',
+              type: 'number',
+              admin: {
+                condition: (_data, siblingData) => siblingData?.inventoryMode === 'limited',
+                description: 'Obligatoria cuando el inventario es limitado.',
+              },
+              label: 'Cantidad disponible',
+              min: 0,
+              validate: (
+                value: number | null | undefined,
+                { siblingData }: { siblingData?: { inventoryMode?: null | string } },
+              ) => {
+                if (siblingData?.inventoryMode !== 'limited') return true
+                return typeof value === 'number' && value >= 0
+                  ? true
+                  : 'Define cuántas unidades hay disponibles.'
+              },
+            },
+            {
+              name: 'fulfillmentType',
+              type: 'select',
+              defaultValue: 'external',
+              label: 'Tipo de entrega',
+              options: [
+                {
+                  label: 'Checkout externo',
+                  value: 'external',
+                },
+                {
+                  label: 'Entrega manual',
+                  value: 'manual',
+                },
+                {
+                  label: 'Entrega digital',
+                  value: 'digital_delivery',
+                },
+              ],
+            },
+            {
+              name: 'externalCheckoutURL',
+              type: 'text',
+              admin: {
+                condition: (_data, siblingData) => siblingData?.fulfillmentType === 'external',
+                description: 'Pega aquí la URL de compra del proveedor externo.',
+              },
+              label: 'URL de compra externa',
+              validate: (
+                value: null | string | undefined,
+                { siblingData }: { siblingData?: { fulfillmentType?: null | string } },
+              ) => {
+                if (siblingData?.fulfillmentType !== 'external') return true
+                if (typeof value !== 'string' || !value.trim()) {
+                  return 'La URL de compra externa es obligatoria.'
+                }
+
+                try {
+                  new URL(value)
+                  return true
+                } catch {
+                  return 'Ingresa una URL válida para el checkout externo.'
+                }
+              },
+            },
+          ],
         },
       ],
-      label: 'Imágenes',
-      minRows: 1,
-    },
-    {
-      name: 'productType',
-      type: 'select',
-      defaultValue: 'physical',
-      label: 'Tipo de producto',
-      options: [
-        {
-          label: 'Físico',
-          value: 'physical',
-        },
-        {
-          label: 'Digital',
-          value: 'digital',
-        },
-        {
-          label: 'Ticket',
-          value: 'ticket',
-        },
-      ],
-      required: true,
-    },
-    {
-      name: 'status',
-      type: 'select',
-      defaultValue: 'draft',
-      label: 'Estado',
-      options: [
-        {
-          label: 'Borrador',
-          value: 'draft',
-        },
-        {
-          label: 'Activo',
-          value: 'active',
-        },
-        {
-          label: 'Archivado',
-          value: 'archived',
-        },
-      ],
-      required: true,
-    },
-    {
-      name: 'price',
-      type: 'number',
-      label: 'Precio',
-      min: 0,
-      required: true,
-    },
-    {
-      name: 'currency',
-      type: 'select',
-      defaultValue: 'COP',
-      label: 'Moneda',
-      options: [
-        {
-          label: 'COP',
-          value: 'COP',
-        },
-        {
-          label: 'USD',
-          value: 'USD',
-        },
-        {
-          label: 'EUR',
-          value: 'EUR',
-        },
-      ],
-      required: true,
-    },
-    {
-      name: 'inventoryMode',
-      type: 'select',
-      defaultValue: 'unlimited',
-      label: 'Inventario',
-      options: [
-        {
-          label: 'Ilimitado',
-          value: 'unlimited',
-        },
-        {
-          label: 'Limitado',
-          value: 'limited',
-        },
-      ],
-    },
-    {
-      name: 'inventoryQuantity',
-      type: 'number',
-      admin: {
-        condition: (_data, siblingData) => siblingData?.inventoryMode === 'limited',
-      },
-      label: 'Cantidad disponible',
-      min: 0,
-    },
-    {
-      name: 'fulfillmentType',
-      type: 'select',
-      defaultValue: 'external',
-      label: 'Tipo de entrega',
-      options: [
-        {
-          label: 'Checkout externo',
-          value: 'external',
-        },
-        {
-          label: 'Entrega manual',
-          value: 'manual',
-        },
-        {
-          label: 'Entrega digital',
-          value: 'digital_delivery',
-        },
-      ],
-    },
-    {
-      name: 'externalCheckoutURL',
-      type: 'text',
-      admin: {
-        condition: (_data, siblingData) => siblingData?.fulfillmentType === 'external',
-      },
-      label: 'URL de compra externa',
     },
     {
       name: 'publishedAt',

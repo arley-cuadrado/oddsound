@@ -165,22 +165,34 @@ export const Profiles: CollectionConfig = {
       type: 'checkbox',
       defaultValue: false,
       label: 'Tienda activa',
+      admin: {
+        description: 'Activa esta opción para mostrar la tienda pública del artista o la banda.',
+      },
     },
     {
       name: 'shopHeadline',
       type: 'text',
       label: 'Título de la tienda',
+      admin: {
+        condition: (_data, siblingData) => Boolean(siblingData?.shopEnabled),
+      },
     },
     {
       name: 'shopDescription',
       type: 'textarea',
       label: 'Descripción de la tienda',
+      admin: {
+        condition: (_data, siblingData) => Boolean(siblingData?.shopEnabled),
+      },
     },
     {
       name: 'shopCurrency',
       type: 'select',
       defaultValue: 'COP',
       label: 'Moneda de la tienda',
+      admin: {
+        condition: (_data, siblingData) => Boolean(siblingData?.shopEnabled),
+      },
       options: [
         {
           label: 'COP',
@@ -201,6 +213,10 @@ export const Profiles: CollectionConfig = {
       type: 'checkbox',
       defaultValue: true,
       label: 'Usar checkout externo',
+      admin: {
+        condition: (_data, siblingData) => Boolean(siblingData?.shopEnabled),
+        description: 'Mantén esta opción activa mientras oddsound use enlaces externos de compra.',
+      },
     },
     slugField({
       useAsSlug: 'displayName',
