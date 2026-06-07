@@ -171,6 +171,19 @@ export const Media: CollectionConfig = {
       }
     },
   },
+  admin: {
+    components: {
+      views: {
+        edit: {
+          api: {
+            tab: {
+              condition: ({ req }) => isAdminUser(req.user),
+            },
+          },
+        },
+      },
+    },
+  },
   fields: [
     {
       name: 'owner',

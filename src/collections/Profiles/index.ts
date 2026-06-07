@@ -2,7 +2,6 @@ import type { CollectionConfig, TextFieldSingleValidation } from 'payload'
 
 import { authenticated } from '@/access/authenticated'
 import { hasFreshAdminAccess } from '@/access/hasFreshAdminAccess'
-import { isAdmin } from '@/access/isAdmin'
 import { isAdminUser } from '@/utilities/isAdminUser'
 import { slugField } from 'payload'
 
@@ -70,6 +69,17 @@ export const Profiles: CollectionConfig = {
     },
   },
   admin: {
+    components: {
+      views: {
+        edit: {
+          api: {
+            tab: {
+              condition: ({ req }) => isAdminUser(req.user),
+            },
+          },
+        },
+      },
+    },
     defaultColumns: ['displayName', 'accountType', 'slug', 'updatedAt'],
     useAsTitle: 'displayName',
   },
@@ -112,6 +122,9 @@ export const Profiles: CollectionConfig = {
     {
       name: 'bio',
       type: 'textarea',
+      admin: {
+        hidden: true,
+      },
     },
     {
       name: 'avatar',
@@ -122,6 +135,9 @@ export const Profiles: CollectionConfig = {
       name: 'coverImage',
       type: 'upload',
       relationTo: 'media',
+      admin: {
+        hidden: true,
+      },
     },
     {
       name: 'location',
@@ -146,6 +162,9 @@ export const Profiles: CollectionConfig = {
     {
       name: 'socialLinks',
       type: 'array',
+      admin: {
+        hidden: true,
+      },
       fields: [
         {
           name: 'label',

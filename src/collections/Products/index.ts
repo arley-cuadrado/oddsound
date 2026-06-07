@@ -74,6 +74,17 @@ export const Products: CollectionConfig = {
     },
   },
   admin: {
+    components: {
+      views: {
+        edit: {
+          api: {
+            tab: {
+              condition: ({ req }) => isAdminUser(req.user),
+            },
+          },
+        },
+      },
+    },
     defaultColumns: ['title', 'status', 'productType', 'price', 'updatedAt'],
     useAsTitle: 'title',
   },
