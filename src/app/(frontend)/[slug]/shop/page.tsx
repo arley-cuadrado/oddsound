@@ -146,7 +146,6 @@ export default async function ArtistShopPage({ params: paramsPromise }: Args) {
       <div className="container">
         <header className="mb-12 overflow-hidden rounded-[2rem] border border-white/10 bg-[#0c0c0f] text-white shadow-[0_30px_90px_rgba(0,0,0,0.24)]">
           <div className="relative px-6 py-10 md:px-10 md:py-12">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(236,72,153,0.20),_transparent_38%),radial-gradient(circle_at_bottom_right,_rgba(59,130,246,0.16),_transparent_32%)]" />
             <div className="relative grid gap-8 lg:grid-cols-[minmax(0,1fr)_240px] lg:items-end">
               <div className="grid gap-5">
                 <p className="text-[12px] uppercase tracking-[0.28em] text-white/55">Shop</p>
