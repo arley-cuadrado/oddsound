@@ -276,20 +276,44 @@ export const Products: CollectionConfig = {
               type: 'select',
               defaultValue: 'external',
               label: 'Tipo de entrega',
+              admin: {
+                hidden: true,
+              },
               options: [
                 {
                   label: 'Checkout externo',
                   value: 'external',
                 },
+              ],
+            },
+            {
+              name: 'checkoutProvider',
+              type: 'select',
+              defaultValue: 'other',
+              label: 'Proveedor de checkout',
+              admin: {
+                description:
+                  'Indica en qué plataforma externa se procesa la compra. Esto prepara el catálogo para una futura integración más profunda con Stripe Connect u otros proveedores.',
+              },
+              options: [
                 {
-                  label: 'Entrega manual',
-                  value: 'manual',
+                  label: 'Stripe',
+                  value: 'stripe',
                 },
                 {
-                  label: 'Entrega digital',
-                  value: 'digital_delivery',
+                  label: 'Shopify',
+                  value: 'shopify',
+                },
+                {
+                  label: 'Eventbrite',
+                  value: 'eventbrite',
+                },
+                {
+                  label: 'Otro',
+                  value: 'other',
                 },
               ],
+              required: true,
             },
             {
               name: 'externalCheckoutURL',
@@ -315,6 +339,25 @@ export const Products: CollectionConfig = {
                 } catch {
                   return 'Ingresa una URL válida para el checkout externo.'
                 }
+              },
+            },
+            {
+              name: 'externalProductReference',
+              type: 'text',
+              label: 'Referencia externa',
+              admin: {
+                description:
+                  'Opcional. Guarda aquí el ID del producto, precio o checkout en la plataforma externa para futuras automatizaciones.',
+              },
+            },
+            {
+              name: 'checkoutButtonLabel',
+              type: 'text',
+              defaultValue: 'Comprar',
+              label: 'Texto del botón de compra',
+              admin: {
+                description:
+                  'Opcional. Personaliza el texto del botón público. Si lo dejas vacío, oddsound mostrará "Comprar".',
               },
             },
           ],

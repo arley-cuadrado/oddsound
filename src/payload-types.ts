@@ -958,11 +958,23 @@ export interface Product {
    * Obligatoria cuando el inventario es limitado.
    */
   inventoryQuantity?: number | null;
-  fulfillmentType?: ('external' | 'manual' | 'digital_delivery') | null;
+  fulfillmentType?: 'external' | null;
+  /**
+   * Indica en qué plataforma externa se procesa la compra. Esto prepara el catálogo para una futura integración más profunda con Stripe Connect u otros proveedores.
+   */
+  checkoutProvider: 'stripe' | 'shopify' | 'eventbrite' | 'other';
   /**
    * Pega aquí la URL de compra del proveedor externo. Ese será el botón Comprar en la tienda pública.
    */
   externalCheckoutURL?: string | null;
+  /**
+   * Opcional. Guarda aquí el ID del producto, precio o checkout en la plataforma externa para futuras automatizaciones.
+   */
+  externalProductReference?: string | null;
+  /**
+   * Opcional. Personaliza el texto del botón público. Si lo dejas vacío, oddsound mostrará "Comprar".
+   */
+  checkoutButtonLabel?: string | null;
   /**
    * Se completa automáticamente cuando el producto pasa a estado Activo.
    */
@@ -1521,7 +1533,10 @@ export interface ProductsSelect<T extends boolean = true> {
   inventoryMode?: T;
   inventoryQuantity?: T;
   fulfillmentType?: T;
+  checkoutProvider?: T;
   externalCheckoutURL?: T;
+  externalProductReference?: T;
+  checkoutButtonLabel?: T;
   publishedAt?: T;
   generateSlug?: T;
   slug?: T;

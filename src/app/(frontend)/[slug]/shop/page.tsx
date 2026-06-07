@@ -21,8 +21,11 @@ const PROFILE_SHOP_SELECT = {
 } as const
 
 const PRODUCT_SHOP_SELECT = {
+  checkoutButtonLabel: true,
+  checkoutProvider: true,
   currency: true,
   externalCheckoutURL: true,
+  externalProductReference: true,
   images: true,
   price: true,
   slug: true,
@@ -236,7 +239,9 @@ export default async function ArtistShopPage({ params: paramsPromise }: Args) {
                         rel="noreferrer"
                         target="_blank"
                       >
-                        Comprar
+                        {typeof product.checkoutButtonLabel === 'string' && product.checkoutButtonLabel.trim()
+                          ? product.checkoutButtonLabel
+                          : 'Comprar'}
                       </a>
                     ) : (
                       <div className="inline-flex w-full items-center justify-center rounded-full border border-dashed border-slate-300 px-4 py-3 text-sm text-[#777] dark:border-slate-700 dark:text-[#858c98]">
