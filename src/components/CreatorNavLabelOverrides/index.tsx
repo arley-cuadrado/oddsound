@@ -1,7 +1,6 @@
 'use client'
 
 import { useAuth } from '@payloadcms/ui'
-import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
 type AuthUser = {
@@ -26,7 +25,6 @@ function updateCreatorNavLinks(profileHref?: string | null) {
 export default function CreatorNavLabelOverrides() {
   const { user } = useAuth<AuthUser>()
   const [profileHref, setProfileHref] = useState<null | string>(null)
-  const router = useRouter()
 
   useEffect(() => {
     if (user?.role !== 'creator') return
@@ -91,14 +89,6 @@ export default function CreatorNavLabelOverrides() {
       observer.disconnect()
     }
   }, [profileHref, user?.role])
-
-  useEffect(() => {
-    if (user?.role !== 'creator' || !profileHref) return
-
-    if (window.location.pathname === '/dashboard/collections/profiles') {
-      router.replace(profileHref)
-    }
-  }, [profileHref, router, user?.role])
 
   return null
 }

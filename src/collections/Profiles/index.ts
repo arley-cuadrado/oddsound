@@ -74,10 +74,8 @@ export const Profiles: CollectionConfig = {
   },
   admin: {
     components: {
+      beforeList: ['@/components/CreatorProfileListRedirect'],
       views: {
-        list: {
-          Component: '@/components/CreatorProfileListView',
-        },
         edit: {
           api: {
             tab: {
