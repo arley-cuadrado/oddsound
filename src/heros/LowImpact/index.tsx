@@ -26,20 +26,14 @@ export const LowImpactHero: React.FC<LowImpactHeroType> = ({
   children,
   richText,
   pageTitle,
-  creatorName,
   creatorGenre,
   creatorCountry,
 }) => {
   return (
     <div className="container mt-16 px-4 md:px-6">
       <div className="max-w-[48rem]">
-        {(creatorName || creatorGenre || creatorCountry) && (
+        {(creatorGenre || creatorCountry) && (
           <div className="mb-4 space-y-1">
-            {creatorName && (
-              <p className="text-xs uppercase tracking-[0.14em] text-[#777] dark:text-[#858c98]">
-                {creatorName}
-              </p>
-            )}
             {(creatorGenre || creatorCountry) && (
               <p className="text-xs uppercase tracking-[0.14em] text-[#777] dark:text-[#858c98]">
                 {[creatorGenre, creatorCountry].filter(Boolean).join(' · ')}

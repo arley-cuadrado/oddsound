@@ -20,7 +20,6 @@ export const HighImpactHero: React.FC<HighImpactHeroProps> = ({
   pageTitle,
   creatorCountry,
   creatorGenre,
-  creatorName,
 }) => {
   const { setHeaderTheme } = useHeaderTheme()
   const creatorMeta = [creatorGenre, creatorCountry].filter(Boolean).join(' · ')
@@ -41,11 +40,6 @@ export const HighImpactHero: React.FC<HighImpactHeroProps> = ({
       <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex justify-center px-4">
         <div className="w-full max-w-4xl">
           <div className="px-5 pb-2 text-center md:px-8 md:pb-3">
-            {creatorName && (
-              <p className="mb-2 text-xs uppercase tracking-[0.14em] text-white/85">
-                {creatorName}
-              </p>
-            )}
             {creatorMeta && (
               <p className="mb-2 text-xs uppercase tracking-[0.14em] text-white/70">
                 {creatorMeta}

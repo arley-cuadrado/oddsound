@@ -19,7 +19,6 @@ export const MediumImpactHero: React.FC<MediumImpactHeroProps> = ({
   pageTitle,
   creatorCountry,
   creatorGenre,
-  creatorName,
 }) => {
   const creatorMeta = [creatorGenre, creatorCountry].filter(Boolean).join(' · ')
 
@@ -38,18 +37,11 @@ export const MediumImpactHero: React.FC<MediumImpactHeroProps> = ({
         </div>
 
         <div className="flex flex-col justify-center">
-          {(creatorName || creatorMeta) && (
+          {creatorMeta && (
             <div className="mb-4 space-y-1">
-              {creatorName && (
-                <p className="text-xs uppercase tracking-[0.14em] text-[#777] dark:text-[#858c98]">
-                  {creatorName}
-                </p>
-              )}
-              {creatorMeta && (
-                <p className="text-xs uppercase tracking-[0.14em] text-[#777] dark:text-[#858c98]">
-                  {creatorMeta}
-                </p>
-              )}
+              <p className="text-xs uppercase tracking-[0.14em] text-[#777] dark:text-[#858c98]">
+                {creatorMeta}
+              </p>
             </div>
           )}
 
