@@ -12,6 +12,7 @@ import { permanentRedirect } from 'next/navigation'
 import { RenderBlocks } from '@/blocks/RenderBlocks'
 import { RenderHero } from '@/heros/RenderHero'
 import { generateMeta } from '@/utilities/generateMeta'
+import { findPublicProfileBySlug } from '@/utilities/publicProfiles'
 import { buildPublicSlugWhere, normalizePublicSlugParam } from '@/utilities/publicSlugs'
 import PageClient from './page.client'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
@@ -52,6 +53,11 @@ type Args = {
   }>
 }
 
+async function queryProfileBySlug(slug: string) {
+  const payload = await getPayload({ config: configPromise })
+  return findPublicProfileBySlug({ payload, slug })
+}
+
 async function creatorHasBiography(profileID: string) {
   const payload = await getPayload({ config: configPromise })
   const result = await payload.find({
@@ -87,6 +93,12 @@ export default async function Page({ params: paramsPromise }: Args) {
   }
 
   if (!page) {
+    const profile = await queryProfileBySlug(decodedSlug)
+
+    if (profile?.slug) {
+      permanentRedirect(`/${profile.slug}/releases`)
+    }
+
     return <PayloadRedirects url={url} />
   }
 

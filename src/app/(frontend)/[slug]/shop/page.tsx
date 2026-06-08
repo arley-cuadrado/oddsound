@@ -4,7 +4,8 @@ import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 import { notFound, permanentRedirect } from 'next/navigation'
 import { ShopBackButton } from './ShopBackButton'
-import { buildPublicSlugWhere, normalizePublicSlugParam } from '@/utilities/publicSlugs'
+import { findPublicProfileBySlug } from '@/utilities/publicProfiles'
+import { normalizePublicSlugParam } from '@/utilities/publicSlugs'
 
 type Args = {
   params: Promise<{
@@ -51,17 +52,7 @@ function formatPrice(args: {
 
 async function queryProfileBySlug(slug: string) {
   const payload = await getPayload({ config: configPromise })
-  const result = await payload.find({
-    collection: 'profiles',
-    depth: 0,
-    limit: 1,
-    overrideAccess: true,
-    pagination: false,
-    select: PROFILE_SHOP_SELECT,
-    where: buildPublicSlugWhere(slug),
-  })
-
-  return result.docs[0] || null
+  return findPublicProfileBySlug({ payload, slug })
 }
 
 export async function generateStaticParams() {

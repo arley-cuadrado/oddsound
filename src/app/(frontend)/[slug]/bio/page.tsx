@@ -7,7 +7,8 @@ import { notFound, permanentRedirect } from 'next/navigation'
 
 import { RenderBlocks } from '@/blocks/RenderBlocks'
 import { ShopBackButton } from '../shop/ShopBackButton'
-import { buildPublicSlugWhere, normalizePublicSlugParam } from '@/utilities/publicSlugs'
+import { findPublicProfileBySlug } from '@/utilities/publicProfiles'
+import { normalizePublicSlugParam } from '@/utilities/publicSlugs'
 
 type Args = {
   params: Promise<{
@@ -27,17 +28,7 @@ const BIOGRAPHY_SELECT = {
 
 async function queryProfileBySlug(slug: string) {
   const payload = await getPayload({ config: configPromise })
-  const result = await payload.find({
-    collection: 'profiles',
-    depth: 0,
-    limit: 1,
-    overrideAccess: true,
-    pagination: false,
-    select: PROFILE_BIO_SELECT,
-    where: buildPublicSlugWhere(slug),
-  })
-
-  return result.docs[0] || null
+  return findPublicProfileBySlug({ payload, slug })
 }
 
 async function queryBiographyByProfileID(profileID: string) {

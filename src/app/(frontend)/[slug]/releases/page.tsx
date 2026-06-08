@@ -12,7 +12,8 @@ import {
 } from '../../home-components/getPublishedReleaseContext'
 import { buildProfilesByOwnerId, mapRelease } from '../../home-components/releaseData'
 import type { ReleaseItem } from '../../home-components/types'
-import { buildPublicSlugWhere, normalizePublicSlugParam } from '@/utilities/publicSlugs'
+import { findPublicProfileBySlug } from '@/utilities/publicProfiles'
+import { normalizePublicSlugParam } from '@/utilities/publicSlugs'
 
 type Args = {
   params: Promise<{
@@ -40,17 +41,8 @@ export async function generateStaticParams() {
 
 async function queryProfileBySlug(slug: string) {
   const payload = await getPayload({ config: configPromise })
-  const result = await payload.find({
-    collection: 'profiles',
-    depth: 1,
-    limit: 1,
-    overrideAccess: true,
-    pagination: false,
-    select: PROFILE_SELECT,
-    where: buildPublicSlugWhere(slug),
-  })
-
-  return result.docs[0] || null
+  const profile = await findPublicProfileBySlug({ payload, slug })
+  return profile ? ({ ...profile } as Profile) : null
 }
 
 export async function generateMetadata({ params: paramsPromise }: Args): Promise<Metadata> {
