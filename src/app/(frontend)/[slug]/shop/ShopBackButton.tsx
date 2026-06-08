@@ -5,9 +5,10 @@ import { useRouter } from 'next/navigation'
 
 type Props = {
   fallbackHref: string
+  label?: string
 }
 
-export function ShopBackButton({ fallbackHref }: Props) {
+export function ShopBackButton({ fallbackHref, label = 'Shop' }: Props) {
   const router = useRouter()
 
   return (
@@ -27,7 +28,7 @@ export function ShopBackButton({ fallbackHref }: Props) {
       >
         <ChevronLeft className="h-4 w-4 shrink-0" />
       </button>
-      <span>Shop</span>
+      <span>{label}</span>
     </div>
   )
 }

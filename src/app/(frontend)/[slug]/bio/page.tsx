@@ -117,7 +117,7 @@ export default async function ArtistBioPage({ params: paramsPromise }: Args) {
           <div className="relative">
             <div className="relative grid gap-8 lg:items-end">
               <div className="grid gap-5">
-                <ShopBackButton fallbackHref={`/${profile.slug}/releases`} />
+                <ShopBackButton fallbackHref={`/${profile.slug}/releases`} label="BIO" />
                 <h1 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white md:text-5xl">
                   {profile.displayName || biography.title || 'Artista'}
                 </h1>
