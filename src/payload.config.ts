@@ -7,6 +7,7 @@ import { buildConfig, PayloadRequest } from 'payload'
 import { fileURLToPath } from 'url'
 
 import { Categories } from './collections/Categories'
+import { Biographies } from './collections/Biographies'
 import { Media } from './collections/Media'
 import { Pages } from './collections/Pages'
 import { Profiles } from './collections/Profiles'
@@ -113,7 +114,7 @@ export default buildConfig({
           } as any,
         }),
   }),
-  collections: [Pages, Posts, Products, Media, Categories, Profiles, Users],
+  collections: [Pages, Posts, Products, Biographies, Media, Categories, Profiles, Users],
   cors: trustedServerURLs,
   globals: [Header, Footer],
   i18n: {
