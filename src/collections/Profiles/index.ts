@@ -189,6 +189,7 @@ export const Profiles: CollectionConfig = {
       defaultValue: false,
       label: 'Tienda activa',
       admin: {
+        condition: (_data, _siblingData, { user }) => isAdminUser(user),
         description:
           'Activa esta opción para mostrar la tienda pública del artista o la banda. Luego crea o activa productos en la colección Productos.',
       },
