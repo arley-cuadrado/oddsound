@@ -199,7 +199,8 @@ export const Profiles: CollectionConfig = {
       defaultValue: 'COP',
       label: 'Moneda de la tienda',
       admin: {
-        condition: (_data, siblingData) => Boolean(siblingData?.shopEnabled),
+        condition: (_data, siblingData, { user }) =>
+          isAdminUser(user) && Boolean(siblingData?.shopEnabled),
       },
       options: [
         {
@@ -222,7 +223,8 @@ export const Profiles: CollectionConfig = {
       defaultValue: true,
       label: 'Usar checkout externo',
       admin: {
-        condition: (_data, siblingData) => Boolean(siblingData?.shopEnabled),
+        condition: (_data, siblingData, { user }) =>
+          isAdminUser(user) && Boolean(siblingData?.shopEnabled),
         description:
           'Mantén esta opción activa mientras oddsound use enlaces externos de compra como Stripe u otra plataforma.',
       },

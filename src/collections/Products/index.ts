@@ -71,6 +71,7 @@ export const Products: CollectionConfig = {
     },
   },
   admin: {
+    hidden: ({ user }) => user?.role === 'creator',
     components: {
       views: {
         edit: {
