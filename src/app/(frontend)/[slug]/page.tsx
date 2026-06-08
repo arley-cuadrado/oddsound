@@ -58,9 +58,6 @@ async function creatorHasBiography(profileID: string) {
     limit: 1,
     overrideAccess: true,
     pagination: false,
-    select: {
-      id: true,
-    },
     where: {
       profile: {
         equals: profileID,

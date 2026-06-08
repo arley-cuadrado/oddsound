@@ -5,6 +5,7 @@ export interface ReleaseItem {
   description: string
   genre: string
   imageUrl: string | null
+  publishedAt?: null | string
   releaseTitle: string
   releaseSlug: string
   spotifyURL?: string | null

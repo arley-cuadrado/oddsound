@@ -141,6 +141,7 @@ export function mapRelease(page: Page, profilesByOwnerId: Map<string, Profile>):
     description,
     genre: profile?.genre || '',
     imageUrl: getReleaseCardImage({ page, profile }),
+    publishedAt: page.publishedAt || null,
     releaseSlug: page.slug,
     releaseTitle: page.title,
     spotifyURL: getSpotifyURL(page),
