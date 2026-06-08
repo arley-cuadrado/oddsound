@@ -7,8 +7,7 @@ import Link from 'next/link'
 import { notFound, permanentRedirect } from 'next/navigation'
 
 import { RenderBlocks } from '@/blocks/RenderBlocks'
-import { RenderHero } from '@/heros/RenderHero'
-import { ShopBackButton } from '../shop/ShopBackButton'
+import { Media as MediaComponent } from '@/components/Media'
 import { findPublicProfileBySlug } from '@/utilities/publicProfiles'
 import { normalizePublicSlugParam } from '@/utilities/publicSlugs'
 
@@ -115,22 +114,43 @@ export default async function ArtistBioPage({ params: paramsPromise }: Args) {
   return (
     <div className="mx-auto max-w-4xl pb-24 pt-16 md:pt-20">
       <div className="container">
-        <header className="mb-12 overflow-hidden rounded-none text-white shadow-[0_30px_90px_rgba(0,0,0,0.24)]">
+        <header className="mb-12 overflow-hidden rounded-none text-white">
           <div className="relative grid gap-5">
-            <ShopBackButton fallbackHref={`/${profile.slug}/releases`} label="BIO" />
             {biographyHeroMedia ? (
-              <RenderHero
-                type="mediumImpact"
-                creatorCountry={profile.location || undefined}
-                creatorGenre={profile.genre || undefined}
-                links={[]}
-                media={biographyHeroMedia}
-                pageTitle={profile.displayName || biography?.title || 'Artista'}
-              />
+              <div className="grid items-center gap-8 md:grid-cols-[minmax(0,1.05fr)_minmax(18rem,0.95fr)] md:gap-12">
+                <div className="h-[272px] overflow-hidden md:h-[320px]">
+                  <MediaComponent
+                    className="h-full w-full overflow-hidden"
+                    imgClassName="h-full w-full object-cover rounded-lg"
+                    priority
+                    resource={biographyHeroMedia}
+                  />
+                </div>
+
+                <div className="flex flex-col justify-center">
+                  <div className="mb-4 space-y-1">
+                    <p className="text-xs uppercase tracking-[0.14em] text-[#777] dark:text-[#858c98]">
+                      BIO
+                    </p>
+                    {[profile.genre, profile.location].filter(Boolean).length > 0 ? (
+                      <p className="text-xs uppercase tracking-[0.14em] text-[#777] dark:text-[#858c98]">
+                        {[profile.genre, profile.location].filter(Boolean).join(' · ')}
+                      </p>
+                    ) : null}
+                  </div>
+
+                  <h1 className="text-4xl font-black leading-[0.95] tracking-tight text-slate-950 md:text-6xl lg:text-7xl dark:text-white">
+                    {profile.displayName || biography?.title || 'Artista'}
+                  </h1>
+                </div>
+              </div>
             ) : (
               <div className="grid gap-3">
                 {([profile.genre, profile.location].filter(Boolean).length > 0) && (
                   <div className="space-y-1">
+                    <p className="text-xs uppercase tracking-[0.14em] text-[#777] dark:text-[#858c98]">
+                      BIO
+                    </p>
                     {[profile.genre, profile.location].filter(Boolean).length > 0 ? (
                       <p className="text-xs uppercase tracking-[0.14em] text-[#777] dark:text-[#858c98]">
                         {[profile.genre, profile.location].filter(Boolean).join(' · ')}
