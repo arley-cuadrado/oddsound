@@ -51,8 +51,8 @@ export async function generateMetadata({ params: paramsPromise }: Args): Promise
   const bandName = profile?.displayName || 'Artista'
 
   return {
-    description: `Explora todos los lanzamientos publicados por ${bandName}.`,
-    title: `Lanzamientos de ${bandName}`,
+    description: 'Explora todos los lanzamientos publicados.',
+    title: bandName,
   }
 }
 
@@ -106,10 +106,10 @@ export default async function ArtistReleasesPage({ params: paramsPromise }: Args
       <div className="container">
         <header className="mb-12 text-center">
           <h1 className="text-4xl font-semibold tracking-tight text-slate-900 dark:text-white">
-            Lanzamientos de {bandName}
+            {bandName}
           </h1>
           <p className="mt-4 text-sm text-[#777] dark:text-[#858c98]">
-            Explora todos los lanzamientos publicados por {bandName}.
+            Explora todos los lanzamientos publicados.
           </p>
         </header>
 
