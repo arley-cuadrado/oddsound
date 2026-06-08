@@ -166,7 +166,7 @@ export default async function ArtistBioPage({ params: paramsPromise }: Args) {
           </div>
         </header>
 
-        <div className="mb-10 flex flex-wrap justify-center gap-x-6 gap-y-3">
+        <div className="mb-10 flex flex-wrap gap-x-6 gap-y-3">
           <Link
             href={`/${profile.slug}/releases`}
             className="inline-flex items-center text-[13px] font-medium text-[#777] underline underline-offset-4 dark:text-[#858c98]"
