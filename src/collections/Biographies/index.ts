@@ -36,7 +36,7 @@ export const Biographies: CollectionConfig = {
     read: async ({ req }) => {
       const user = req.user
 
-      if (!user) return false
+      if (!user) return true
       if (await hasFreshAdminAccess(req as any)) return true
 
       return {

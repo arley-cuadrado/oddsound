@@ -50,6 +50,27 @@ type Args = {
   }>
 }
 
+async function creatorHasBiography(profileID: string) {
+  const payload = await getPayload({ config: configPromise })
+  const result = await payload.find({
+    collection: 'biographies',
+    depth: 0,
+    limit: 1,
+    overrideAccess: true,
+    pagination: false,
+    select: {
+      id: true,
+    },
+    where: {
+      profile: {
+        equals: profileID,
+      },
+    },
+  })
+
+  return result.docs.length > 0
+}
+
 export default async function Page({ params: paramsPromise }: Args) {
   const { isEnabled: draft } = await draftMode()
   const { slug = 'home' } = await paramsPromise
@@ -76,6 +97,7 @@ export default async function Page({ params: paramsPromise }: Args) {
   const artistLayout = Array.isArray(layout)
     ? layout.filter((block) => block.blockType !== 'formBlock')
     : []
+  const hasBiography = creatorProfile?.id ? await creatorHasBiography(String(creatorProfile.id)) : false
 
   return (
     <article className="mx-auto max-w-4xl pb-0 [&_p]:text-[13px]">
@@ -100,6 +122,14 @@ export default async function Page({ params: paramsPromise }: Args) {
           >
             Ver lanzamientos
           </Link>
+          {hasBiography ? (
+            <Link
+              href={`/${creatorProfile.slug}/bio`}
+              className="inline-flex items-center text-[13px] font-medium text-[#777] underline underline-offset-4 dark:text-[#858c98]"
+            >
+              Bio
+            </Link>
+          ) : null}
           {creatorProfile.shopEnabled ? (
             <Link
               href={`/${creatorProfile.slug}/shop`}
