@@ -312,14 +312,6 @@ export interface Profile {
    * Activa esta opción para mostrar la tienda pública del artista o la banda. Luego crea o activa productos en la colección Productos.
    */
   shopEnabled?: boolean | null;
-  /**
-   * Opcional. Si lo dejas vacío, oddsound mostrará un título por defecto.
-   */
-  shopHeadline?: string | null;
-  /**
-   * Opcional. Úsala para contar qué vende el artista o la banda.
-   */
-  shopDescription?: string | null;
   shopCurrency?: ('COP' | 'USD' | 'EUR') | null;
   /**
    * Mantén esta opción activa mientras oddsound use enlaces externos de compra como Stripe u otra plataforma.
@@ -1680,8 +1672,6 @@ export interface ProfilesSelect<T extends boolean = true> {
         id?: T;
       };
   shopEnabled?: T;
-  shopHeadline?: T;
-  shopDescription?: T;
   shopCurrency?: T;
   shopExternalCheckoutOnly?: T;
   generateSlug?: T;

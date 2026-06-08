@@ -193,24 +193,6 @@ export const Profiles: CollectionConfig = {
       },
     },
     {
-      name: 'shopHeadline',
-      type: 'text',
-      label: 'Título de la tienda',
-      admin: {
-        condition: (_data, siblingData) => Boolean(siblingData?.shopEnabled),
-        description: 'Opcional. Si lo dejas vacío, oddsound mostrará un título por defecto.',
-      },
-    },
-    {
-      name: 'shopDescription',
-      type: 'textarea',
-      label: 'Descripción de la tienda',
-      admin: {
-        condition: (_data, siblingData) => Boolean(siblingData?.shopEnabled),
-        description: 'Opcional. Úsala para contar qué vende el artista o la banda.',
-      },
-    },
-    {
       name: 'shopCurrency',
       type: 'select',
       defaultValue: 'COP',

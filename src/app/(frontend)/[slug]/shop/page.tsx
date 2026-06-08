@@ -14,9 +14,7 @@ type Args = {
 const PROFILE_SHOP_SELECT = {
   displayName: true,
   shopCurrency: true,
-  shopDescription: true,
   shopEnabled: true,
-  shopHeadline: true,
   slug: true,
 } as const
 
