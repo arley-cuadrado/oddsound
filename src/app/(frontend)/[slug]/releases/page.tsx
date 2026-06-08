@@ -118,7 +118,13 @@ export default async function ArtistReleasesPage({ params: paramsPromise }: Args
             <div className="grid grid-cols-2 gap-4 md:gap-6 xl:grid-cols-4">
               {releases.map((release) => (
                 <article className="w-full" key={release.id}>
-                  <Link href={`/${release.releaseSlug}`}>
+                  <Link
+                    href={
+                      release.creatorSlug
+                        ? `/${release.creatorSlug}/release/${release.releaseSlug}`
+                        : `/${release.releaseSlug}`
+                    }
+                  >
                     <div>
                       <div className="relative aspect-square w-full overflow-hidden bg-slate-100 dark:bg-slate-900 rounded-lg">
                         {/* eslint-disable-next-line @next/next/no-img-element */}

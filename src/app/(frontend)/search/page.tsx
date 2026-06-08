@@ -19,6 +19,7 @@ type Args = {
 
 type SearchRelease = {
   country: string
+  creatorSlug: null | string
   creatorName: string
   description: string
   genre: string
@@ -105,6 +106,7 @@ function mapSearchRelease(
 
   return {
     country: isAdminRelease ? '' : profile?.location || '',
+    creatorSlug: profile?.slug || null,
     creatorName: isAdminRelease ? 'oddsound' : profile?.displayName || ownerName || page.title,
     description:
       page.meta?.description?.trim() ||
@@ -162,7 +164,13 @@ export default async function Page({ searchParams: searchParamsPromise }: Args) 
                 <div className="grid grid-cols-2 gap-4 md:gap-6 xl:grid-cols-4">
                   {releases.map((release) => (
                     <article className="w-full" key={release.slug}>
-                      <Link href={`/${release.slug}`}>
+                      <Link
+                        href={
+                          release.creatorSlug
+                            ? `/${release.creatorSlug}/release/${release.slug}`
+                            : `/${release.slug}`
+                        }
+                      >
                         <div>
                           <div className="relative aspect-square w-full overflow-hidden bg-slate-100 dark:bg-slate-900 rounded-lg">
                             {/* eslint-disable-next-line @next/next/no-img-element */}

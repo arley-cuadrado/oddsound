@@ -1,4 +1,4 @@
-import type { Biography } from '@/payload-types'
+import type { Biography, Media } from '@/payload-types'
 import type { Metadata } from 'next'
 
 import configPromise from '@payload-config'
@@ -96,22 +96,20 @@ export default async function ArtistBioPage({ params: paramsPromise }: Args) {
   }
 
   if (profile.slug && profile.slug !== decodedSlug) {
-    permanentRedirect(`/${profile.slug}/bio`)
+    permanentRedirect(`/${profile.slug}`)
   }
 
   const biography = await queryBiographyByProfileID(profile.id)
-
-  if (!biography) {
-    notFound()
-  }
-
-  const bioLayout = Array.isArray(biography.layout) ? (biography.layout as Biography['layout']) : []
+  const bioLayout: NonNullable<Biography['layout']> =
+    biography && Array.isArray(biography.layout)
+      ? (biography.layout as NonNullable<Biography['layout']>)
+      : []
   const biographyHeroMedia =
-    biography.hero &&
+    biography?.hero &&
     typeof biography.hero === 'object' &&
     biography.hero.media &&
     typeof biography.hero.media === 'object'
-      ? biography.hero.media
+      ? (biography.hero.media as Media)
       : null
 
   return (
@@ -125,20 +123,14 @@ export default async function ArtistBioPage({ params: paramsPromise }: Args) {
                 type="mediumImpact"
                 creatorCountry={profile.location || undefined}
                 creatorGenre={profile.genre || undefined}
-                creatorName={profile.displayName || undefined}
                 links={[]}
                 media={biographyHeroMedia}
-                pageTitle={profile.displayName || biography.title || 'Artista'}
+                pageTitle={profile.displayName || biography?.title || 'Artista'}
               />
             ) : (
               <div className="grid gap-3">
-                {(profile.displayName || profile.genre || profile.location) && (
+                {([profile.genre, profile.location].filter(Boolean).length > 0) && (
                   <div className="space-y-1">
-                    {profile.displayName ? (
-                      <p className="text-xs uppercase tracking-[0.14em] text-[#777] dark:text-[#858c98]">
-                        {profile.displayName}
-                      </p>
-                    ) : null}
                     {[profile.genre, profile.location].filter(Boolean).length > 0 ? (
                       <p className="text-xs uppercase tracking-[0.14em] text-[#777] dark:text-[#858c98]">
                         {[profile.genre, profile.location].filter(Boolean).join(' · ')}
@@ -163,9 +155,9 @@ export default async function ArtistBioPage({ params: paramsPromise }: Args) {
           </Link>
         </div>
 
-        {bioLayout && bioLayout.length > 0 ? (
+        {bioLayout.length > 0 ? (
           <RenderBlocks blocks={bioLayout as any} />
-        ) : (
+        ) : biography ? (
           <div className="rounded-[1.75rem] border border-dashed border-slate-300 bg-white/70 px-6 py-12 text-center dark:border-slate-700 dark:bg-slate-950/50">
             <p className="text-[12px] uppercase tracking-[0.22em] text-[#777] dark:text-[#858c98]">
               Bio
@@ -174,7 +166,7 @@ export default async function ArtistBioPage({ params: paramsPromise }: Args) {
               Esta biografía aún está en construcción
             </h2>
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   )

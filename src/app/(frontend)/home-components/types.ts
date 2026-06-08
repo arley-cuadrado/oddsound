@@ -1,4 +1,5 @@
 export interface ReleaseItem {
+  creatorSlug?: null | string
   id: string
   country: string
   creatorName: string

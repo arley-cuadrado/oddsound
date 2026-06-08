@@ -135,6 +135,7 @@ export function mapRelease(page: Page, profilesByOwnerId: Map<string, Profile>):
     'No description available.'
 
   return {
+    creatorSlug: profile?.slug || null,
     id: page.id,
     country: isAdminRelease ? '' : profile?.location || '',
     creatorName: isAdminRelease ? 'oddsound' : profile?.displayName || ownerName || page.title,
