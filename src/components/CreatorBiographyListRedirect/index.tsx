@@ -46,6 +46,9 @@ export default async function CreatorBiographyListRedirect({
     const createdBiography = await payload.create({
       collection: 'biographies',
       data: {
+        hero: {
+          type: 'mediumImpact',
+        },
         layout: [],
         owner: creatorUser.id,
         ...(profileID ? { profile: profileID } : {}),

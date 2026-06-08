@@ -990,7 +990,14 @@ export interface Biography {
   owner?: (string | null) | User;
   profile?: (string | null) | Profile;
   title: string;
-  layout?: (MediaBlock | ContentBlock)[] | null;
+  hero: {
+    type: 'mediumImpact';
+    /**
+     * Opcional. Si agregas una imagen, la biografía mostrará el encabezado dividido.
+     */
+    media?: (string | null) | Media;
+  };
+  layout?: ContentBlock[] | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1562,10 +1569,15 @@ export interface BiographiesSelect<T extends boolean = true> {
   owner?: T;
   profile?: T;
   title?: T;
+  hero?:
+    | T
+    | {
+        type?: T;
+        media?: T;
+      };
   layout?:
     | T
     | {
-        mediaBlock?: T | MediaBlockSelect<T>;
         content?: T | ContentBlockSelect<T>;
       };
   updatedAt?: T;

@@ -3,9 +3,11 @@ import type { Metadata } from 'next'
 
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
+import Link from 'next/link'
 import { notFound, permanentRedirect } from 'next/navigation'
 
 import { RenderBlocks } from '@/blocks/RenderBlocks'
+import { RenderHero } from '@/heros/RenderHero'
 import { ShopBackButton } from '../shop/ShopBackButton'
 import { findPublicProfileBySlug } from '@/utilities/publicProfiles'
 import { normalizePublicSlugParam } from '@/utilities/publicSlugs'
@@ -18,10 +20,13 @@ type Args = {
 
 const PROFILE_BIO_SELECT = {
   displayName: true,
+  genre: true,
+  location: true,
   slug: true,
 } as const
 
 const BIOGRAPHY_SELECT = {
+  hero: true,
   layout: true,
   title: true,
 } as const
@@ -101,22 +106,62 @@ export default async function ArtistBioPage({ params: paramsPromise }: Args) {
   }
 
   const bioLayout = Array.isArray(biography.layout) ? (biography.layout as Biography['layout']) : []
+  const biographyHeroMedia =
+    biography.hero &&
+    typeof biography.hero === 'object' &&
+    biography.hero.media &&
+    typeof biography.hero.media === 'object'
+      ? biography.hero.media
+      : null
 
   return (
     <div className="mx-auto max-w-4xl pb-24 pt-16 md:pt-20">
       <div className="container">
         <header className="mb-12 overflow-hidden rounded-none text-white shadow-[0_30px_90px_rgba(0,0,0,0.24)]">
-          <div className="relative">
-            <div className="relative grid gap-8 lg:items-end">
-              <div className="grid gap-5">
-                <ShopBackButton fallbackHref={`/${profile.slug}/releases`} label="BIO" />
+          <div className="relative grid gap-5">
+            <ShopBackButton fallbackHref={`/${profile.slug}/releases`} label="BIO" />
+            {biographyHeroMedia ? (
+              <RenderHero
+                type="mediumImpact"
+                creatorCountry={profile.location || undefined}
+                creatorGenre={profile.genre || undefined}
+                creatorName={profile.displayName || undefined}
+                links={[]}
+                media={biographyHeroMedia}
+                pageTitle={profile.displayName || biography.title || 'Artista'}
+              />
+            ) : (
+              <div className="grid gap-3">
+                {(profile.displayName || profile.genre || profile.location) && (
+                  <div className="space-y-1">
+                    {profile.displayName ? (
+                      <p className="text-xs uppercase tracking-[0.14em] text-[#777] dark:text-[#858c98]">
+                        {profile.displayName}
+                      </p>
+                    ) : null}
+                    {[profile.genre, profile.location].filter(Boolean).length > 0 ? (
+                      <p className="text-xs uppercase tracking-[0.14em] text-[#777] dark:text-[#858c98]">
+                        {[profile.genre, profile.location].filter(Boolean).join(' · ')}
+                      </p>
+                    ) : null}
+                  </div>
+                )}
                 <h1 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white md:text-5xl">
                   {profile.displayName || biography.title || 'Artista'}
                 </h1>
               </div>
-            </div>
+            )}
           </div>
         </header>
+
+        <div className="mb-10 flex flex-wrap justify-center gap-x-6 gap-y-3">
+          <Link
+            href={`/${profile.slug}/releases`}
+            className="inline-flex items-center text-[13px] font-medium text-[#777] underline underline-offset-4 dark:text-[#858c98]"
+          >
+            Ver lanzamientos
+          </Link>
+        </div>
 
         {bioLayout && bioLayout.length > 0 ? (
           <RenderBlocks blocks={bioLayout as any} />
