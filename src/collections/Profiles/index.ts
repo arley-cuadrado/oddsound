@@ -8,7 +8,7 @@ import { slugField } from 'payload'
 export const Profiles: CollectionConfig = {
   slug: 'profiles',
   labels: {
-    plural: 'Perfiles',
+    plural: 'Perfil',
     singular: 'Perfil',
   },
   indexes: [
@@ -19,7 +19,7 @@ export const Profiles: CollectionConfig = {
   ],
   access: {
     admin: authenticated,
-    create: authenticated,
+    create: ({ req }) => isAdminUser(req.user),
     delete: async ({ req }) => {
       const user = req.user
 
