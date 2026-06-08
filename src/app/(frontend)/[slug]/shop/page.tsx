@@ -2,8 +2,8 @@ import type { Metadata } from 'next'
 
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
-import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { ShopBackButton } from './ShopBackButton'
 
 type Args = {
   params: Promise<{
@@ -148,20 +148,10 @@ export default async function ArtistShopPage({ params: paramsPromise }: Args) {
           <div className="relative">
             <div className="relative grid gap-8 lg:items-end">
               <div className="grid gap-5">
-                <p className="text-xs uppercase tracking-[0.18em] text-[#777] dark:text-[#858c98]">
-                  Shop
-                </p>
+                <ShopBackButton fallbackHref={`/${profile.slug}/releases`} />
                 <h1 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white md:text-5xl">
                   {profile.displayName || 'Artista'}
                 </h1>
-                <div className="flex flex-wrap gap-3">
-                  <Link
-                    href={`/${profile.slug}/releases`}
-                    className="inline-flex items-center text-[13px] text-[#777] underline underline-offset-2 transition hover:text-slate-900 dark:text-[#858c98] dark:hover:text-white"
-                  >
-                    Volver al perfil de {profile.displayName}
-                  </Link>
-                </div>
               </div>
             </div>
           </div>
