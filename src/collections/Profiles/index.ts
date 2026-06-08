@@ -75,6 +75,9 @@ export const Profiles: CollectionConfig = {
   admin: {
     components: {
       views: {
+        list: {
+          Component: '@/components/CreatorProfileListView',
+        },
         edit: {
           api: {
             tab: {
