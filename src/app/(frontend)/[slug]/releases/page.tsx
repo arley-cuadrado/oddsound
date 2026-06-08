@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 import configPromise from '@payload-config'
 import type { Page, Profile } from '@/payload-types'
 import { getPayload } from 'payload'
-import { notFound } from 'next/navigation'
+import { notFound, permanentRedirect } from 'next/navigation'
 import Link from 'next/link'
 
 import {
@@ -12,6 +12,7 @@ import {
 } from '../../home-components/getPublishedReleaseContext'
 import { buildProfilesByOwnerId, mapRelease } from '../../home-components/releaseData'
 import type { ReleaseItem } from '../../home-components/types'
+import { buildPublicSlugWhere, normalizePublicSlugParam } from '@/utilities/publicSlugs'
 
 type Args = {
   params: Promise<{
@@ -46,11 +47,7 @@ async function queryProfileBySlug(slug: string) {
     overrideAccess: true,
     pagination: false,
     select: PROFILE_SELECT,
-    where: {
-      slug: {
-        equals: slug,
-      },
-    },
+    where: buildPublicSlugWhere(slug),
   })
 
   return result.docs[0] || null
@@ -58,7 +55,7 @@ async function queryProfileBySlug(slug: string) {
 
 export async function generateMetadata({ params: paramsPromise }: Args): Promise<Metadata> {
   const { slug = '' } = await paramsPromise
-  const profile = await queryProfileBySlug(decodeURIComponent(slug))
+  const profile = await queryProfileBySlug(normalizePublicSlugParam(slug))
   const bandName = profile?.displayName || 'Artista'
 
   return {
@@ -69,11 +66,15 @@ export async function generateMetadata({ params: paramsPromise }: Args): Promise
 
 export default async function ArtistReleasesPage({ params: paramsPromise }: Args) {
   const { slug = '' } = await paramsPromise
-  const decodedSlug = decodeURIComponent(slug)
+  const decodedSlug = normalizePublicSlugParam(slug)
   const profile = await queryProfileBySlug(decodedSlug)
 
   if (!profile) {
     notFound()
+  }
+
+  if (profile.slug && profile.slug !== decodedSlug) {
+    permanentRedirect(`/${profile.slug}/releases`)
   }
 
   const payload = await getPayload({ config: configPromise })

@@ -3,10 +3,11 @@ import type { Metadata } from 'next'
 
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
-import { notFound } from 'next/navigation'
+import { notFound, permanentRedirect } from 'next/navigation'
 
 import { RenderBlocks } from '@/blocks/RenderBlocks'
 import { ShopBackButton } from '../shop/ShopBackButton'
+import { buildPublicSlugWhere, normalizePublicSlugParam } from '@/utilities/publicSlugs'
 
 type Args = {
   params: Promise<{
@@ -33,11 +34,7 @@ async function queryProfileBySlug(slug: string) {
     overrideAccess: true,
     pagination: false,
     select: PROFILE_BIO_SELECT,
-    where: {
-      slug: {
-        equals: slug,
-      },
-    },
+    where: buildPublicSlugWhere(slug),
   })
 
   return result.docs[0] || null
@@ -84,7 +81,7 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params: paramsPromise }: Args): Promise<Metadata> {
   const { slug = '' } = await paramsPromise
-  const profile = await queryProfileBySlug(decodeURIComponent(slug))
+  const profile = await queryProfileBySlug(normalizePublicSlugParam(slug))
   const displayName = profile?.displayName || 'Artista'
 
   return {
@@ -95,11 +92,15 @@ export async function generateMetadata({ params: paramsPromise }: Args): Promise
 
 export default async function ArtistBioPage({ params: paramsPromise }: Args) {
   const { slug = '' } = await paramsPromise
-  const decodedSlug = decodeURIComponent(slug)
+  const decodedSlug = normalizePublicSlugParam(slug)
   const profile = await queryProfileBySlug(decodedSlug)
 
   if (!profile) {
     notFound()
+  }
+
+  if (profile.slug && profile.slug !== decodedSlug) {
+    permanentRedirect(`/${profile.slug}/bio`)
   }
 
   const biography = await queryBiographyByProfileID(profile.id)

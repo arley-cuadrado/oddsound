@@ -7,10 +7,12 @@ import { draftMode } from 'next/headers'
 import Link from 'next/link'
 import React, { cache } from 'react'
 import { homeStatic } from '@/endpoints/seed/home-static'
+import { permanentRedirect } from 'next/navigation'
 
 import { RenderBlocks } from '@/blocks/RenderBlocks'
 import { RenderHero } from '@/heros/RenderHero'
 import { generateMeta } from '@/utilities/generateMeta'
+import { buildPublicSlugWhere, normalizePublicSlugParam } from '@/utilities/publicSlugs'
 import PageClient from './page.client'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
 import { RELEASE_PAGE_SELECT } from '../home-components/getPublishedReleaseContext'
@@ -71,8 +73,7 @@ async function creatorHasBiography(profileID: string) {
 export default async function Page({ params: paramsPromise }: Args) {
   const { isEnabled: draft } = await draftMode()
   const { slug = 'home' } = await paramsPromise
-  // Decode to support slugs with special characters
-  const decodedSlug = decodeURIComponent(slug)
+  const decodedSlug = normalizePublicSlugParam(slug)
   const url = '/' + decodedSlug
   let page: RequiredDataFromCollectionSlug<'pages'> | null
 
@@ -87,6 +88,10 @@ export default async function Page({ params: paramsPromise }: Args) {
 
   if (!page) {
     return <PayloadRedirects url={url} />
+  }
+
+  if (page.slug && page.slug !== decodedSlug) {
+    permanentRedirect(`/${page.slug}`)
   }
 
   const { hero, layout } = page
@@ -144,8 +149,7 @@ export default async function Page({ params: paramsPromise }: Args) {
 
 export async function generateMetadata({ params: paramsPromise }: Args): Promise<Metadata> {
   const { slug = 'home' } = await paramsPromise
-  // Decode to support slugs with special characters
-  const decodedSlug = decodeURIComponent(slug)
+  const decodedSlug = normalizePublicSlugParam(slug)
   const page = await queryPageBySlug({
     slug: decodedSlug,
   })
@@ -168,11 +172,7 @@ const queryPageBySlug = cache(async ({ slug }: { slug: string }) => {
     select: RELEASE_PAGE_SELECT,
     where: {
       and: [
-        {
-          slug: {
-            equals: slug,
-          },
-        },
+        buildPublicSlugWhere(slug),
         ...(!draft
           ? [
               {

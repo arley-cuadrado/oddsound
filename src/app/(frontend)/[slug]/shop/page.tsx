@@ -2,8 +2,9 @@ import type { Metadata } from 'next'
 
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
-import { notFound } from 'next/navigation'
+import { notFound, permanentRedirect } from 'next/navigation'
 import { ShopBackButton } from './ShopBackButton'
+import { buildPublicSlugWhere, normalizePublicSlugParam } from '@/utilities/publicSlugs'
 
 type Args = {
   params: Promise<{
@@ -57,11 +58,7 @@ async function queryProfileBySlug(slug: string) {
     overrideAccess: true,
     pagination: false,
     select: PROFILE_SHOP_SELECT,
-    where: {
-      slug: {
-        equals: slug,
-      },
-    },
+    where: buildPublicSlugWhere(slug),
   })
 
   return result.docs[0] || null
@@ -95,7 +92,7 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params: paramsPromise }: Args): Promise<Metadata> {
   const { slug = '' } = await paramsPromise
-  const profile = await queryProfileBySlug(decodeURIComponent(slug))
+  const profile = await queryProfileBySlug(normalizePublicSlugParam(slug))
   const displayName = profile?.displayName || 'Artista'
 
   return {
@@ -106,11 +103,15 @@ export async function generateMetadata({ params: paramsPromise }: Args): Promise
 
 export default async function ArtistShopPage({ params: paramsPromise }: Args) {
   const { slug = '' } = await paramsPromise
-  const decodedSlug = decodeURIComponent(slug)
+  const decodedSlug = normalizePublicSlugParam(slug)
   const profile = await queryProfileBySlug(decodedSlug)
 
   if (!profile || !profile.shopEnabled) {
     notFound()
+  }
+
+  if (profile.slug && profile.slug !== decodedSlug) {
+    permanentRedirect(`/${profile.slug}/shop`)
   }
 
   const payload = await getPayload({ config: configPromise })
