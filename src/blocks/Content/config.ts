@@ -51,9 +51,11 @@ const columnFields: Field[] = [
   {
     name: 'enableLink',
     type: 'checkbox',
+    label: 'Habilitar enlace',
   },
   link({
     overrides: {
+      label: 'Enlace',
       admin: {
         condition: (_data, siblingData) => {
           return Boolean(siblingData?.enableLink)
@@ -76,6 +78,10 @@ export const Content: Block = {
       type: 'array',
       admin: {
         initCollapsed: true,
+      },
+      labels: {
+        plural: 'Contenido',
+        singular: 'Contenido',
       },
       fields: columnFields,
     },
