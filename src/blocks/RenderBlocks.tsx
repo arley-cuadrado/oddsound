@@ -27,8 +27,9 @@ const blockComponents = {
 export const RenderBlocks: React.FC<{
   blocks: Page['layout'][0][]
   disableInnerContainer?: boolean
+  linkClassName?: string
 }> = (props) => {
-  const { blocks, disableInnerContainer = false } = props
+  const { blocks, disableInnerContainer = false, linkClassName } = props
 
   const hasBlocks = blocks && Array.isArray(blocks) && blocks.length > 0
 
@@ -39,13 +40,16 @@ export const RenderBlocks: React.FC<{
           const { blockType } = block
 
           if (blockType && blockType in blockComponents) {
-            const Block = blockComponents[blockType]
+            const Block = blockComponents[blockType] as React.ComponentType<any>
 
             if (Block) {
               return (
                 <div className="my-8" key={index}>
-                  {/* @ts-expect-error there may be some mismatch between the expected types here */}
-                  <Block {...block} disableInnerContainer={disableInnerContainer} />
+                  <Block
+                    {...block}
+                    disableInnerContainer={disableInnerContainer}
+                    linkClassName={linkClassName}
+                  />
                 </div>
               )
             }

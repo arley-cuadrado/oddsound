@@ -7,8 +7,9 @@ import type { ContentBlock as ContentBlockProps } from '@/payload-types'
 import { CMSLink } from '../../components/Link'
 
 export const ContentBlock: React.FC<ContentBlockProps> = (props) => {
-  const { columns, disableInnerContainer } = props as ContentBlockProps & {
+  const { columns, disableInnerContainer, linkClassName } = props as ContentBlockProps & {
     disableInnerContainer?: boolean
+    linkClassName?: string
   }
 
   const colsSpanClasses = {
@@ -35,7 +36,7 @@ export const ContentBlock: React.FC<ContentBlockProps> = (props) => {
               >
                 {richText && <RichText data={richText} enableGutter={false} />}
 
-                {enableLink && <CMSLink {...link} className="mt-4" />}
+                {enableLink && <CMSLink {...link} className={cn('mt-4', linkClassName)} />}
               </div>
             )
           })}

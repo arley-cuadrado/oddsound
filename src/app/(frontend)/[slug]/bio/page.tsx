@@ -176,7 +176,11 @@ export default async function ArtistBioPage({ params: paramsPromise }: Args) {
         </div>
 
         {bioLayout.length > 0 ? (
-          <RenderBlocks blocks={bioLayout as any} disableInnerContainer />
+          <RenderBlocks
+            blocks={bioLayout as any}
+            disableInnerContainer
+            linkClassName="inline-flex items-center text-[13px] font-medium text-[#777] underline underline-offset-4 dark:text-[#858c98]"
+          />
         ) : biography ? (
           <div className="rounded-[1.75rem] border border-dashed border-slate-300 bg-white/70 px-6 py-12 text-center dark:border-slate-700 dark:bg-slate-950/50">
             <p className="text-[12px] uppercase tracking-[0.22em] text-[#777] dark:text-[#858c98]">
