@@ -9,7 +9,11 @@ import {
 
 import { link } from '@/fields/link'
 
-const columnFields: Field[] = [
+function createColumnFields(options?: { disableAppearances?: boolean; groupLabel?: string }) {
+  const disableAppearances = Boolean(options?.disableAppearances)
+  const groupLabel = options?.groupLabel || 'Enlace'
+
+  return [
   {
     name: 'size',
     type: 'select',
@@ -54,8 +58,9 @@ const columnFields: Field[] = [
     label: 'Habilitar enlace',
   },
   link({
+    appearances: disableAppearances ? false : undefined,
     overrides: {
-      label: 'Enlace',
+      label: groupLabel,
       admin: {
         condition: (_data, siblingData) => {
           return Boolean(siblingData?.enableLink)
@@ -63,28 +68,45 @@ const columnFields: Field[] = [
       },
     },
   }),
-]
-
-export const Content: Block = {
-  slug: 'content',
-  interfaceName: 'ContentBlock',
-  labels: {
-    plural: 'Textos',
-    singular: 'Texto',
-  },
-  fields: [
-    {
-      name: 'columns',
-      type: 'array',
-      label: 'Contenido',
-      admin: {
-        initCollapsed: true,
-      },
-      labels: {
-        plural: 'Texto',
-        singular: 'Texto',
-      },
-      fields: columnFields,
-    },
-  ],
+  ] satisfies Field[]
 }
+
+function createContentBlock(options?: {
+  arrayLabel?: string
+  arrayLabels?: { plural: string; singular: string }
+  disableAppearances?: boolean
+  groupLabel?: string
+}) {
+  return {
+    slug: 'content',
+    interfaceName: 'ContentBlock',
+    labels: {
+      plural: 'Textos',
+      singular: 'Texto',
+    },
+    fields: [
+      {
+        name: 'columns',
+        type: 'array',
+        label: options?.arrayLabel || 'Contenido',
+        admin: {
+          initCollapsed: true,
+        },
+        labels: options?.arrayLabels || {
+          plural: 'Texto',
+          singular: 'Texto',
+        },
+        fields: createColumnFields({
+          disableAppearances: options?.disableAppearances,
+          groupLabel: options?.groupLabel,
+        }),
+      },
+    ],
+  } satisfies Block
+}
+
+export const Content: Block = createContentBlock()
+
+export const BiographyContent: Block = createContentBlock({
+  disableAppearances: true,
+})

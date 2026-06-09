@@ -241,6 +241,11 @@ html[data-theme='light'] {
   -webkit-background-clip: text;
   animation: 15s infinite gradient;
 }
+
+.title-surface {
+  background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab) 0 0/400% 400%;
+  animation: 15s infinite gradient;
+}
 @keyframes gradient {
   0% {
     background-position: 0%;

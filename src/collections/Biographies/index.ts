@@ -3,7 +3,7 @@ import type { CollectionConfig, Field } from 'payload'
 import { authenticated } from '@/access/authenticated'
 import { hasFreshAdminAccess } from '@/access/hasFreshAdminAccess'
 import { assignOwnership } from '@/hooks/assignOwnership'
-import { Content } from '@/blocks/Content/config'
+import { BiographyContent } from '@/blocks/Content/config'
 import { isAdminUser } from '@/utilities/isAdminUser'
 
 const biographyHero: Field = {
@@ -156,7 +156,7 @@ export const Biographies: CollectionConfig = {
               name: 'layout',
               type: 'blocks',
               label: 'Contenido',
-              blocks: [Content],
+              blocks: [BiographyContent],
               admin: {
                 initCollapsed: true,
               },
