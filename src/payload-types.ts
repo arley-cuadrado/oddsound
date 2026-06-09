@@ -572,10 +572,6 @@ export interface ContentBlock {
               } | null);
           url?: string | null;
           label: string;
-          /**
-           * Elige cómo debe renderizarse el enlace.
-           */
-          appearance?: ('default' | 'outline') | null;
         };
         id?: string | null;
       }[]
@@ -1382,7 +1378,6 @@ export interface ContentBlockSelect<T extends boolean = true> {
               reference?: T;
               url?: T;
               label?: T;
-              appearance?: T;
             };
         id?: T;
       };
