@@ -12,6 +12,7 @@ import { slugField } from 'payload'
 import { populatePublishedAt } from '../../hooks/populatePublishedAt'
 import { generatePreviewPath } from '../../utilities/generatePreviewPath'
 import { revalidateDelete, revalidatePage } from './hooks/revalidatePage'
+import { socialLinksField } from '@/fields/socialLinks'
 
 import {
   MetaDescriptionField,
@@ -189,6 +190,8 @@ export const Pages: CollectionConfig<'pages'> = {
                   hiddenBlocks.add('archive')
                 }
 
+                hiddenBlocks.add('socialMediaBlock')
+
                 return editorialBlocks
                   .map((block) => block.slug)
                   .filter((slug): slug is string => Boolean(slug) && !hiddenBlocks.has(slug))
@@ -200,6 +203,10 @@ export const Pages: CollectionConfig<'pages'> = {
             },
           ],
           label: 'Contenido',
+        },
+        {
+          fields: [socialLinksField()],
+          label: 'Red Social',
         },
         {
           name: 'meta',

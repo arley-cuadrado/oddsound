@@ -4,6 +4,7 @@ import { authenticated } from '@/access/authenticated'
 import { hasFreshAdminAccess } from '@/access/hasFreshAdminAccess'
 import { assignOwnership } from '@/hooks/assignOwnership'
 import { BiographyContent } from '@/blocks/Content/config'
+import { socialLinksField } from '@/fields/socialLinks'
 import { isAdminUser } from '@/utilities/isAdminUser'
 
 const biographyHero: Field = {
@@ -163,6 +164,10 @@ export const Biographies: CollectionConfig = {
               required: false,
             },
           ],
+        },
+        {
+          label: 'Red Social',
+          fields: [socialLinksField()],
         },
       ],
     },

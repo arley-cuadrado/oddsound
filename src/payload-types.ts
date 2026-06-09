@@ -224,6 +224,13 @@ export interface Page {
     | ArchiveBlock
     | FormBlock
   )[];
+  socialLinks?:
+    | {
+        platform: string;
+        url: string;
+        id?: string | null;
+      }[]
+    | null;
   meta?: {
     title?: string | null;
     /**
@@ -994,6 +1001,13 @@ export interface Biography {
     media?: (string | null) | Media;
   };
   layout?: ContentBlock[] | null;
+  socialLinks?:
+    | {
+        platform: string;
+        url: string;
+        id?: string | null;
+      }[]
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1321,6 +1335,13 @@ export interface PagesSelect<T extends boolean = true> {
         archive?: T | ArchiveBlockSelect<T>;
         formBlock?: T | FormBlockSelect<T>;
       };
+  socialLinks?:
+    | T
+    | {
+        platform?: T;
+        url?: T;
+        id?: T;
+      };
   meta?:
     | T
     | {
@@ -1574,6 +1595,13 @@ export interface BiographiesSelect<T extends boolean = true> {
     | T
     | {
         content?: T | ContentBlockSelect<T>;
+      };
+  socialLinks?:
+    | T
+    | {
+        platform?: T;
+        url?: T;
+        id?: T;
       };
   updatedAt?: T;
   createdAt?: T;
