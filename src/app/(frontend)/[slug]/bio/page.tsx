@@ -8,6 +8,7 @@ import { notFound, permanentRedirect } from 'next/navigation'
 
 import { RenderBlocks } from '@/blocks/RenderBlocks'
 import { Media as MediaComponent } from '@/components/Media'
+import { SocialMediaBlock } from '@/blocks/SocialMediaBlock/Component'
 import { findPublicProfileBySlug } from '@/utilities/publicProfiles'
 import { normalizePublicSlugParam } from '@/utilities/publicSlugs'
 
@@ -27,6 +28,7 @@ const PROFILE_BIO_SELECT = {
 const BIOGRAPHY_SELECT = {
   hero: true,
   layout: true,
+  socialLinks: true,
   title: true,
 } as const
 
@@ -189,6 +191,11 @@ export default async function ArtistBioPage({ params: paramsPromise }: Args) {
             <h2 className="mt-3 text-2xl font-semibold text-slate-900 dark:text-white">
               Esta biografía aún está en construcción
             </h2>
+          </div>
+        ) : null}
+        {Array.isArray(biography?.socialLinks) && biography.socialLinks.length > 0 ? (
+          <div className="pt-6">
+            <SocialMediaBlock socialLinks={biography.socialLinks} />
           </div>
         ) : null}
       </div>

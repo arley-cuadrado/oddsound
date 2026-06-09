@@ -15,6 +15,7 @@ export const RELEASE_PAGE_SELECT = {
   owner: true,
   profile: true,
   publishedAt: true,
+  socialLinks: true,
   slug: true,
   title: true,
 } as const

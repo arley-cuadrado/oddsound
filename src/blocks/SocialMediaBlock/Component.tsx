@@ -1,10 +1,15 @@
 import Link from 'next/link'
 import React from 'react'
 
-import type { SocialMediaBlock as SocialMediaBlockProps } from '@/payload-types'
+import type { Biography, Page, SocialMediaBlock as SocialMediaBlockProps } from '@/payload-types'
 
-type Props = SocialMediaBlockProps & {
+type SocialLinkItem = NonNullable<
+  NonNullable<Biography['socialLinks'] | Page['socialLinks'] | SocialMediaBlockProps['socialLinks']>
+>[number]
+
+type Props = {
   disableInnerContainer?: boolean
+  socialLinks?: null | SocialLinkItem[]
 }
 
 export const SocialMediaBlock: React.FC<Props> = ({ socialLinks }) => {

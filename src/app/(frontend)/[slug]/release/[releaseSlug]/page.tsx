@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 
 import { PayloadRedirects } from '@/components/PayloadRedirects'
+import { SocialMediaBlock } from '@/blocks/SocialMediaBlock/Component'
 import configPromise from '@payload-config'
 import { getPayload, type RequiredDataFromCollectionSlug } from 'payload'
 import { draftMode } from 'next/headers'
@@ -178,6 +179,11 @@ export default async function ReleaseDetailPage({ params: paramsPromise }: Args)
         </div>
       ) : null}
       <RenderBlocks blocks={artistLayout} />
+      {Array.isArray(page.socialLinks) && page.socialLinks.length > 0 ? (
+        <div className="px-4 pb-12 pt-6 md:px-0">
+          <SocialMediaBlock socialLinks={page.socialLinks} />
+        </div>
+      ) : null}
     </article>
   )
 }
