@@ -76,12 +76,13 @@ export const Content: Block = {
     {
       name: 'columns',
       type: 'array',
+      label: 'Contenido',
       admin: {
         initCollapsed: true,
       },
       labels: {
-        plural: 'Contenido',
-        singular: 'Contenido',
+        plural: 'Texto',
+        singular: 'Texto',
       },
       fields: columnFields,
     },

@@ -181,6 +181,7 @@ export const Posts: CollectionConfig<'posts'> = {
             {
               name: 'layout',
               type: 'blocks',
+              label: 'Contenido',
               blocks: editorialBlocks,
               filterOptions: () =>
                 editorialBlocks

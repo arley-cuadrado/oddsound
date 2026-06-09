@@ -1,4 +1,5 @@
 import { Button, type ButtonProps } from '@/components/ui/button'
+import { getPublicDocHref } from '@/utilities/getPublicDocHref'
 import { cn } from '@/utilities/ui'
 import Link from 'next/link'
 import React from 'react'
@@ -36,10 +37,11 @@ export const CMSLink: React.FC<CMSLinkType> = (props) => {
     /* CMSLink converts a page reference into a real URL here: */
   }
   const href =
-    type === 'reference' && typeof reference?.value === 'object' && reference.value.slug
-      ? `${reference?.relationTo !== 'pages' ? `/${reference?.relationTo}` : ''}/${
-          reference.value.slug
-        }`
+    type === 'reference' && reference
+      ? getPublicDocHref({
+          relationTo: reference.relationTo,
+          value: reference.value,
+        })
       : url
 
   if (!href) return null

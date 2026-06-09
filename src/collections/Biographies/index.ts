@@ -155,6 +155,7 @@ export const Biographies: CollectionConfig = {
             {
               name: 'layout',
               type: 'blocks',
+              label: 'Contenido',
               blocks: [Content],
               admin: {
                 initCollapsed: true,
