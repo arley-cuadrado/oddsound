@@ -113,6 +113,9 @@ export const Pages: CollectionConfig<'pages'> = {
     livePreview: {
       url: ({ data, req }) =>
         generatePreviewPath({
+          profile: data?.profile,
+          id:
+            typeof data?.id === 'string' || typeof data?.id === 'number' ? data.id : undefined,
           slug: data?.slug,
           collection: 'pages',
           req,
@@ -120,6 +123,9 @@ export const Pages: CollectionConfig<'pages'> = {
     },
     preview: (data, { req }) =>
       generatePreviewPath({
+        profile: data?.profile,
+        id:
+          typeof data?.id === 'string' || typeof data?.id === 'number' ? data.id : undefined,
         slug: data?.slug as string,
         collection: 'pages',
         req,
