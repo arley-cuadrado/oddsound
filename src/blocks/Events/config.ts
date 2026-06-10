@@ -56,7 +56,6 @@ export const Events: Block = {
           label: 'Habilitar compra de entradas',
         },
         link({
-          disableLabel: true,
           appearances: ['default', 'outline'],
           overrides: {
             name: 'ticketLink',

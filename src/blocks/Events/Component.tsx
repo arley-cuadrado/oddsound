@@ -32,6 +32,9 @@ export const EventsBlock: React.FC<Props> = (props) => {
           {events.map((event, index) => {
             const { city, date, enableTicketLink, ticketLink, venue } = event
             const { day, month } = formatEventDateParts(date)
+            const ticketLinkLabel =
+              (ticketLink as { label?: null | string } | null | undefined)?.label ||
+              'Comprar entradas'
 
             return (
               <article className="bg-transparent px-5 shadow-none" key={index}>
@@ -72,7 +75,7 @@ export const EventsBlock: React.FC<Props> = (props) => {
                       {...ticketLink}
                       appearance={ticketLink?.appearance ?? 'default'}
                       className="w-full justify-center lg:mt-2 lg:w-auto"
-                      label="Comprar entradas"
+                      label={ticketLinkLabel}
                     />
                   ) : null}
                 </div>

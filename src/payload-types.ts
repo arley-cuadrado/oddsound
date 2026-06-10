@@ -611,6 +611,7 @@ export interface EventsBlock {
             value: string | Post;
           } | null);
       url?: string | null;
+      label: string;
       /**
        * Elige cómo debe renderizarse el enlace.
        */
@@ -1425,6 +1426,7 @@ export interface EventsBlockSelect<T extends boolean = true> {
               newTab?: T;
               reference?: T;
               url?: T;
+              label?: T;
               appearance?: T;
             };
         id?: T;
