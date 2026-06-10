@@ -178,7 +178,7 @@ export default async function ReleaseDetailPage({ params: paramsPromise }: Args)
           ) : null}
         </div>
       ) : null}
-      <RenderBlocks blocks={artistLayout} />
+      <RenderBlocks blocks={artistLayout} hiddenBlockTypes={['socialMediaBlock']} />
       {Array.isArray(page.socialLinks) && page.socialLinks.length > 0 ? (
         <div className="px-4 pb-12 pt-6 md:px-0">
           <SocialMediaBlock socialLinks={page.socialLinks} />

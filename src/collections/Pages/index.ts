@@ -13,6 +13,10 @@ import { populatePublishedAt } from '../../hooks/populatePublishedAt'
 import { generatePreviewPath } from '../../utilities/generatePreviewPath'
 import { revalidateDelete, revalidatePage } from './hooks/revalidatePage'
 import { socialLinksField } from '@/fields/socialLinks'
+import {
+  normalizeLegacySocialLinksAfterRead,
+  normalizeLegacySocialLinksBeforeChange,
+} from '@/hooks/normalizeLegacySocialLinks'
 
 import {
   MetaDescriptionField,
@@ -248,8 +252,14 @@ export const Pages: CollectionConfig<'pages'> = {
     slugField(),
   ],
   hooks: {
+    afterRead: [normalizeLegacySocialLinksAfterRead],
     afterChange: [revalidatePage],
-    beforeChange: [assignOwnership, generateCreatorContentSlug('pages'), populatePublishedAt],
+    beforeChange: [
+      assignOwnership,
+      normalizeLegacySocialLinksBeforeChange,
+      generateCreatorContentSlug('pages'),
+      populatePublishedAt,
+    ],
     afterDelete: [revalidateDelete],
   },
   versions: {

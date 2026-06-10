@@ -27,9 +27,10 @@ const blockComponents = {
 export const RenderBlocks: React.FC<{
   blocks: Page['layout'][0][]
   disableInnerContainer?: boolean
+  hiddenBlockTypes?: string[]
   linkClassName?: string
 }> = (props) => {
-  const { blocks, disableInnerContainer = false, linkClassName } = props
+  const { blocks, disableInnerContainer = false, hiddenBlockTypes = [], linkClassName } = props
 
   const hasBlocks = blocks && Array.isArray(blocks) && blocks.length > 0
 
@@ -38,6 +39,10 @@ export const RenderBlocks: React.FC<{
       <Fragment>
         {blocks.map((block, index) => {
           const { blockType } = block
+
+          if (blockType && hiddenBlockTypes.includes(blockType)) {
+            return null
+          }
 
           if (blockType && blockType in blockComponents) {
             const Block = blockComponents[blockType] as React.ComponentType<any>

@@ -4,6 +4,10 @@ import { authenticated } from '@/access/authenticated'
 import { hasFreshAdminAccess } from '@/access/hasFreshAdminAccess'
 import { assignOwnership } from '@/hooks/assignOwnership'
 import { BiographyContent } from '@/blocks/Content/config'
+import {
+  normalizeLegacySocialLinksAfterRead,
+  normalizeLegacySocialLinksBeforeChange,
+} from '@/hooks/normalizeLegacySocialLinks'
 import { socialLinksField } from '@/fields/socialLinks'
 import { isAdminUser } from '@/utilities/isAdminUser'
 
@@ -173,6 +177,7 @@ export const Biographies: CollectionConfig = {
     },
   ],
   hooks: {
-    beforeChange: [assignOwnership],
+    afterRead: [normalizeLegacySocialLinksAfterRead],
+    beforeChange: [assignOwnership, normalizeLegacySocialLinksBeforeChange],
   },
 }

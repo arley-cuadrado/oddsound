@@ -181,6 +181,7 @@ export default async function ArtistBioPage({ params: paramsPromise }: Args) {
           <RenderBlocks
             blocks={bioLayout as any}
             disableInnerContainer
+            hiddenBlockTypes={['socialMediaBlock']}
             linkClassName="inline-flex items-center text-[13px] font-medium text-[#777] underline underline-offset-4 dark:text-[#858c98]"
           />
         ) : biography ? (
