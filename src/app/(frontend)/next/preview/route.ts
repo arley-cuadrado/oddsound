@@ -6,6 +6,7 @@ import { redirect } from 'next/navigation'
 import { NextRequest } from 'next/server'
 
 import configPromise from '@payload-config'
+import { findCreatorProfileByOwner } from '@/utilities/creatorProfiles'
 import { findPublicProfileBySlug } from '@/utilities/publicProfiles'
 
 export type PreviewSearchParams = {
@@ -25,6 +26,41 @@ async function resolvePagePreviewPath(args: {
 }) {
   const { documentID, payload, profileRef, slug } = args
 
+  const resolveProfileSlugFromID = async (profileID: null | string) => {
+    if (!profileID) return null
+
+    try {
+      const profile = await payload.findByID({
+        collection: 'profiles',
+        id: profileID,
+        depth: 0,
+        overrideAccess: true,
+      })
+
+      return typeof profile?.slug === 'string' && profile.slug.trim() ? profile.slug : null
+    } catch {
+      return null
+    }
+  }
+
+  const resolveProfileSlugFromOwner = async (owner: unknown) => {
+    const ownerID =
+      typeof owner === 'string' || typeof owner === 'number'
+        ? String(owner)
+        : owner && typeof owner === 'object' && 'id' in owner
+          ? String(owner.id)
+          : null
+
+    if (!ownerID) return null
+
+    const profileID = await findCreatorProfileByOwner({
+      ownerID,
+      payload,
+    })
+
+    return resolveProfileSlugFromID(profileID)
+  }
+
   if (documentID) {
     try {
       const page = await payload.findByID({
@@ -36,13 +72,19 @@ async function resolvePagePreviewPath(args: {
       })
 
       const pageSlug = typeof page?.slug === 'string' && page.slug.trim() ? page.slug : slug
-      const pageProfile =
+      const pageProfileSlug =
         page?.profile && typeof page.profile === 'object' && typeof page.profile.slug === 'string'
           ? page.profile.slug
-          : null
+          : await resolveProfileSlugFromID(
+              typeof page?.profile === 'string' || typeof page?.profile === 'number'
+                ? String(page.profile)
+                : null,
+            )
+      const ownerProfileSlug = pageProfileSlug ? null : await resolveProfileSlugFromOwner(page?.owner)
+      const resolvedProfileSlug = pageProfileSlug || ownerProfileSlug
 
-      if (pageProfile && pageSlug) {
-        return `/${pageProfile}/release/${encodeURIComponent(pageSlug)}`
+      if (resolvedProfileSlug && pageSlug) {
+        return `/${resolvedProfileSlug}/release/${encodeURIComponent(pageSlug)}`
       }
     } catch {
       // Fall through to direct profile resolution below.
@@ -51,19 +93,10 @@ async function resolvePagePreviewPath(args: {
 
   if (!profileRef || !slug) return null
 
-  try {
-    const profile = await payload.findByID({
-      collection: 'profiles',
-      id: profileRef,
-      depth: 0,
-      overrideAccess: true,
-    })
+  const directProfileSlug = await resolveProfileSlugFromID(profileRef)
 
-    if (typeof profile?.slug === 'string' && profile.slug.trim()) {
-      return `/${profile.slug}/release/${encodeURIComponent(slug)}`
-    }
-  } catch {
-    // Fall through to slug-based lookup below.
+  if (directProfileSlug) {
+    return `/${directProfileSlug}/release/${encodeURIComponent(slug)}`
   }
 
   const profile = await findPublicProfileBySlug({
