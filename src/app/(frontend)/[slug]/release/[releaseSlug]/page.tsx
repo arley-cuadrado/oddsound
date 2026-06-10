@@ -35,6 +35,13 @@ const queryReleaseByProfileAndSlug = cache(
       return { page: null, profile: null }
     }
 
+    const profileOwnerID =
+      typeof profile.owner === 'string' || typeof profile.owner === 'number'
+        ? profile.owner
+        : profile.owner && typeof profile.owner === 'object' && 'id' in profile.owner
+          ? profile.owner.id
+          : null
+
     const result = await payload.find({
       collection: 'pages',
       depth: 1,
@@ -46,9 +53,22 @@ const queryReleaseByProfileAndSlug = cache(
       where: {
         and: [
           {
-            profile: {
-              equals: profile.id,
-            },
+            or: [
+              {
+                profile: {
+                  equals: profile.id,
+                },
+              },
+              ...(profileOwnerID
+                ? [
+                    {
+                      owner: {
+                        equals: profileOwnerID,
+                      },
+                    },
+                  ]
+                : []),
+            ],
           },
           {
             slug: {
@@ -135,7 +155,8 @@ export default async function ReleaseDetailPage({ params: paramsPromise }: Args)
   }
 
   const { hero, layout } = page
-  const creatorProfile = typeof page.profile === 'object' && page.profile ? page.profile : null
+  const creatorProfile =
+    typeof page.profile === 'object' && page.profile ? page.profile : profile
   const artistLayout = Array.isArray(layout)
     ? layout.filter((block) => block.blockType !== 'formBlock')
     : []

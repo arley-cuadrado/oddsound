@@ -78,4 +78,30 @@ describe('assignOwnership', () => {
 
     expect(payload.find).toHaveBeenCalledTimes(1)
   })
+
+  it('assigns the resolved profile to admins when they already have one', async () => {
+    const payload = {
+      find: vi.fn(),
+    }
+
+    const result = await assignOwnership({
+      data: { title: 'Admin Release' },
+      req: {
+        context: {},
+        payload,
+        user: {
+          id: 'admin-1',
+          profile: 'profile-admin-1',
+          role: 'admin',
+        },
+      },
+    } as never)
+
+    expect(result).toMatchObject({
+      owner: 'admin-1',
+      profile: 'profile-admin-1',
+      title: 'Admin Release',
+    })
+    expect(payload.find).not.toHaveBeenCalled()
+  })
 })

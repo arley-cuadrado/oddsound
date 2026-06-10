@@ -70,6 +70,12 @@ export default async function ArtistReleasesPage({ params: paramsPromise }: Args
   }
 
   const payload = await getPayload({ config: configPromise })
+  const profileOwnerID =
+    typeof profile.owner === 'string' || typeof profile.owner === 'number'
+      ? profile.owner
+      : profile.owner && typeof profile.owner === 'object' && 'id' in profile.owner
+        ? profile.owner.id
+        : null
   const pagesResult = await payload.find({
     collection: 'pages',
     depth: 1,
@@ -86,9 +92,22 @@ export default async function ArtistReleasesPage({ params: paramsPromise }: Args
           },
         },
         {
-          profile: {
-            equals: profile.id,
-          },
+          or: [
+            {
+              profile: {
+                equals: profile.id,
+              },
+            },
+            ...(profileOwnerID
+              ? [
+                  {
+                    owner: {
+                      equals: profileOwnerID,
+                    },
+                  },
+                ]
+              : []),
+          ],
         },
       ],
     },
