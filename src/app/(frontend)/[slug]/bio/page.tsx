@@ -1,4 +1,4 @@
-import type { Biography, Media } from '@/payload-types'
+import type { Biography, Media, Page } from '@/payload-types'
 import type { Metadata } from 'next'
 
 import configPromise from '@payload-config'
@@ -28,8 +28,12 @@ const PROFILE_BIO_SELECT = {
 const BIOGRAPHY_SELECT = {
   hero: true,
   layout: true,
-  socialLinks: true,
   title: true,
+} as const
+
+const RELEASE_SOCIAL_LINKS_SELECT = {
+  layout: true,
+  socialLinks: true,
 } as const
 
 async function queryProfileBySlug(slug: string) {
@@ -54,6 +58,30 @@ async function queryBiographyByProfileID(profileID: string) {
   })
 
   return result.docs[0] || null
+}
+
+async function queryProfileSocialLinksByProfileID(profileID: string) {
+  const payload = await getPayload({ config: configPromise })
+  const result = await payload.find({
+    collection: 'pages',
+    depth: 0,
+    limit: 50,
+    overrideAccess: true,
+    pagination: false,
+    select: RELEASE_SOCIAL_LINKS_SELECT,
+    sort: '-updatedAt',
+    where: {
+      profile: {
+        equals: profileID,
+      },
+    },
+  })
+
+  return (
+    result.docs.find(
+      (page) => Array.isArray(page.socialLinks) && page.socialLinks.length > 0,
+    ) || null
+  ) as null | Pick<Page, 'socialLinks'>
 }
 
 export async function generateStaticParams() {
@@ -100,7 +128,10 @@ export default async function ArtistBioPage({ params: paramsPromise }: Args) {
     permanentRedirect(`/${profile.slug}`)
   }
 
-  const biography = await queryBiographyByProfileID(profile.id)
+  const [biography, socialLinksSource] = await Promise.all([
+    queryBiographyByProfileID(profile.id),
+    queryProfileSocialLinksByProfileID(profile.id),
+  ])
   const bioLayout: NonNullable<Biography['layout']> =
     biography && Array.isArray(biography.layout)
       ? (biography.layout as NonNullable<Biography['layout']>)
@@ -194,11 +225,13 @@ export default async function ArtistBioPage({ params: paramsPromise }: Args) {
             </h2>
           </div>
         ) : null}
-        {Array.isArray(biography?.socialLinks) && biography.socialLinks.length > 0 ? (
-          <div className="pt-6">
-            <SocialMediaBlock socialLinks={biography.socialLinks} />
-          </div>
-        ) : null}
+      </div>
+      <div className="pt-10">
+        <div className="container">
+          {Array.isArray(socialLinksSource?.socialLinks) && socialLinksSource.socialLinks.length > 0 ? (
+            <SocialMediaBlock socialLinks={socialLinksSource.socialLinks} />
+          ) : null}
+        </div>
       </div>
     </div>
   )

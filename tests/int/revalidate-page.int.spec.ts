@@ -23,49 +23,66 @@ describe('revalidatePage', () => {
     revalidateTagMock.mockReset()
   })
 
-  it('revalidates both the release path and home when a release is published', () => {
+  it('revalidates release, bio, releases listing and home when a release is published', async () => {
     const logger = createPayloadLogger()
 
-    revalidatePage({
+    await revalidatePage({
       doc: {
         _status: 'published',
+        profile: {
+          slug: 'forte-marea',
+        },
         slug: 'mi-release',
       },
       previousDoc: {
         _status: 'draft',
+        profile: {
+          slug: 'forte-marea',
+        },
         slug: 'mi-release',
       },
       req: {
         context: {},
-        payload: { logger },
+        payload: { findByID: vi.fn(), logger },
       },
     } as never)
 
     expect(revalidatePathMock).toHaveBeenCalledWith('/mi-release')
     expect(revalidatePathMock).toHaveBeenCalledWith('/')
-    expect(revalidateTagMock).toHaveBeenCalledTimes(2)
+    expect(revalidatePathMock).toHaveBeenCalledWith('/forte-marea')
+    expect(revalidatePathMock).toHaveBeenCalledWith('/forte-marea/releases')
+    expect(revalidatePathMock).toHaveBeenCalledWith('/forte-marea/release/mi-release')
   })
 
-  it('revalidates home when a previously published release is unpublished', () => {
+  it('revalidates bio, release detail and home when a previously published release is unpublished', async () => {
     const logger = createPayloadLogger()
 
-    revalidatePage({
+    await revalidatePage({
       doc: {
         _status: 'draft',
+        profile: {
+          slug: 'forte-marea',
+        },
         slug: 'mi-release',
       },
       previousDoc: {
         _status: 'published',
+        profile: {
+          slug: 'forte-marea',
+        },
         slug: 'mi-release',
       },
       req: {
         context: {},
-        payload: { logger },
+        payload: { findByID: vi.fn(), logger },
       },
     } as never)
 
     expect(revalidatePathMock).toHaveBeenCalledWith('/mi-release')
     expect(revalidatePathMock).toHaveBeenCalledWith('/')
+    expect(revalidatePathMock).toHaveBeenCalledWith('/forte-marea')
+    expect(revalidatePathMock).toHaveBeenCalledWith('/forte-marea/releases')
+    expect(revalidatePathMock).toHaveBeenCalledWith('/forte-marea/release/mi-release')
   })
 })
 
@@ -75,21 +92,26 @@ describe('revalidateDelete', () => {
     revalidateTagMock.mockReset()
   })
 
-  it('revalidates both the deleted release path and home', () => {
+  it('revalidates deleted release, bio, releases listing and home', async () => {
     const logger = createPayloadLogger()
 
-    revalidateDelete({
+    await revalidateDelete({
       doc: {
+        profile: {
+          slug: 'forte-marea',
+        },
         slug: 'mi-release',
       },
       req: {
         context: {},
-        payload: { logger },
+        payload: { findByID: vi.fn(), logger },
       },
     } as never)
 
     expect(revalidatePathMock).toHaveBeenCalledWith('/mi-release')
     expect(revalidatePathMock).toHaveBeenCalledWith('/')
-    expect(revalidateTagMock).toHaveBeenCalledTimes(2)
+    expect(revalidatePathMock).toHaveBeenCalledWith('/forte-marea')
+    expect(revalidatePathMock).toHaveBeenCalledWith('/forte-marea/releases')
+    expect(revalidatePathMock).toHaveBeenCalledWith('/forte-marea/release/mi-release')
   })
 })

@@ -4,6 +4,50 @@ import { revalidatePath, revalidateTag } from 'next/cache'
 
 import type { Page } from '../../../payload-types'
 
+async function resolveProfileSlug(args: {
+  payload: {
+    findByID: (...args: any[]) => Promise<any>
+    logger: {
+      info: (message: string) => void
+      warn: (message: string) => void
+    }
+  }
+  profile: Page['profile']
+}) {
+  const { payload, profile } = args
+
+  if (profile && typeof profile === 'object' && 'slug' in profile && profile.slug) {
+    return profile.slug
+  }
+
+  const profileID =
+    typeof profile === 'string' || typeof profile === 'number'
+      ? profile
+      : profile && typeof profile === 'object' && 'id' in profile
+        ? profile.id
+        : null
+
+  if (!profileID) return null
+
+  try {
+    const resolvedProfile = await payload.findByID({
+      collection: 'profiles',
+      depth: 0,
+      id: profileID,
+      overrideAccess: true,
+      select: {
+        slug: true,
+      },
+    })
+
+    return resolvedProfile?.slug || null
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown profile lookup error'
+    payload.logger.warn(`Skipping profile-aware release revalidation: ${message}`)
+    return null
+  }
+}
+
 function safelyRevalidate(args: {
   path: string
   payload: {
@@ -47,7 +91,52 @@ function revalidateHomeFeed(args: {
   })
 }
 
-export const revalidatePage: CollectionAfterChangeHook<Page> = ({
+async function revalidateProfileReleaseSurfaces(args: {
+  payload: {
+    findByID: (...args: any[]) => Promise<any>
+    logger: {
+      info: (message: string) => void
+      warn: (message: string) => void
+    }
+  }
+  page: Pick<Page, 'profile' | 'slug'>
+  sitemapTag: string
+}) {
+  const { payload, page, sitemapTag } = args
+  const profileSlug = await resolveProfileSlug({
+    payload,
+    profile: page.profile,
+  })
+
+  if (!profileSlug || !page.slug) return
+
+  const bioPath = `/${profileSlug}`
+  const releasesPath = `/${profileSlug}/releases`
+  const releaseDetailPath = `/${profileSlug}/release/${page.slug}`
+
+  payload.logger.info(`Revalidating biography at path: ${bioPath}`)
+  safelyRevalidate({
+    path: bioPath,
+    payload,
+    sitemapTag,
+  })
+
+  payload.logger.info(`Revalidating releases listing at path: ${releasesPath}`)
+  safelyRevalidate({
+    path: releasesPath,
+    payload,
+    sitemapTag,
+  })
+
+  payload.logger.info(`Revalidating release detail at path: ${releaseDetailPath}`)
+  safelyRevalidate({
+    path: releaseDetailPath,
+    payload,
+    sitemapTag,
+  })
+}
+
+export const revalidatePage: CollectionAfterChangeHook<Page> = async ({
   doc,
   previousDoc,
   req: { payload, context },
@@ -67,6 +156,12 @@ export const revalidatePage: CollectionAfterChangeHook<Page> = ({
       if (doc.slug !== 'home') {
         revalidateHomeFeed({
           payload,
+          sitemapTag: 'pages-sitemap',
+        })
+
+        await revalidateProfileReleaseSurfaces({
+          payload,
+          page: doc,
           sitemapTag: 'pages-sitemap',
         })
       }
@@ -89,13 +184,19 @@ export const revalidatePage: CollectionAfterChangeHook<Page> = ({
           payload,
           sitemapTag: 'pages-sitemap',
         })
+
+        await revalidateProfileReleaseSurfaces({
+          payload,
+          page: previousDoc,
+          sitemapTag: 'pages-sitemap',
+        })
       }
     }
   }
   return doc
 }
 
-export const revalidateDelete: CollectionAfterDeleteHook<Page> = ({
+export const revalidateDelete: CollectionAfterDeleteHook<Page> = async ({
   doc,
   req: { context, payload },
 }) => {
@@ -110,6 +211,12 @@ export const revalidateDelete: CollectionAfterDeleteHook<Page> = ({
     if (doc?.slug !== 'home') {
       revalidateHomeFeed({
         payload,
+        sitemapTag: 'pages-sitemap',
+      })
+
+      await revalidateProfileReleaseSurfaces({
+        payload,
+        page: doc,
         sitemapTag: 'pages-sitemap',
       })
     }
