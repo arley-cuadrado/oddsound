@@ -11,7 +11,7 @@ const PageClient: React.FC = () => {
 
     const root = document.documentElement
 
-    root.style.setProperty('--mobile-page-bottom-offset', '3.5rem')
+    root.style.setProperty('--mobile-page-bottom-offset', '3rem')
 
     return () => {
       root.style.removeProperty('--mobile-page-bottom-offset')
