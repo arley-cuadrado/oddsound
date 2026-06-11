@@ -143,7 +143,7 @@ export default async function ArtistBioPage({ params: paramsPromise }: Args) {
       : null
 
   return (
-    <div className="mx-auto max-w-4xl pb-24 pt-16 md:pt-20">
+    <div className="mx-auto max-w-4xl pb-24 pt-12 md:pt-20">
       <div className="container">
         <header className="mb-12 overflow-hidden rounded-none text-white">
           <div className="relative grid gap-5">
