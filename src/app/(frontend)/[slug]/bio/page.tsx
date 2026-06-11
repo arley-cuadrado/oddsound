@@ -77,11 +77,9 @@ async function queryProfileSocialLinksByProfileID(profileID: string) {
     },
   })
 
-  return (
-    result.docs.find(
-      (page) => Array.isArray(page.socialLinks) && page.socialLinks.length > 0,
-    ) || null
-  ) as null | Pick<Page, 'socialLinks'>
+  return (result.docs.find(
+    (page) => Array.isArray(page.socialLinks) && page.socialLinks.length > 0,
+  ) || null) as null | Pick<Page, 'socialLinks'>
 }
 
 export async function generateStaticParams() {
@@ -179,7 +177,7 @@ export default async function ArtistBioPage({ params: paramsPromise }: Args) {
               </div>
             ) : (
               <div className="grid gap-3">
-                {([profile.genre, profile.location].filter(Boolean).length > 0) && (
+                {[profile.genre, profile.location].filter(Boolean).length > 0 && (
                   <div className="space-y-1">
                     <p className="text-xs uppercase tracking-[0.14em] text-[#777] dark:text-[#858c98]">
                       BIO
@@ -228,7 +226,8 @@ export default async function ArtistBioPage({ params: paramsPromise }: Args) {
       </div>
       <div className="pt-10">
         <div className="container">
-          {Array.isArray(socialLinksSource?.socialLinks) && socialLinksSource.socialLinks.length > 0 ? (
+          {Array.isArray(socialLinksSource?.socialLinks) &&
+          socialLinksSource.socialLinks.length > 0 ? (
             <SocialMediaBlock socialLinks={socialLinksSource.socialLinks} />
           ) : null}
         </div>

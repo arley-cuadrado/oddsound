@@ -41,13 +41,13 @@ export default async function HomePage() {
   return (
     <div className="mx-auto max-w-4xl">
       {sliderPosts.length > 0 ? (
-        <div className="container px-4 py-0 md:px-6">
+        <div className="container px-4 mt-12 py-0 md:px-6">
           <SliderHeader posts={sliderPosts} />
         </div>
       ) : null}
       <main className="text-sm container">
         <div className="flex flex-col justify-between md:flex-row">
-          <section className="w-full min-w-0 pt-4 pb-4 pr-0 md:pr-24">
+          <section className="w-full min-w-0 pt-8 pb-4 pr-0 md:pr-24">
             <div className="w-full min-w-0">
               <Suspense
                 fallback={

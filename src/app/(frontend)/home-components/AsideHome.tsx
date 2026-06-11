@@ -5,7 +5,7 @@ import { AboutUsTeaser } from '../about-us/AboutUsTeaser'
 export default function AsideHome() {
   return (
     <>
-      <aside className="gap-6 mb-7 pt-8 pb-4">
+      <aside className="gap-6 mb-7 pt-4 pb-4">
         <div className="w-70 px-6">
           <div>
             <h2 className="text-[13px] font-semibold tracking-tight text-pretty text-black dark:text-white">
