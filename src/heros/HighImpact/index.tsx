@@ -29,7 +29,7 @@ export const HighImpactHero: React.FC<HighImpactHeroProps> = ({
   })
 
   return (
-    <div className="relative mt-12 overflow-hidden text-white container md:mt-8" data-theme="dark">
+    <div className="relative mt-12 overflow-hidden text-white container md:mt-4" data-theme="dark">
       <div className="relative h-[400px] select-none">
         {media && typeof media === 'object' && (
           <Media fill imgClassName="-z-10 object-cover rounded-lg" priority resource={media} />

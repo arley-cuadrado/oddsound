@@ -30,7 +30,7 @@ export const LowImpactHero: React.FC<LowImpactHeroType> = ({
   creatorCountry,
 }) => {
   return (
-    <div className="container mt-12 px-4 md:mt-16 md:px-6">
+    <div className="container mt-12 px-4 md:mt-4 md:px-6">
       <div className="max-w-[48rem]">
         {(creatorGenre || creatorCountry) && (
           <div className="mb-4 space-y-1">
