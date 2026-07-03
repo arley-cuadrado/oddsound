@@ -31,6 +31,7 @@ const biographyHero: Field = {
     {
       name: 'media',
       type: 'upload',
+      label: 'Imagen del álbum',
       relationTo: 'media',
       admin: {
         description: 'Opcional. Si agregas una imagen, la biografía mostrará el encabezado dividido.',

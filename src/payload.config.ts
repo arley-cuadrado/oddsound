@@ -1,6 +1,5 @@
 import { mongooseAdapter } from '@payloadcms/db-mongodb'
 import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
-import { es } from '@payloadcms/translations/languages/es'
 import sharp from 'sharp'
 import path from 'path'
 import { buildConfig, PayloadRequest } from 'payload'
@@ -19,6 +18,7 @@ import { Header } from './Header/config'
 import { oddsoundVercelBlobStorage } from './plugins/oddsoundVercelBlob'
 import { plugins } from './plugins'
 import { defaultLexical } from '@/fields/defaultLexical'
+import { payloadSpanish } from '@/i18n/payloadSpanish'
 import { collectTrustedServerURLs, getServerSideURL } from './utilities/getURL'
 
 const filename = fileURLToPath(import.meta.url)
@@ -120,7 +120,7 @@ export default buildConfig({
   i18n: {
     fallbackLanguage: 'es',
     supportedLanguages: {
-      es,
+      es: payloadSpanish,
     },
   },
   plugins: [
