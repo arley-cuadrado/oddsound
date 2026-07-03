@@ -57,7 +57,6 @@ export const hero: Field = {
     {
       name: 'albumImage',
       type: 'upload',
-      label: 'Imagen del álbum',
       admin: {
         condition: (_, { type } = {}) => type === 'lowImpact',
         description:
@@ -70,7 +69,7 @@ export const hero: Field = {
       ) => {
         if (siblingData?.type !== 'lowImpact') return true
 
-        return value ? true : 'La imagen es requerida.'
+        return value ? true : 'La imagen del álbum es obligatoria para los releases de bajo impacto.'
       },
     },
     linkGroup({
@@ -81,7 +80,6 @@ export const hero: Field = {
     {
       name: 'media',
       type: 'upload',
-      label: 'Imagen del álbum',
       admin: {
         condition: (_, { type } = {}) => ['highImpact', 'mediumImpact'].includes(type),
         description:
@@ -94,7 +92,7 @@ export const hero: Field = {
       ) => {
         if (!['highImpact', 'mediumImpact'].includes(siblingData?.type || '')) return true
 
-        return value ? true : 'La imagen es requerida.'
+        return value ? true : 'La imagen principal es obligatoria para los releases de alto y medio impacto.'
       },
     },
   ],

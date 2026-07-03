@@ -1,5 +1,4 @@
-import type { CollectionAfterReadHook, CollectionBeforeValidateHook, CollectionConfig } from 'payload'
-import { ValidationError } from 'payload'
+import type { CollectionAfterReadHook, CollectionConfig } from 'payload'
 
 import {
   FixedToolbarFeature,
@@ -122,36 +121,8 @@ const normalizeLegacyMediaURLs: CollectionAfterReadHook = ({ doc }) => {
   return nextDoc
 }
 
-const validateRequiredMediaFile: CollectionBeforeValidateHook = ({
-  collection,
-  data,
-  operation,
-  req,
-}) => {
-  if (operation !== 'create') return data
-  if (req.file) return data
-
-  throw new ValidationError(
-    {
-      collection: collection.slug,
-      errors: [
-        {
-          message: 'La imagen es requerida.',
-          path: 'file',
-        },
-      ],
-      req,
-    },
-    req.t,
-  )
-}
-
 export const Media: CollectionConfig = {
   slug: 'media',
-  labels: {
-    plural: 'Imágenes',
-    singular: 'Imagen',
-  },
   indexes: [
     {
       fields: ['owner', 'updatedAt'],
@@ -248,7 +219,6 @@ export const Media: CollectionConfig = {
     {
       name: 'caption',
       type: 'richText',
-      label: 'Subtítulo',
       editor: lexicalEditor({
         features: ({ rootFeatures }) => {
           return [...rootFeatures, FixedToolbarFeature(), InlineToolbarFeature()]
@@ -262,7 +232,6 @@ export const Media: CollectionConfig = {
     // for this collection and serves files through the custom Blob adapter.
     staticDir: path.resolve(dirname, '../../public/media'),
     adminThumbnail: 'thumbnail',
-    filesRequiredOnCreate: false,
     focalPoint: true,
     pasteURL: false,
     imageSizes: [
@@ -301,7 +270,6 @@ export const Media: CollectionConfig = {
   },
   hooks: {
     afterRead: [normalizeLegacyMediaURLs],
-    beforeValidate: [validateRequiredMediaFile],
     beforeChange: [assignOwnership],
   },
 }
