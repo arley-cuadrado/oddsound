@@ -13,6 +13,10 @@ type LinkGroupType = (options?: {
 export const linkGroup: LinkGroupType = ({ appearances, overrides = {} } = {}) => {
   const generatedLinkGroup: Field = {
     name: 'links',
+    labels: {
+      plural: 'Enlaces',
+      singular: 'Enlace',
+    },
     type: 'array',
     fields: [
       link({

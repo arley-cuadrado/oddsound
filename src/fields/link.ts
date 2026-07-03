@@ -24,6 +24,7 @@ type LinkType = (options?: {
 export const link: LinkType = ({ appearances, disableLabel = false, overrides = {} } = {}) => {
   const linkResult: GroupField = {
     name: 'link',
+    label: 'Enlace',
     type: 'group',
     admin: {
       hideGutter: true,
@@ -35,6 +36,7 @@ export const link: LinkType = ({ appearances, disableLabel = false, overrides = 
           {
             name: 'type',
             type: 'radio',
+            label: 'Tipo',
             admin: {
               layout: 'horizontal',
               width: '50%',
