@@ -25,7 +25,7 @@ export function LegalDocument({
       <div className="mx-auto max-w-[48rem]">
         <header className="mb-10 border-b border-slate-200 pb-8 dark:border-slate-800">
           <p className="mb-3 text-xs uppercase tracking-[0.18em] text-[#777] dark:text-[#858c98]">
-            Be heard. Stay odd.
+            Oddsound
           </p>
           <h1 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white md:text-5xl">
             {title}

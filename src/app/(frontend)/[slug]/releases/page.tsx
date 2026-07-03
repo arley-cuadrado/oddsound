@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 import configPromise from '@payload-config'
 import type { Page, Profile } from '@/payload-types'
 import { getPayload } from 'payload'
-import { notFound, permanentRedirect } from 'next/navigation'
+import { notFound } from 'next/navigation'
 import Link from 'next/link'
 
 import {
@@ -12,8 +12,6 @@ import {
 } from '../../home-components/getPublishedReleaseContext'
 import { buildProfilesByOwnerId, mapRelease } from '../../home-components/releaseData'
 import type { ReleaseItem } from '../../home-components/types'
-import { findPublicProfileBySlug } from '@/utilities/publicProfiles'
-import { normalizePublicSlugParam } from '@/utilities/publicSlugs'
 
 type Args = {
   params: Promise<{
@@ -41,41 +39,44 @@ export async function generateStaticParams() {
 
 async function queryProfileBySlug(slug: string) {
   const payload = await getPayload({ config: configPromise })
-  const profile = await findPublicProfileBySlug({ payload, slug })
-  return profile ? ({ ...profile } as Profile) : null
+  const result = await payload.find({
+    collection: 'profiles',
+    depth: 1,
+    limit: 1,
+    overrideAccess: true,
+    pagination: false,
+    select: PROFILE_SELECT,
+    where: {
+      slug: {
+        equals: slug,
+      },
+    },
+  })
+
+  return result.docs[0] || null
 }
 
 export async function generateMetadata({ params: paramsPromise }: Args): Promise<Metadata> {
   const { slug = '' } = await paramsPromise
-  const profile = await queryProfileBySlug(normalizePublicSlugParam(slug))
+  const profile = await queryProfileBySlug(decodeURIComponent(slug))
   const bandName = profile?.displayName || 'Artista'
 
   return {
-    description: 'Explora todos los lanzamientos publicados.',
-    title: bandName,
+    description: `Explora todos los lanzamientos publicados por ${bandName}.`,
+    title: `Lanzamientos de ${bandName}`,
   }
 }
 
 export default async function ArtistReleasesPage({ params: paramsPromise }: Args) {
   const { slug = '' } = await paramsPromise
-  const decodedSlug = normalizePublicSlugParam(slug)
+  const decodedSlug = decodeURIComponent(slug)
   const profile = await queryProfileBySlug(decodedSlug)
 
   if (!profile) {
     notFound()
   }
 
-  if (profile.slug && profile.slug !== decodedSlug) {
-    permanentRedirect(`/${profile.slug}/releases`)
-  }
-
   const payload = await getPayload({ config: configPromise })
-  const profileOwnerID =
-    typeof profile.owner === 'string' || typeof profile.owner === 'number'
-      ? profile.owner
-      : profile.owner && typeof profile.owner === 'object' && 'id' in profile.owner
-        ? profile.owner.id
-        : null
   const pagesResult = await payload.find({
     collection: 'pages',
     depth: 1,
@@ -92,22 +93,9 @@ export default async function ArtistReleasesPage({ params: paramsPromise }: Args
           },
         },
         {
-          or: [
-            {
-              profile: {
-                equals: profile.id,
-              },
-            },
-            ...(profileOwnerID
-              ? [
-                  {
-                    owner: {
-                      equals: profileOwnerID,
-                    },
-                  },
-                ]
-              : []),
-          ],
+          profile: {
+            equals: profile.id,
+          },
         },
       ],
     },
@@ -125,10 +113,10 @@ export default async function ArtistReleasesPage({ params: paramsPromise }: Args
       <div className="container">
         <header className="mb-12 text-center">
           <h1 className="text-4xl font-semibold tracking-tight text-slate-900 dark:text-white">
-            {bandName}
+            Lanzamientos de {bandName}
           </h1>
           <p className="mt-4 text-sm text-[#777] dark:text-[#858c98]">
-            Explora todos los lanzamientos publicados.
+            Explora todos los lanzamientos publicados por {bandName}.
           </p>
         </header>
 
@@ -137,13 +125,7 @@ export default async function ArtistReleasesPage({ params: paramsPromise }: Args
             <div className="grid grid-cols-2 gap-4 md:gap-6 xl:grid-cols-4">
               {releases.map((release) => (
                 <article className="w-full" key={release.id}>
-                  <Link
-                    href={
-                      release.creatorSlug
-                        ? `/${release.creatorSlug}/release/${release.releaseSlug}`
-                        : `/${release.releaseSlug}`
-                    }
-                  >
+                  <Link href={`/${release.releaseSlug}`}>
                     <div>
                       <div className="relative aspect-square w-full overflow-hidden bg-slate-100 dark:bg-slate-900 rounded-lg">
                         {/* eslint-disable-next-line @next/next/no-img-element */}

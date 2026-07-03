@@ -15,7 +15,6 @@ export const RELEASE_PAGE_SELECT = {
   owner: true,
   profile: true,
   publishedAt: true,
-  socialLinks: true,
   slug: true,
   title: true,
 } as const
@@ -28,7 +27,6 @@ export const PROFILE_SELECT = {
   genre: true,
   location: true,
   owner: true,
-  shopEnabled: true,
   slug: true,
 } as const
 

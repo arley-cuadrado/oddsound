@@ -226,14 +226,6 @@
   }
 }
 
-@media (max-width: 975px) {
-  input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']),
-  textarea,
-  select {
-    font-size: 16px !important;
-  }
-}
-
 html {
   opacity: 0;
 }
@@ -247,11 +239,6 @@ html[data-theme='light'] {
   -webkit-text-fill-color: transparent;
   background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab) 0 0/400% 400%;
   -webkit-background-clip: text;
-  animation: 15s infinite gradient;
-}
-
-.title-surface {
-  background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab) 0 0/400% 400%;
   animation: 15s infinite gradient;
 }
 @keyframes gradient {

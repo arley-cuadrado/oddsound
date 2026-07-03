@@ -135,14 +135,12 @@ export function mapRelease(page: Page, profilesByOwnerId: Map<string, Profile>):
     'No description available.'
 
   return {
-    creatorSlug: profile?.slug || null,
     id: page.id,
     country: isAdminRelease ? '' : profile?.location || '',
     creatorName: isAdminRelease ? 'oddsound' : profile?.displayName || ownerName || page.title,
     description,
     genre: profile?.genre || '',
     imageUrl: getReleaseCardImage({ page, profile }),
-    publishedAt: page.publishedAt || null,
     releaseSlug: page.slug,
     releaseTitle: page.title,
     spotifyURL: getSpotifyURL(page),

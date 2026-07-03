@@ -26,7 +26,6 @@
     "test:int": "cross-env NODE_OPTIONS=--no-deprecation vitest run --config ./vitest.config.mts"
   },
   "dependencies": {
-    "@next/third-parties": "16.3.0-canary.45",
     "@payloadcms/admin-bar": "3.84.1",
     "@payloadcms/db-mongodb": "3.84.1",
     "@payloadcms/email-nodemailer": "3.84.1",

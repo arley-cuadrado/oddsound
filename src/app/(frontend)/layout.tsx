@@ -1,7 +1,5 @@
 import type { Metadata } from 'next'
 
-import { GoogleAnalytics } from '@next/third-parties/google'
-
 import { cn } from '@/utilities/ui'
 import { GeistMono } from 'geist/font/mono'
 import React from 'react'
@@ -37,12 +35,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             />
 
             <Header />
-            <main className="w-full md:pt-4 pb-4">{children}</main>
+            <main className="w-full pt-[var(--admin-bar-offset,0px)] max-[975px]:pt-[calc(var(--admin-bar-offset,0px)+5rem)] max-[975px]:pb-[var(--mobile-page-bottom-offset,6rem)]">
+              {children}
+            </main>
             {/*<Footer />*/}
           </div>
         </Providers>
       </body>
-      <GoogleAnalytics gaId="G-EEBMCPE9WZ" />
     </html>
   )
 }

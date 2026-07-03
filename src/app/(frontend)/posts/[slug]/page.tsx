@@ -5,7 +5,6 @@ import { PayloadRedirects } from '@/components/PayloadRedirects'
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 import { draftMode } from 'next/headers'
-import { permanentRedirect } from 'next/navigation'
 import React, { cache } from 'react'
 import RichText from '@/components/RichText'
 
@@ -13,7 +12,6 @@ import type { Post } from '@/payload-types'
 
 import { PostHero } from '@/heros/PostHero'
 import { generateMeta } from '@/utilities/generateMeta'
-import { buildPublicSlugWhere, normalizePublicSlugParam } from '@/utilities/publicSlugs'
 import PageClient from './page.client'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
 import { RenderBlocks } from '@/blocks/RenderBlocks'
@@ -47,15 +45,12 @@ type Args = {
 export default async function Post({ params: paramsPromise }: Args) {
   const { isEnabled: draft } = await draftMode()
   const { slug = '' } = await paramsPromise
-  const decodedSlug = normalizePublicSlugParam(slug)
+  // Decode to support slugs with special characters
+  const decodedSlug = decodeURIComponent(slug)
   const url = '/posts/' + decodedSlug
   const post = await queryPostBySlug({ slug: decodedSlug })
 
   if (!post) return <PayloadRedirects url={url} />
-
-  if (post.slug && post.slug !== decodedSlug) {
-    permanentRedirect(`/posts/${post.slug}`)
-  }
 
   return (
     <article className="mx-auto max-w-4xl pb-16">
@@ -94,7 +89,8 @@ export default async function Post({ params: paramsPromise }: Args) {
 
 export async function generateMetadata({ params: paramsPromise }: Args): Promise<Metadata> {
   const { slug = '' } = await paramsPromise
-  const decodedSlug = normalizePublicSlugParam(slug)
+  // Decode to support slugs with special characters
+  const decodedSlug = decodeURIComponent(slug)
   const post = await queryPostBySlug({ slug: decodedSlug })
 
   return generateMeta({ doc: post })
@@ -113,7 +109,11 @@ const queryPostBySlug = cache(async ({ slug }: { slug: string }) => {
     pagination: false,
     where: {
       and: [
-        buildPublicSlugWhere(slug),
+        {
+          slug: {
+            equals: slug,
+          },
+        },
         ...(!draft
           ? [
               {
