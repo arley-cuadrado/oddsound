@@ -30,7 +30,7 @@ export const VideoBlock: Block = {
     {
       name: 'video',
       type: 'text',
-      label: 'Añadir URL de YouTube',
+      label: 'URL de YouTube',
       required: true,
       validate: (value: null | string | undefined) => {
         if (typeof value !== 'string' || !value.trim()) {

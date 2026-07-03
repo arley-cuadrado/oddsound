@@ -17,7 +17,6 @@ function createColumnFields(options?: { disableAppearances?: boolean; groupLabel
   {
     name: 'size',
     type: 'select',
-    label: 'Tamaño',
     defaultValue: 'oneThird',
     options: [
       {
@@ -89,7 +88,7 @@ function createContentBlock(options?: {
       {
         name: 'columns',
         type: 'array',
-        label: options?.arrayLabel || 'Escribe sobre tu trabajo musical, tu inspiración, etc.',
+        label: options?.arrayLabel || 'Contenido',
         admin: {
           initCollapsed: true,
         },

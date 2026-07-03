@@ -11,7 +11,6 @@ export const MediaBlock: Block = {
     {
       name: 'media',
       type: 'upload',
-      label: 'Seleccionar archivo',
       relationTo: 'media',
       required: true,
     },
