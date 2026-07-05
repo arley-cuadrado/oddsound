@@ -5,6 +5,7 @@ import { Events } from '@/blocks/Events/config'
 import { MediaBlock } from '@/blocks/MediaBlock/config'
 import { SpotifyBlock } from '@/blocks/SpotifyBlock/config'
 import { VideoBlock } from '@/blocks/VideoBlock/config'
+import { Biographies } from '@/collections/Biographies'
 import { Media } from '@/collections/Media'
 import { Pages } from '@/collections/Pages'
 import { MEDIA_UPLOAD_MAX_FILE_SIZE_BYTES, payloadUploadOptions } from '@/config/uploadLimits'
@@ -113,7 +114,10 @@ describe('release editor localization config', () => {
     const pagesTabsField = (Pages.fields as any[]).find((field) => field?.type === 'tabs')
     const contentTab = pagesTabsField?.tabs?.find((tab: any) => tab?.label === 'Contenido')
     const seoTab = pagesTabsField?.tabs?.find((tab: any) => tab?.label === 'SEO')
+    const biographiesTabsField = (Biographies.fields as any[]).find((field) => field?.type === 'tabs')
+    const biographyTab = biographiesTabsField?.tabs?.find((tab: any) => tab?.label === 'Bio')
     const releaseLayoutField = findFieldByName(contentTab?.fields ?? [], 'layout')
+    const biographyLayoutField = findFieldByName(biographyTab?.fields ?? [], 'layout')
     const seoTitleField = findFieldByName(seoTab?.fields ?? [], 'title')
     const contentColumnsField = findFieldByName(Content.fields as any[], 'columns')
     const contentSizeField = findFieldByName(contentColumnsField?.fields ?? [], 'size')
@@ -129,6 +133,31 @@ describe('release editor localization config', () => {
       plural: 'Secciones',
       singular: 'Sección',
     })
+    expect(biographyLayoutField?.labels).toEqual({
+      plural: 'Secciones',
+      singular: 'Sección',
+    })
+    expect(biographyLayoutField?.maxRows).toBe(1)
+    expect(biographyLayoutField?.defaultValue).toEqual([
+      {
+        blockType: 'content',
+        columns: [
+          {
+            size: 'full',
+            richText: {
+              root: {
+                type: 'root',
+                children: [],
+                direction: null,
+                format: '',
+                indent: 0,
+                version: 1,
+              },
+            },
+          },
+        ],
+      },
+    ])
     expect(seoTitleField?.label).toBe('Título')
     expect(contentColumnsField?.label).toBe(
       'Escribe sobre tu trabajo musical, tu inspiración, etc.',

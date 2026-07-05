@@ -157,7 +157,32 @@ export const Biographies: CollectionConfig = {
               name: 'layout',
               type: 'blocks',
               label: 'Contenido',
+              labels: {
+                plural: 'Secciones',
+                singular: 'Sección',
+              },
               blocks: [BiographyContent],
+              maxRows: 1,
+              defaultValue: [
+                {
+                  blockType: 'content',
+                  columns: [
+                    {
+                      size: 'full',
+                      richText: {
+                        root: {
+                          type: 'root',
+                          children: [],
+                          direction: null,
+                          format: '',
+                          indent: 0,
+                          version: 1,
+                        },
+                      },
+                    },
+                  ],
+                },
+              ],
               admin: {
                 initCollapsed: true,
               },
