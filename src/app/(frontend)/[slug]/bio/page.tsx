@@ -200,7 +200,11 @@ export default async function ArtistBioPage({ params: paramsPromise }: Args) {
         <div className="mb-10 flex flex-wrap gap-x-6 gap-y-3">
           <Link
             href={`/${profile.slug}/releases`}
-            className="title-surface inline-flex items-center rounded-full px-4 py-2 text-[13px] font-medium text-white shadow-sm transition-transform hover:-translate-y-0.5"
+            className="inline-flex items-center rounded-full px-4 py-2 text-[13px] font-medium text-white shadow-sm transition-transform hover:-translate-y-0.5"
+            style={{
+              background:
+                'linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab) 0 0 / 400% 400%',
+            }}
           >
             Ver lanzamientos
           </Link>
