@@ -173,7 +173,7 @@ export default function ReleasesHome({ releases }: { releases: ReleaseItem[] }) 
                   </p>
                   <div className="mt-3 flex items-center gap-3 text-[11px] text-[#777] dark:text-[#858c98]">
                     {publishedDate ? <time dateTime={release.publishedAt || undefined}>{publishedDate}</time> : null}
-                    <span className="font-medium text-slate-800 dark:text-white">Read more</span>
+                    <span className="font-medium text-slate-800 dark:text-white">Leer más</span>
                   </div>
                 </div>
               </Link>
