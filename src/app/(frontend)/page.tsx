@@ -1,3 +1,5 @@
+import type { Metadata } from 'next'
+
 import AsideHome from './home-components/AsideHome'
 import SliderHeader from './home-components/HeaderHome'
 import { Suspense } from 'react'
@@ -5,6 +7,21 @@ import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 
 import ReleasesHomeSection from './home-components/ReleasesHomeSection'
+import { HOME_DESCRIPTION, SITE_NAME, SITE_TITLE } from '@/seo/site'
+
+export const metadata: Metadata = {
+  title: SITE_TITLE,
+  description: HOME_DESCRIPTION,
+  alternates: {
+    canonical: '/',
+  },
+  openGraph: {
+    description: HOME_DESCRIPTION,
+    title: SITE_NAME,
+    type: 'website',
+    url: '/',
+  },
+}
 
 export default async function HomePage() {
   const payload = await getPayload({ config: configPromise })

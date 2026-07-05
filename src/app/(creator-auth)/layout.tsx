@@ -9,7 +9,7 @@ import '../(frontend)/globals.css'
 
 export default function CreatorAuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html className={cn(GeistMono.variable)} lang="en" suppressHydrationWarning>
+    <html className={cn(GeistMono.variable)} lang="es" suppressHydrationWarning>
       <head>
         <InitTheme />
         <link href="/favicon.ico" rel="icon" sizes="32x32" />

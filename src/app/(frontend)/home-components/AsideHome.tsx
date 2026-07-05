@@ -9,7 +9,7 @@ export default function AsideHome() {
         <div className="w-70 px-6">
           <div>
             <h2 className="text-[13px] font-semibold tracking-tight text-pretty text-black dark:text-white">
-              Binevenid@!
+              Bienvenid@!
             </h2>
             <p className="mt-2 text-[13px] text-[#777] dark:text-[#858c98]">
               Esta es una versión temprana del sitio, un espacio donde encontrarás artistas

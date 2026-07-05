@@ -1,7 +1,17 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ArloSignature } from '../ArloSignature'
 import { LegalDocument } from '../legal/LegalDocument'
 import { aboutUsIntro, aboutUsIntroTitle, aboutUsUpdatedAt } from './content'
+import { ABOUT_US_DESCRIPTION, SITE_NAME } from '@/seo/site'
+
+export const metadata: Metadata = {
+  title: `${SITE_NAME} About Us`,
+  description: ABOUT_US_DESCRIPTION,
+  alternates: {
+    canonical: '/about-us',
+  },
+}
 
 const sections = [
   {

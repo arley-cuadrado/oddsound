@@ -8,6 +8,7 @@ import { Search } from '@/search/Component'
 import Link from 'next/link'
 import { getReleaseCardImage } from '@/utilities/getReleaseCardImage'
 import { getPublishedReleaseContext } from '../home-components/getPublishedReleaseContext'
+import { DISCOVERY_DESCRIPTION, SITE_NAME } from '@/seo/site'
 
 import PageClient from './page.client'
 
@@ -208,6 +209,10 @@ export default async function Page({ searchParams: searchParamsPromise }: Args) 
 
 export function generateMetadata(): Metadata {
   return {
-    title: `ODDSOUND Release Search`,
+    title: `${SITE_NAME} Discovery`,
+    description: DISCOVERY_DESCRIPTION,
+    alternates: {
+      canonical: '/search',
+    },
   }
 }

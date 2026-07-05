@@ -7,6 +7,20 @@ import type { ReleaseItem } from './types'
 const RELEASES_BATCH_SIZE = 5
 const SPOTIFY_EMBED_TYPES = new Set(['album', 'artist', 'episode', 'playlist', 'show', 'track'])
 
+function formatPublishedDate(value: null | string | undefined) {
+  if (!value) return null
+
+  const date = new Date(value)
+
+  if (Number.isNaN(date.getTime())) return null
+
+  return new Intl.DateTimeFormat('es-CO', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  }).format(date)
+}
+
 function getSpotifyEmbedURL(spotify: string) {
   try {
     const parsedURL = new URL(spotify)
@@ -84,6 +98,7 @@ export default function ReleasesHome({ releases }: { releases: ReleaseItem[] }) 
         const spotifyEmbedURL = release.spotifyURL ? getSpotifyEmbedURL(release.spotifyURL) : null
         const isSpotifyVisible = activeSpotifyReleaseId === release.id
         const isSpotifyAnimated = animatedSpotifyReleaseId === release.id
+        const publishedDate = formatPublishedDate(release.publishedAt)
 
         return (
           <article key={release.id} className="w-full min-w-0 max-w-[28rem] max-[767.98px]:max-w-none">
@@ -156,6 +171,10 @@ export default function ReleasesHome({ releases }: { releases: ReleaseItem[] }) 
                   <p className="line-clamp-3 text-[13px] text-[#777] dark:text-[#858c98]">
                     {release.description}
                   </p>
+                  <div className="mt-3 flex items-center gap-3 text-[11px] text-[#777] dark:text-[#858c98]">
+                    {publishedDate ? <time dateTime={release.publishedAt || undefined}>{publishedDate}</time> : null}
+                    <span className="font-medium text-slate-800 dark:text-white">Read more</span>
+                  </div>
                 </div>
               </Link>
             </section>

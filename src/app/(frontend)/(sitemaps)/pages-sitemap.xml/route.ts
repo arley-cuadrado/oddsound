@@ -4,6 +4,7 @@ import config from '@payload-config'
 import { unstable_cache } from 'next/cache'
 
 import { getServerSideURL } from '@/utilities/getURL'
+import { getStaticSitemapEntries } from '@/seo/site'
 
 const getPagesSitemap = unstable_cache(
   async () => {
@@ -30,16 +31,7 @@ const getPagesSitemap = unstable_cache(
 
     const dateFallback = new Date().toISOString()
 
-    const defaultSitemap = [
-      {
-        loc: `${SITE_URL}/search`,
-        lastmod: dateFallback,
-      },
-      {
-        loc: `${SITE_URL}/posts`,
-        lastmod: dateFallback,
-      },
-    ]
+    const defaultSitemap = getStaticSitemapEntries(dateFallback)
 
     const sitemap = results.docs
       ? results.docs
@@ -52,7 +44,7 @@ const getPagesSitemap = unstable_cache(
           })
       : []
 
-    return [...defaultSitemap, ...sitemap]
+    return [...new Map([...defaultSitemap, ...sitemap].map((entry) => [entry.loc, entry])).values()]
   },
   ['pages-sitemap'],
   {
