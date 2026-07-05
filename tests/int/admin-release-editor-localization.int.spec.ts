@@ -23,6 +23,9 @@ describe('release editor localization config', () => {
     expect(payloadSpanish.translations.general.create).toBe('Crear')
     expect(payloadSpanish.translations.general.createNew).toBe('Crear')
     expect(payloadSpanish.translations.general.creatingNewLabel).toBe('{{label}}')
+    expect(payloadSpanish.translations.general.changesNotSaved).toBe(
+      'Tus cambios no han sido guardados. Si sales ahora, se perderán.',
+    )
     expect(payloadSpanish.translations.general.successfullyCreated).toBe(
       '{{label}} añadida correctamente',
     )
