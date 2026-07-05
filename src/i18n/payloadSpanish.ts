@@ -14,6 +14,7 @@ export const payloadSpanish = {
     },
     general: {
       ...es.translations.general,
+      changesNotSaved: 'Tus cambios no han sido guardados. Si sales ahora, se perderán.',
       create: 'Crear',
       createNew: 'Crear',
       creatingNewLabel: '{{label}}',
