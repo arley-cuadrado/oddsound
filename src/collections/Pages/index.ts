@@ -185,7 +185,12 @@ export const Pages: CollectionConfig<'pages'> = {
             {
               name: 'layout',
               type: 'blocks',
-              label: 'Contenido',
+              label:
+                'Agrega las secciones que consideres necesarias para tu lanzamiento, muévelas a tu conveniencia y crea el flujo que más te guste.',
+              labels: {
+                plural: 'Secciones',
+                singular: 'Sección',
+              },
               blocks: editorialBlocks,
               filterOptions: ({ req }) => {
                 const hiddenBlocks = new Set(['formBlock'])
@@ -223,6 +228,9 @@ export const Pages: CollectionConfig<'pages'> = {
             }),
             MetaTitleField({
               hasGenerateFn: true,
+              overrides: {
+                label: 'Título',
+              },
             }),
             MetaImageField({
               relationTo: 'media',
