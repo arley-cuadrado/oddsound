@@ -235,6 +235,9 @@ export const Posts: CollectionConfig<'posts'> = {
             }),
             MetaTitleField({
               hasGenerateFn: true,
+              overrides: {
+                label: 'Título',
+              },
             }),
             MetaImageField({
               relationTo: 'media',

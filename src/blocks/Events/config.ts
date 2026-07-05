@@ -14,6 +14,7 @@ export const Events: Block = {
     {
       name: 'events',
       type: 'array',
+      label: 'Eventos',
       labels: {
         plural: 'Eventos',
         singular: 'Evento',

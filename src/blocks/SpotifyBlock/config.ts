@@ -33,7 +33,7 @@ export const SpotifyBlock: Block = {
     {
       name: 'spotify',
       type: 'text',
-      label: 'URL de Spotify',
+      label: 'Añadir URL de Spotify (Añade enlace de álbum o de un sencillo)',
       required: true,
       validate: (value: null | string | undefined) => {
         if (typeof value !== 'string' || !value.trim()) {

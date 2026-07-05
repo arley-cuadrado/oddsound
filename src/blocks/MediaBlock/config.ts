@@ -11,8 +11,12 @@ export const MediaBlock: Block = {
     {
       name: 'media',
       type: 'upload',
+      label: 'Seleccionar archivo',
       relationTo: 'media',
       required: true,
+      validate: (value: unknown) => {
+        return value ? true : 'Se requiere un archivo.'
+      },
     },
   ],
 }

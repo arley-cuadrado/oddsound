@@ -1,6 +1,5 @@
 import { mongooseAdapter } from '@payloadcms/db-mongodb'
 import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
-import { es } from '@payloadcms/translations/languages/es'
 import sharp from 'sharp'
 import path from 'path'
 import { buildConfig, PayloadRequest } from 'payload'
@@ -18,7 +17,9 @@ import { Footer } from './Footer/config'
 import { Header } from './Header/config'
 import { oddsoundVercelBlobStorage } from './plugins/oddsoundVercelBlob'
 import { plugins } from './plugins'
+import { payloadUploadOptions } from '@/config/uploadLimits'
 import { defaultLexical } from '@/fields/defaultLexical'
+import { payloadSpanish } from '@/i18n/payloadSpanish'
 import { collectTrustedServerURLs, getServerSideURL } from './utilities/getURL'
 
 const filename = fileURLToPath(import.meta.url)
@@ -92,6 +93,7 @@ export default buildConfig({
   db: mongooseAdapter({
     url: process.env.DATABASE_URL || '',
   }),
+  upload: payloadUploadOptions,
   email: nodemailerAdapter({
     defaultFromAddress: process.env.EMAIL_FROM_ADDRESS || 'hello@oddsound.co',
     defaultFromName: process.env.EMAIL_FROM_NAME || 'oddsound',
@@ -120,7 +122,7 @@ export default buildConfig({
   i18n: {
     fallbackLanguage: 'es',
     supportedLanguages: {
-      es,
+      es: payloadSpanish,
     },
   },
   plugins: [
