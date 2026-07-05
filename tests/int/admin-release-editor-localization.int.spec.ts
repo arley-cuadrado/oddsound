@@ -30,6 +30,7 @@ describe('release editor localization config', () => {
   })
 
   it('localizes the media collection labels and upload validation message', () => {
+    const altField = findFieldByName(Media.fields as any[], 'alt')
     const captionField = findFieldByName(Media.fields as any[], 'caption')
     const beforeValidateHook = Media.hooks?.beforeValidate?.[0]
     const mediaBlockUploadField = findFieldByName(MediaBlock.fields as any[], 'media')
@@ -38,6 +39,7 @@ describe('release editor localization config', () => {
       plural: 'Imágenes',
       singular: 'Imagen',
     })
+    expect(altField?.label).toBe('Texto alternativo')
     expect(captionField?.label).toBe('Subtítulo')
 
     try {

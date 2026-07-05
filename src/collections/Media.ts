@@ -243,6 +243,7 @@ export const Media: CollectionConfig = {
     {
       name: 'alt',
       type: 'text',
+      label: 'Texto alternativo',
       //required: true,
     },
     {
