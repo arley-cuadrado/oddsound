@@ -7,6 +7,11 @@ import { buildConfig, PayloadRequest } from 'payload'
 import { fileURLToPath } from 'url'
 
 import {
+  extendEcommerceCartsCollection,
+  extendEcommerceOrdersCollection,
+  extendEcommerceTransactionsCollection,
+} from '@/collections/Commerce/officialCheckout'
+import {
   ecommerceAdminOnlyFieldAccess,
   ecommerceAdminOrPublishedStatus,
   ecommerceIsAdmin,
@@ -147,12 +152,22 @@ export default buildConfig({
         isDocumentOwner: ecommerceIsDocumentOwner,
         publicAccess: ecommercePublicAccess,
       },
+      carts: {
+        allowGuestCarts: false,
+        cartsCollectionOverride: extendEcommerceCartsCollection,
+      },
       customers: {
         slug: Users.slug,
+      },
+      orders: {
+        ordersCollectionOverride: extendEcommerceOrdersCollection,
       },
       products: {
         productsCollectionOverride: extendEcommerceProductsCollection,
         variants: false,
+      },
+      transactions: {
+        transactionsCollectionOverride: extendEcommerceTransactionsCollection,
       },
     }),
     ...(hasBlobToken
