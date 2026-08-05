@@ -6,6 +6,7 @@ import {
   extendEcommerceTransactionsCollection,
 } from '@/collections/Commerce/officialCheckout'
 import { extendEcommerceProductsCollection } from '@/collections/Commerce/officialProducts'
+import { Pages } from '@/collections/Pages'
 
 describe('official ecommerce collection overrides', () => {
   it('extends products with creator ownership and storefront-ready fields', () => {
@@ -81,5 +82,18 @@ describe('official ecommerce collection overrides', () => {
     expect(orders.admin?.useAsTitle).toBe('customerEmail')
     expect(transactions.admin?.defaultColumns).toEqual(['customerEmail', 'status', 'amount', 'updatedAt'])
     expect(transactions.admin?.useAsTitle).toBe('customerEmail')
+  })
+
+  it('exposes joined shop products from releases without duplicating relationships', () => {
+    const shopProductsField = Pages.fields.find((field: any) => field.name === 'shopProducts') as any
+
+    expect(shopProductsField).toMatchObject({
+      collection: 'products',
+      label: 'Productos vinculados',
+      name: 'shopProducts',
+      on: 'release',
+      type: 'join',
+    })
+    expect(shopProductsField.admin?.defaultColumns).toEqual(['title', 'priceInUSD', '_status', 'updatedAt'])
   })
 })

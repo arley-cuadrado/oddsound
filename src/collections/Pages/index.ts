@@ -168,6 +168,21 @@ export const Pages: CollectionConfig<'pages'> = {
       },
     },
     {
+      name: 'shopProducts',
+      type: 'join',
+      collection: 'products',
+      on: 'release',
+      access: {
+        read: ({ req: { user } }) => Boolean(user),
+      },
+      admin: {
+        defaultColumns: ['title', 'priceInUSD', '_status', 'updatedAt'],
+        description: 'Productos del commerce oficial vinculados a este lanzamiento.',
+        position: 'sidebar',
+      },
+      label: 'Productos vinculados',
+    },
+    {
       name: 'title',
       type: 'text',
       label: 'Título',

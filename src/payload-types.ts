@@ -94,7 +94,11 @@ export interface Config {
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
   };
-  collectionsJoins: {};
+  collectionsJoins: {
+    pages: {
+      shopProducts: 'products';
+    };
+  };
   collectionsSelect: {
     pages: PagesSelect<false> | PagesSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
@@ -185,6 +189,14 @@ export interface Page {
   id: string;
   owner?: (string | null) | User;
   profile?: (string | null) | Profile;
+  /**
+   * Productos del commerce oficial vinculados a este lanzamiento.
+   */
+  shopProducts?: {
+    docs?: (string | Product)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
   title: string;
   hero: {
     type: 'highImpact' | 'mediumImpact' | 'lowImpact';
@@ -444,6 +456,50 @@ export interface Media {
       filename?: string | null;
     };
   };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "products".
+ */
+export interface Product {
+  id: string;
+  owner?: (string | null) | User;
+  profile?: (string | null) | Profile;
+  title: string;
+  description?: string | null;
+  coverImage?: (string | null) | Media;
+  /**
+   * La primera imagen puede reutilizarse luego en la vitrina publica del producto.
+   */
+  images?:
+    | {
+        image: string | Media;
+        id?: string | null;
+      }[]
+    | null;
+  release?: (string | null) | Page;
+  checkoutProvider: 'stripe' | 'shopify' | 'eventbrite' | 'other';
+  /**
+   * Prepara productos con checkout externo mientras definimos la integracion final de pagos.
+   */
+  externalCheckoutURL?: string | null;
+  /**
+   * Guarda el ID del producto o precio en la plataforma externa para futuras automatizaciones.
+   */
+  externalProductReference?: string | null;
+  checkoutButtonLabel?: string | null;
+  inventory?: number | null;
+  priceInUSDEnabled?: boolean | null;
+  priceInUSD?: number | null;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  updatedAt: string;
+  createdAt: string;
+  deletedAt?: string | null;
+  _status?: ('draft' | 'published') | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1106,50 +1162,6 @@ export interface Address {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "products".
- */
-export interface Product {
-  id: string;
-  owner?: (string | null) | User;
-  profile?: (string | null) | Profile;
-  title: string;
-  description?: string | null;
-  coverImage?: (string | null) | Media;
-  /**
-   * La primera imagen puede reutilizarse luego en la vitrina publica del producto.
-   */
-  images?:
-    | {
-        image: string | Media;
-        id?: string | null;
-      }[]
-    | null;
-  release?: (string | null) | Page;
-  checkoutProvider: 'stripe' | 'shopify' | 'eventbrite' | 'other';
-  /**
-   * Prepara productos con checkout externo mientras definimos la integracion final de pagos.
-   */
-  externalCheckoutURL?: string | null;
-  /**
-   * Guarda el ID del producto o precio en la plataforma externa para futuras automatizaciones.
-   */
-  externalProductReference?: string | null;
-  checkoutButtonLabel?: string | null;
-  inventory?: number | null;
-  priceInUSDEnabled?: boolean | null;
-  priceInUSD?: number | null;
-  /**
-   * When enabled, the slug will auto-generate from the title field on save and autosave.
-   */
-  generateSlug?: boolean | null;
-  slug: string;
-  updatedAt: string;
-  createdAt: string;
-  deletedAt?: string | null;
-  _status?: ('draft' | 'published') | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "carts".
  */
 export interface Cart {
@@ -1470,6 +1482,7 @@ export interface PayloadMigration {
 export interface PagesSelect<T extends boolean = true> {
   owner?: T;
   profile?: T;
+  shopProducts?: T;
   title?: T;
   hero?:
     | T
