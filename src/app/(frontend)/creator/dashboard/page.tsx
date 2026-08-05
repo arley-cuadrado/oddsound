@@ -18,6 +18,12 @@ export default async function CreatorDashboardPage() {
     payload,
     profile: profileID,
   })
+  const publicProfileSlug =
+    (typeof user.profile === 'object' && user.profile && 'slug' in user.profile
+      ? user.profile.slug
+      : null) ||
+    products.find((product) => product.profile?.slug)?.profile?.slug ||
+    null
 
   return (
     <main className="bg-[radial-gradient(circle_at_top,#f5efe7_0%,#fbfaf7_50%,#f2eee8_100%)] px-6 py-16">
@@ -56,7 +62,11 @@ export default async function CreatorDashboardPage() {
           </div>
         </div>
 
-        <CommerceOverview apiPath="/creator-api/commerce/products" products={products} />
+        <CommerceOverview
+          apiPath="/creator-api/commerce/products"
+          products={products}
+          profileSlug={publicProfileSlug}
+        />
       </div>
     </main>
   )

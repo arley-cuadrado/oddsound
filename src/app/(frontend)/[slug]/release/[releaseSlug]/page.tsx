@@ -12,6 +12,7 @@ import { permanentRedirect } from 'next/navigation'
 import { RenderBlocks } from '@/blocks/RenderBlocks'
 import { RenderHero } from '@/heros/RenderHero'
 import { generateMeta } from '@/utilities/generateMeta'
+import { hasPublishedCommerceProducts } from '@/utilities/commerceProducts'
 import { findPublicProfileBySlug } from '@/utilities/publicProfiles'
 import { normalizePublicSlugParam } from '@/utilities/publicSlugs'
 import PageClient from '../../page.client'
@@ -157,6 +158,12 @@ export default async function ReleaseDetailPage({ params: paramsPromise }: Args)
   const { hero, layout } = page
   const creatorProfile =
     typeof page.profile === 'object' && page.profile ? page.profile : profile
+  const hasShop = creatorProfile?.id
+    ? await hasPublishedCommerceProducts({
+        payload: await getPayload({ config: configPromise }),
+        profile: creatorProfile.id,
+      })
+    : false
   const artistLayout = Array.isArray(layout)
     ? layout.filter((block) => block.blockType !== 'formBlock')
     : []
@@ -189,6 +196,14 @@ export default async function ReleaseDetailPage({ params: paramsPromise }: Args)
           >
             Bio
           </Link>
+          {hasShop ? (
+            <Link
+              href={`/${creatorProfile.slug}/shop`}
+              className="inline-flex items-center text-[13px] font-medium text-[#777] underline underline-offset-4 dark:text-[#858c98]"
+            >
+              Shop
+            </Link>
+          ) : null}
         </div>
       ) : null}
       <RenderBlocks blocks={artistLayout} hiddenBlockTypes={['socialMediaBlock']} />

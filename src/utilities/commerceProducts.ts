@@ -41,6 +41,7 @@ type ResolveReferenceArgs = {
 
 type ListCommerceProductsArgs = {
   includeDrafts?: boolean
+  limit?: number
   ownerID?: null | string
   payload: Payload
   profile?: null | string
@@ -139,8 +140,25 @@ export function groupCommerceProductsByRelease(products: CommerceProductSummary[
   })
 }
 
+export async function hasPublishedCommerceProducts(args: {
+  payload: Payload
+  profile?: null | string
+  release?: null | string
+}): Promise<boolean> {
+  const products = await listCommerceProducts({
+    includeDrafts: false,
+    limit: 1,
+    payload: args.payload,
+    profile: args.profile,
+    release: args.release,
+  })
+
+  return products.length > 0
+}
+
 export async function listCommerceProducts({
   includeDrafts = false,
+  limit = 100,
   ownerID,
   payload,
   profile,
@@ -202,7 +220,7 @@ export async function listCommerceProducts({
   const result = await payload.find({
     collection: 'products',
     depth: 1,
-    limit: 100,
+    limit,
     overrideAccess: true,
     pagination: false,
     sort: '-updatedAt',

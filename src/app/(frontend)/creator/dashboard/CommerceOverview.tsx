@@ -11,16 +11,17 @@ function formatDate(value: string) {
 }
 
 type CommerceOverviewProps = {
+  profileSlug?: null | string
   apiPath: string
   products: CommerceProductSummary[]
 }
 
-export function CommerceOverview({ apiPath, products }: CommerceOverviewProps) {
+export function CommerceOverview({ apiPath, products, profileSlug }: CommerceOverviewProps) {
   const groupedProducts = groupCommerceProductsByRelease(products)
 
   return (
     <section className="space-y-6 rounded-[28px] border border-border/70 bg-white/70 p-6 shadow-[0_18px_60px_rgba(49,46,46,0.08)] backdrop-blur">
-      <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+        <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
         <div className="space-y-2">
           <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-foreground/55">
             Commerce Hidden Layer
@@ -32,8 +33,24 @@ export function CommerceOverview({ apiPath, products }: CommerceOverviewProps) {
           </p>
         </div>
 
-        <div className="rounded-2xl border border-border/70 bg-background px-4 py-3 text-[12px] text-foreground/70">
-          <span className="font-medium text-foreground">Endpoint interno:</span> {apiPath}
+        <div className="flex flex-wrap gap-3">
+          <div className="rounded-2xl border border-border/70 bg-background px-4 py-3 text-[12px] text-foreground/70">
+            <span className="font-medium text-foreground">Endpoint interno:</span> {apiPath}
+          </div>
+          <Link
+            className="inline-flex items-center rounded-2xl border border-border/70 bg-background px-4 py-3 text-[12px] font-medium text-foreground transition hover:bg-[#f3efe8]"
+            href="/dashboard/collections/products"
+          >
+            Gestionar productos en Payload
+          </Link>
+          {profileSlug ? (
+            <Link
+              className="inline-flex items-center rounded-2xl border border-border/70 bg-background px-4 py-3 text-[12px] font-medium text-foreground transition hover:bg-[#f3efe8]"
+              href={`/${profileSlug}/shop`}
+            >
+              Abrir shop publico
+            </Link>
+          ) : null}
         </div>
       </div>
 
