@@ -86,10 +86,13 @@ export default async function ArtistShopPage({ params: paramsPromise }: Args) {
     notFound()
   }
 
+  const shopGridClassName =
+    products.length === 1 ? 'grid gap-5' : 'grid grid-cols-2 gap-4 md:grid-cols-2 md:gap-5 xl:grid-cols-3'
+
   return (
     <div className="mx-auto max-w-6xl px-6 pb-24 pt-12">
       <div className="space-y-8">
-        <header className="space-y-5 rounded-[32px] border border-border/70 bg-white/80 p-6 shadow-[0_18px_60px_rgba(49,46,46,0.08)] backdrop-blur md:p-8">
+        <header className="space-y-5 rounded-[32px] border border-border/70 bg-white/80 p-6 shadow-[0_18px_60px_rgba(49,46,46,0.08)] backdrop-blur dark:bg-[#111111]/90 md:p-8">
           <ShopBackButton fallbackHref={`/${profile.slug}/releases`} label="Shop" />
 
           <div className="space-y-3">
@@ -105,27 +108,31 @@ export default async function ArtistShopPage({ params: paramsPromise }: Args) {
             </p>
           </div>
 
-          <div className="flex flex-wrap gap-3 text-[12px] text-foreground/70">
-            <span className="rounded-full bg-[#f4efe6] px-3 py-1.5">
+          <div className="flex flex-wrap gap-3 text-[12px] text-foreground/70 dark:text-white/80">
+            <span className="rounded-full bg-[#f4efe6] px-3 py-1.5 dark:bg-white/10 dark:text-white">
               {products.length} producto{products.length === 1 ? '' : 's'}
             </span>
             {profile.genre ? (
-              <span className="rounded-full bg-[#f4efe6] px-3 py-1.5">{profile.genre}</span>
+              <span className="rounded-full bg-[#f4efe6] px-3 py-1.5 dark:bg-white/10 dark:text-white">
+                {profile.genre}
+              </span>
             ) : null}
             {profile.location ? (
-              <span className="rounded-full bg-[#f4efe6] px-3 py-1.5">{profile.location}</span>
+              <span className="rounded-full bg-[#f4efe6] px-3 py-1.5 dark:bg-white/10 dark:text-white">
+                {profile.location}
+              </span>
             ) : null}
           </div>
         </header>
 
-        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+        <div className={shopGridClassName}>
           {products.map((product) => {
             const visual = getProductVisual(product)
 
             return (
               <article
                 key={product.id}
-                className="overflow-hidden rounded-[28px] border border-border/70 bg-white shadow-[0_18px_60px_rgba(49,46,46,0.08)]"
+                className="overflow-hidden rounded-[28px] border border-border/70 bg-white shadow-[0_18px_60px_rgba(49,46,46,0.08)] dark:bg-[#171717]"
               >
                 <div className="relative aspect-[4/5] bg-[#efebe4]">
                   {visual ? (
@@ -147,23 +154,25 @@ export default async function ArtistShopPage({ params: paramsPromise }: Args) {
                       {product.title || 'Producto sin titulo'}
                     </h2>
                     {product.description ? (
-                      <p className="text-[13px] leading-6 text-foreground/72">{product.description}</p>
+                      <p className="text-[13px] leading-6 text-foreground/72 dark:text-white/72">
+                        {product.description}
+                      </p>
                     ) : null}
                   </div>
 
-                  <div className="flex flex-wrap gap-2 text-[12px] text-foreground/72">
+                  <div className="flex flex-wrap gap-2 text-[12px] text-foreground/72 dark:text-white/80">
                     {typeof product.priceInUSD === 'number' ? (
-                      <span className="rounded-full bg-[#f4efe6] px-3 py-1.5">
+                      <span className="rounded-full bg-[#f4efe6] px-3 py-1.5 dark:bg-white/10 dark:text-white">
                         USD {product.priceInUSD}
                       </span>
                     ) : null}
                     {typeof product.inventory === 'number' ? (
-                      <span className="rounded-full bg-[#f4efe6] px-3 py-1.5">
+                      <span className="rounded-full bg-[#f4efe6] px-3 py-1.5 dark:bg-white/10 dark:text-white">
                         Inventario {product.inventory}
                       </span>
                     ) : null}
                     {product.release?.title ? (
-                      <span className="rounded-full bg-[#f4efe6] px-3 py-1.5">
+                      <span className="rounded-full bg-[#f4efe6] px-3 py-1.5 dark:bg-white/10 dark:text-white">
                         {product.release.title}
                       </span>
                     ) : null}
@@ -182,7 +191,7 @@ export default async function ArtistShopPage({ params: paramsPromise }: Args) {
                     ) : null}
                     {product.release?.slug ? (
                       <Link
-                        className="inline-flex h-11 items-center justify-center rounded-full border border-border px-5 text-[13px] font-medium text-foreground transition hover:bg-[#f3efe8]"
+                        className="inline-flex h-11 items-center justify-center rounded-full border border-border px-5 text-[13px] font-medium text-foreground transition hover:bg-[#f3efe8] dark:border-white/15 dark:text-white dark:hover:bg-white/10"
                         href={`/${profile.slug}/release/${product.release.slug}`}
                       >
                         Ver release
