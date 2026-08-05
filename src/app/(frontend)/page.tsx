@@ -1,5 +1,4 @@
 import type { Metadata } from 'next'
-import type { Media } from '@/payload-types'
 
 import AsideHome from './home-components/AsideHome'
 import SliderHeader from './home-components/HeaderHome'
@@ -8,11 +7,7 @@ import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 
 import ReleasesHomeSection from './home-components/ReleasesHomeSection'
-import { getMediaResourceURL } from '@/utilities/getMediaUrl'
 import { HOME_DESCRIPTION, SITE_NAME, SITE_TITLE } from '@/seo/site'
-
-const FALLBACK_SLIDER_IMAGE = '/home-images/hero.jpeg'
-const LEGACY_MEDIA_API_SEGMENT = '/api/media/file/'
 
 export const metadata: Metadata = {
   title: SITE_TITLE,
@@ -52,24 +47,13 @@ export default async function HomePage() {
 
   const sliderPosts = featuredScenes.docs
     .filter((post) => post.slug)
-    .map((post) => {
-      const imageUrl =
-        post.heroImage && typeof post.heroImage === 'object'
-          ? getMediaResourceURL(post.heroImage as Media, post.heroImage.updatedAt)
-          : null
-
-      const safeImageUrl =
-        !process.env.BLOB_READ_WRITE_TOKEN && imageUrl?.startsWith(LEGACY_MEDIA_API_SEGMENT)
-          ? FALLBACK_SLIDER_IMAGE
-          : (imageUrl ?? FALLBACK_SLIDER_IMAGE)
-
-      return {
-        id: post.id,
-        imageUrl: safeImageUrl,
-        slug: post.slug as string,
-        title: post.title,
-      }
-    })
+    .map((post) => ({
+      id: post.id,
+      imageUrl:
+        post.heroImage && typeof post.heroImage === 'object' ? (post.heroImage.url ?? null) : null,
+      slug: post.slug as string,
+      title: post.title,
+    }))
 
   return (
     <div className="mx-auto max-w-4xl">
