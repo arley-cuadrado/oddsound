@@ -76,6 +76,15 @@ const canManageOwnedProducts: CollectionConfig['access'] = {
 }
 
 export function extendEcommerceProductsCollection({ defaultCollection }: OverrideArgs): CollectionConfig {
+  const defaultVersions =
+    defaultCollection.versions && typeof defaultCollection.versions === 'object'
+      ? defaultCollection.versions
+      : undefined
+  const defaultDrafts =
+    defaultVersions?.drafts && typeof defaultVersions.drafts === 'object'
+      ? defaultVersions.drafts
+      : undefined
+
   return {
     ...defaultCollection,
     access: canManageOwnedProducts,
@@ -91,7 +100,7 @@ export function extendEcommerceProductsCollection({ defaultCollection }: Overrid
         relationTo: 'users',
         access: {
           create: ({ req: { user } }) => Boolean(user),
-          read: ({ req: { user } }) => isAdminUser(user),
+          read: ({ req: { user } }) => Boolean(user),
           update: ({ req: { user } }) => Boolean(user),
         },
         admin: {
@@ -105,7 +114,7 @@ export function extendEcommerceProductsCollection({ defaultCollection }: Overrid
         relationTo: 'profiles',
         access: {
           create: ({ req: { user } }) => Boolean(user),
-          read: ({ req: { user } }) => isAdminUser(user),
+          read: ({ req: { user } }) => Boolean(user),
           update: ({ req: { user } }) => Boolean(user),
         },
         admin: {
@@ -210,6 +219,13 @@ export function extendEcommerceProductsCollection({ defaultCollection }: Overrid
     hooks: {
       ...defaultCollection.hooks,
       beforeChange: [...(defaultCollection.hooks?.beforeChange || []), assignOwnership],
+    },
+    versions: {
+      ...(defaultVersions || {}),
+      drafts: {
+        ...(defaultDrafts || {}),
+        autosave: false,
+      },
     },
   }
 }
