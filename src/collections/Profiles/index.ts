@@ -183,53 +183,6 @@ export const Profiles: CollectionConfig = {
         },
       ],
     },
-    {
-      name: 'shopEnabled',
-      type: 'checkbox',
-      defaultValue: false,
-      label: 'Tienda activa',
-      admin: {
-        condition: (_data, _siblingData, { user }) => isAdminUser(user),
-        description:
-          'Activa esta opción para mostrar la tienda pública del artista o la banda. Luego crea o activa productos en la colección Productos.',
-      },
-    },
-    {
-      name: 'shopCurrency',
-      type: 'select',
-      defaultValue: 'COP',
-      label: 'Moneda de la tienda',
-      admin: {
-        condition: (_data, siblingData, { user }) =>
-          isAdminUser(user) && Boolean(siblingData?.shopEnabled),
-      },
-      options: [
-        {
-          label: 'COP',
-          value: 'COP',
-        },
-        {
-          label: 'USD',
-          value: 'USD',
-        },
-        {
-          label: 'EUR',
-          value: 'EUR',
-        },
-      ],
-    },
-    {
-      name: 'shopExternalCheckoutOnly',
-      type: 'checkbox',
-      defaultValue: true,
-      label: 'Usar checkout externo',
-      admin: {
-        condition: (_data, siblingData, { user }) =>
-          isAdminUser(user) && Boolean(siblingData?.shopEnabled),
-        description:
-          'Mantén esta opción activa mientras oddsound use enlaces externos de compra como Stripe u otra plataforma.',
-      },
-    },
     slugField({
       useAsSlug: 'displayName',
     }),

@@ -10,7 +10,6 @@ import { Biographies } from './collections/Biographies'
 import { Media } from './collections/Media'
 import { Pages } from './collections/Pages'
 import { Profiles } from './collections/Profiles'
-import { Products } from './collections/Products'
 import { Posts } from './collections/Posts'
 import { Users } from './collections/Users'
 import { Footer } from './Footer/config'
@@ -116,7 +115,7 @@ export default buildConfig({
           } as any,
         }),
   }),
-  collections: [Pages, Posts, Products, Biographies, Media, Categories, Profiles, Users],
+  collections: [Pages, Posts, Biographies, Media, Categories, Profiles, Users],
   cors: trustedServerURLs,
   globals: [Header, Footer],
   i18n: {
