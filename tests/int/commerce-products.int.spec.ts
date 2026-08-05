@@ -1,6 +1,10 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { listCommerceProducts, resolveUserProfileID } from '@/utilities/commerceProducts'
+import {
+  groupCommerceProductsByRelease,
+  listCommerceProducts,
+  resolveUserProfileID,
+} from '@/utilities/commerceProducts'
 
 describe('commerce product utilities', () => {
   it('resolves inline user profile ids', () => {
@@ -104,5 +108,43 @@ describe('commerce product utilities', () => {
         title: 'Product 1',
       }),
     ])
+  })
+
+  it('groups products by release while keeping unlinked items separate', () => {
+    const groups = groupCommerceProductsByRelease([
+      {
+        createdAt: '2026-08-05T00:00:00.000Z',
+        id: 'product-1',
+        release: { id: 'release-1', slug: 'release-1', title: 'Release 1' },
+        title: 'Product 1',
+        updatedAt: '2026-08-05T10:00:00.000Z',
+      },
+      {
+        createdAt: '2026-08-05T00:00:00.000Z',
+        id: 'product-2',
+        release: null,
+        title: 'Product 2',
+        updatedAt: '2026-08-05T09:00:00.000Z',
+      },
+      {
+        createdAt: '2026-08-05T00:00:00.000Z',
+        id: 'product-3',
+        release: { id: 'release-1', slug: 'release-1', title: 'Release 1' },
+        title: 'Product 3',
+        updatedAt: '2026-08-05T08:00:00.000Z',
+      },
+    ] as never)
+
+    expect(groups).toHaveLength(2)
+    expect(groups[0]).toMatchObject({
+      products: [expect.objectContaining({ id: 'product-1' }), expect.objectContaining({ id: 'product-3' })],
+      release: {
+        id: 'release-1',
+      },
+    })
+    expect(groups[1]).toMatchObject({
+      products: [expect.objectContaining({ id: 'product-2' })],
+      release: null,
+    })
   })
 })

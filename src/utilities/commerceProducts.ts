@@ -28,6 +28,11 @@ export type CommerceProductSummary = {
   updatedAt: string
 }
 
+export type GroupedCommerceProducts = {
+  products: CommerceProductSummary[]
+  release: null | ProductReference
+}
+
 type ResolveReferenceArgs = {
   payload: Payload
   collection: 'pages' | 'profiles'
@@ -105,6 +110,33 @@ export function resolveUserProfileID(user: null | User | undefined): null | stri
   if (isRecord(user.profile) && typeof user.profile.id === 'string') return user.profile.id
 
   return null
+}
+
+export function groupCommerceProductsByRelease(products: CommerceProductSummary[]): GroupedCommerceProducts[] {
+  const groups = new Map<string, GroupedCommerceProducts>()
+
+  products.forEach((product) => {
+    const release = product.release || null
+    const key = release?.id || 'unlinked'
+    const existing = groups.get(key)
+
+    if (existing) {
+      existing.products.push(product)
+      return
+    }
+
+    groups.set(key, {
+      products: [product],
+      release,
+    })
+  })
+
+  return Array.from(groups.values()).sort((left, right) => {
+    const leftDate = left.products[0]?.updatedAt || ''
+    const rightDate = right.products[0]?.updatedAt || ''
+
+    return rightDate.localeCompare(leftDate)
+  })
 }
 
 export async function listCommerceProducts({
