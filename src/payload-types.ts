@@ -1115,6 +1115,26 @@ export interface Product {
   title: string;
   description?: string | null;
   coverImage?: (string | null) | Media;
+  /**
+   * La primera imagen puede reutilizarse luego en la vitrina publica del producto.
+   */
+  images?:
+    | {
+        image: string | Media;
+        id?: string | null;
+      }[]
+    | null;
+  release?: (string | null) | Page;
+  checkoutProvider: 'stripe' | 'shopify' | 'eventbrite' | 'other';
+  /**
+   * Prepara productos con checkout externo mientras definimos la integracion final de pagos.
+   */
+  externalCheckoutURL?: string | null;
+  /**
+   * Guarda el ID del producto o precio en la plataforma externa para futuras automatizaciones.
+   */
+  externalProductReference?: string | null;
+  checkoutButtonLabel?: string | null;
   inventory?: number | null;
   priceInUSDEnabled?: boolean | null;
   priceInUSD?: number | null;
@@ -2124,6 +2144,17 @@ export interface ProductsSelect<T extends boolean = true> {
   title?: T;
   description?: T;
   coverImage?: T;
+  images?:
+    | T
+    | {
+        image?: T;
+        id?: T;
+      };
+  release?: T;
+  checkoutProvider?: T;
+  externalCheckoutURL?: T;
+  externalProductReference?: T;
+  checkoutButtonLabel?: T;
   inventory?: T;
   priceInUSDEnabled?: T;
   priceInUSD?: T;

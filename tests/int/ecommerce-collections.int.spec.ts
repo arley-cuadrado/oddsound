@@ -26,7 +26,20 @@ describe('official ecommerce collection overrides', () => {
     expect(collection.admin?.defaultColumns).toEqual(['title', 'priceInUSD', 'inventory', 'updatedAt'])
     expect(collection.admin?.useAsTitle).toBe('title')
     expect(fieldNames).toEqual(
-      expect.arrayContaining(['owner', 'profile', 'title', 'description', 'coverImage', 'inventory']),
+      expect.arrayContaining([
+        'owner',
+        'profile',
+        'title',
+        'description',
+        'coverImage',
+        'images',
+        'release',
+        'checkoutProvider',
+        'externalCheckoutURL',
+        'externalProductReference',
+        'checkoutButtonLabel',
+        'inventory',
+      ]),
     )
     expect(collection.fields?.at(-1)).toMatchObject({
       type: 'row',

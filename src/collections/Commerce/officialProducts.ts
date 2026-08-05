@@ -10,6 +10,23 @@ type OverrideArgs = {
   defaultCollection: CollectionConfig
 }
 
+function validateExternalCheckoutURL(
+  value: null | string | undefined,
+  { siblingData }: { siblingData?: { checkoutProvider?: null | string } },
+) {
+  if (siblingData?.checkoutProvider !== 'other') return true
+  if (typeof value !== 'string' || !value.trim()) {
+    return 'La URL de compra externa es obligatoria.'
+  }
+
+  try {
+    new URL(value)
+    return true
+  } catch {
+    return 'Ingresa una URL valida para el checkout externo.'
+  }
+}
+
 const canManageOwnedProducts: CollectionConfig['access'] = {
   admin: authenticated,
   create: ({ req: { user } }) => Boolean(user),
@@ -105,13 +122,85 @@ export function extendEcommerceProductsCollection({ defaultCollection }: Overrid
       {
         name: 'description',
         type: 'textarea',
-        label: 'Description',
+        label: 'Descripcion',
       },
       {
         name: 'coverImage',
         type: 'upload',
-        label: 'Cover image',
+        label: 'Imagen de portada',
         relationTo: 'media',
+      },
+      {
+        name: 'images',
+        type: 'array',
+        label: 'Galeria',
+        admin: {
+          description: 'La primera imagen puede reutilizarse luego en la vitrina publica del producto.',
+          initCollapsed: true,
+        },
+        fields: [
+          {
+            name: 'image',
+            type: 'upload',
+            label: 'Imagen',
+            relationTo: 'media',
+            required: true,
+          },
+        ],
+      },
+      {
+        name: 'release',
+        type: 'relationship',
+        label: 'Lanzamiento relacionado',
+        relationTo: 'pages',
+      },
+      {
+        name: 'checkoutProvider',
+        type: 'select',
+        label: 'Proveedor de checkout',
+        defaultValue: 'other',
+        options: [
+          {
+            label: 'Stripe',
+            value: 'stripe',
+          },
+          {
+            label: 'Shopify',
+            value: 'shopify',
+          },
+          {
+            label: 'Eventbrite',
+            value: 'eventbrite',
+          },
+          {
+            label: 'Otro',
+            value: 'other',
+          },
+        ],
+        required: true,
+      },
+      {
+        name: 'externalCheckoutURL',
+        type: 'text',
+        label: 'URL de compra externa',
+        admin: {
+          description: 'Prepara productos con checkout externo mientras definimos la integracion final de pagos.',
+        },
+        validate: validateExternalCheckoutURL,
+      },
+      {
+        name: 'externalProductReference',
+        type: 'text',
+        label: 'Referencia externa',
+        admin: {
+          description: 'Guarda el ID del producto o precio en la plataforma externa para futuras automatizaciones.',
+        },
+      },
+      {
+        name: 'checkoutButtonLabel',
+        type: 'text',
+        label: 'Texto del boton',
+        defaultValue: 'Comprar',
       },
       ...defaultCollection.fields,
       slugField({
