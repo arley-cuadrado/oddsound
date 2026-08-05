@@ -1,11 +1,24 @@
 import type { Media, Page, Profile } from '@/payload-types'
 
 import { getMediaResourceURL } from './getMediaUrl'
+import { getServerSideURL } from './getURL'
 
 const FALLBACK_RELEASE_IMAGE = '/home-images/hero.jpeg'
+const LEGACY_MEDIA_API_SEGMENT = '/api/media/file/'
+
+function isBrokenLocalLegacyMediaURL(url: null | string | undefined) {
+  if (!url) return false
+
+  const isLocalEnvironment = getServerSideURL().includes('localhost')
+  const hasBlobStorage = Boolean(process.env.BLOB_READ_WRITE_TOKEN)
+
+  return isLocalEnvironment && !hasBlobStorage && url.startsWith(LEGACY_MEDIA_API_SEGMENT)
+}
 
 function getMediaURL(media: Media | null | string | undefined) {
-  return getMediaResourceURL(media, media && typeof media === 'object' ? media.updatedAt : null)
+  const url = getMediaResourceURL(media, media && typeof media === 'object' ? media.updatedAt : null)
+
+  return isBrokenLocalLegacyMediaURL(url) ? null : url
 }
 
 type ReleaseCardImageArgs = {
@@ -35,4 +48,3 @@ export function getReleaseCardImage({ page, profile }: ReleaseCardImageArgs) {
       return pageImage || heroImage || albumImage || coverImage || avatarImage || FALLBACK_RELEASE_IMAGE
   }
 }
-
