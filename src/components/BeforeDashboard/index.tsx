@@ -2,6 +2,9 @@ import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 import React from 'react'
 
+import { getMeUser } from '@/utilities/getMeUser'
+import { listCommerceProducts, resolveUserProfileID } from '@/utilities/commerceProducts'
+
 type ScheduledJobInput = {
   doc?: {
     relationTo?: 'pages' | 'posts'
@@ -26,6 +29,25 @@ const baseClass = 'before-dashboard'
 const BeforeDashboard = async () => {
   const payload = await getPayload({ config: configPromise })
   const now = new Date().toISOString()
+  const currentUser = await getMeUser().catch(() => null)
+  const user = currentUser?.user || null
+  const userRole = user?.role || null
+  const profileID = resolveUserProfileID(user)
+  const commerceProducts =
+    userRole === 'admin' || userRole === 'creator'
+      ? await listCommerceProducts({
+          includeDrafts: true,
+          ownerID: userRole === 'admin' ? null : user?.id ? String(user.id) : null,
+          payload,
+          profile: profileID,
+        })
+      : []
+  const commerceProfileSlug =
+    (typeof user?.profile === 'object' && user?.profile && 'slug' in user.profile
+      ? user.profile.slug
+      : null) ||
+    commerceProducts.find((product) => product.profile?.slug)?.profile?.slug ||
+    null
 
   const upcomingJobs = await payload.find({
     collection: 'payload-jobs',
@@ -114,6 +136,45 @@ const BeforeDashboard = async () => {
           <p className={`${baseClass}__empty`}>No hay publicaciones programadas próximas.</p>
         )}
       </div>
+
+      {userRole === 'admin' || userRole === 'creator' ? (
+        <div className={`${baseClass}__panel`}>
+          <div className={`${baseClass}__header`}>
+            <div>
+              <h4>Commerce oficial</h4>
+              <p>
+                Acceso directo al catalogo que ya corre con Payload ecommerce dentro del dashboard
+                individual.
+              </p>
+            </div>
+          </div>
+
+          <div className={`${baseClass}__commerce-grid`}>
+            <article className={`${baseClass}__commerce-card`}>
+              <span>Productos visibles aqui</span>
+              <strong>{commerceProducts.length}</strong>
+            </article>
+            <article className={`${baseClass}__commerce-card`}>
+              <span>Perfil vinculado</span>
+              <strong>{profileID || 'Sin perfil'}</strong>
+            </article>
+          </div>
+
+          <div className={`${baseClass}__actions`}>
+            <a className={`${baseClass}__action`} href="/creator/dashboard">
+              Abrir vista remota de commerce
+            </a>
+            <a className={`${baseClass}__action`} href="/dashboard/collections/products">
+              Gestionar productos
+            </a>
+            {commerceProfileSlug ? (
+              <a className={`${baseClass}__action`} href={`/${commerceProfileSlug}/shop`}>
+                Abrir shop publico
+              </a>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
     </section>
   )
 }

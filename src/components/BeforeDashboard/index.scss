@@ -2,6 +2,8 @@
 
 .dashboard .before-dashboard {
   margin-bottom: base(1.5);
+  display: grid;
+  gap: base(1);
 
   &__panel {
     border: 1px solid var(--theme-elevation-150);
@@ -34,6 +36,54 @@
     list-style: none;
     margin: 0;
     padding: 0;
+  }
+
+  &__commerce-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: base(0.75);
+    margin-bottom: base(0.75);
+  }
+
+  &__commerce-card {
+    border: 1px solid var(--theme-elevation-100);
+    border-radius: 8px;
+    padding: base(0.75);
+    background: var(--theme-bg);
+
+    & span,
+    & strong {
+      display: block;
+      margin: 0;
+    }
+
+    & span {
+      color: var(--theme-elevation-700);
+      margin-bottom: base(0.25);
+    }
+  }
+
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: base(0.5);
+  }
+
+  &__action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    padding: 0 base(0.75);
+    border: 1px solid var(--theme-elevation-150);
+    border-radius: 999px;
+    color: var(--theme-text);
+    text-decoration: none;
+    background: var(--theme-bg);
+
+    &:hover {
+      background: var(--theme-elevation-50);
+    }
   }
 
   &__item {
