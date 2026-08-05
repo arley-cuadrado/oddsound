@@ -15,6 +15,7 @@ import {
   ecommerceIsDocumentOwner,
   ecommercePublicAccess,
 } from '@/access/ecommerce'
+import { extendEcommerceProductsCollection } from '@/collections/Commerce/officialProducts'
 import { Categories } from './collections/Categories'
 import { Biographies } from './collections/Biographies'
 import { Media } from './collections/Media'
@@ -150,6 +151,7 @@ export default buildConfig({
         slug: Users.slug,
       },
       products: {
+        productsCollectionOverride: extendEcommerceProductsCollection,
         variants: false,
       },
     }),

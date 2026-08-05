@@ -1110,9 +1110,19 @@ export interface Address {
  */
 export interface Product {
   id: string;
+  owner?: (string | null) | User;
+  profile?: (string | null) | Profile;
+  title: string;
+  description?: string | null;
+  coverImage?: (string | null) | Media;
   inventory?: number | null;
   priceInUSDEnabled?: boolean | null;
   priceInUSD?: number | null;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
   updatedAt: string;
   createdAt: string;
   deletedAt?: string | null;
@@ -2109,9 +2119,16 @@ export interface AddressesSelect<T extends boolean = true> {
  * via the `definition` "products_select".
  */
 export interface ProductsSelect<T extends boolean = true> {
+  owner?: T;
+  profile?: T;
+  title?: T;
+  description?: T;
+  coverImage?: T;
   inventory?: T;
   priceInUSDEnabled?: T;
   priceInUSD?: T;
+  generateSlug?: T;
+  slug?: T;
   updatedAt?: T;
   createdAt?: T;
   deletedAt?: T;
