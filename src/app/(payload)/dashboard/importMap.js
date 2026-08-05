@@ -22,6 +22,8 @@ import { default as default_3809c25a6e74ecc91d7c9aee35c403e2 } from '@/component
 import { default as default_797b25f28c6227edff8335d9f2f9f569 } from '@/components/UsersListSelectionGuard'
 import { LinkToDoc as LinkToDoc_aead06e4cbf6b2620c5c51c9ab283634 } from '@payloadcms/plugin-search/client'
 import { ReindexButton as ReindexButton_aead06e4cbf6b2620c5c51c9ab283634 } from '@payloadcms/plugin-search/client'
+import { PriceCell as PriceCell_e27bf7b8cc50640dcdd584767b8eac3c } from '@payloadcms/plugin-ecommerce/client'
+import { PriceInput as PriceInput_b91672ccd6e8b071c11142ab941fedfb } from '@payloadcms/plugin-ecommerce/rsc'
 import { default as default_c1363893506d7ed29a71d1a4da01ddb5 } from '@/components/AdminIcon'
 import { default as default_aa0a2d19d38a4839dbd373417e210b89 } from '@/components/AdminLogo'
 import { default as default_1a7510af427896d367a49dbf838d2de6 } from '@/components/BeforeDashboard'
@@ -58,6 +60,8 @@ export const importMap = {
   "@/components/UsersListSelectionGuard#default": default_797b25f28c6227edff8335d9f2f9f569,
   "@payloadcms/plugin-search/client#LinkToDoc": LinkToDoc_aead06e4cbf6b2620c5c51c9ab283634,
   "@payloadcms/plugin-search/client#ReindexButton": ReindexButton_aead06e4cbf6b2620c5c51c9ab283634,
+  "@payloadcms/plugin-ecommerce/client#PriceCell": PriceCell_e27bf7b8cc50640dcdd584767b8eac3c,
+  "@payloadcms/plugin-ecommerce/rsc#PriceInput": PriceInput_b91672ccd6e8b071c11142ab941fedfb,
   "@/components/AdminIcon#default": default_c1363893506d7ed29a71d1a4da01ddb5,
   "@/components/AdminLogo#default": default_aa0a2d19d38a4839dbd373417e210b89,
   "@/components/BeforeDashboard#default": default_1a7510af427896d367a49dbf838d2de6,

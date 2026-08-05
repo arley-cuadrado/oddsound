@@ -1,10 +1,20 @@
 import { mongooseAdapter } from '@payloadcms/db-mongodb'
 import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
+import { ecommercePlugin } from '@payloadcms/plugin-ecommerce'
 import sharp from 'sharp'
 import path from 'path'
 import { buildConfig, PayloadRequest } from 'payload'
 import { fileURLToPath } from 'url'
 
+import {
+  ecommerceAdminOnlyFieldAccess,
+  ecommerceAdminOrPublishedStatus,
+  ecommerceIsAdmin,
+  ecommerceIsAuthenticated,
+  ecommerceIsCustomer,
+  ecommerceIsDocumentOwner,
+  ecommercePublicAccess,
+} from '@/access/ecommerce'
 import { Categories } from './collections/Categories'
 import { Biographies } from './collections/Biographies'
 import { Media } from './collections/Media'
@@ -126,6 +136,23 @@ export default buildConfig({
   },
   plugins: [
     ...plugins,
+    ecommercePlugin({
+      access: {
+        adminOnlyFieldAccess: ecommerceAdminOnlyFieldAccess,
+        adminOrPublishedStatus: ecommerceAdminOrPublishedStatus,
+        isAdmin: ecommerceIsAdmin,
+        isAuthenticated: ecommerceIsAuthenticated,
+        isCustomer: ecommerceIsCustomer,
+        isDocumentOwner: ecommerceIsDocumentOwner,
+        publicAccess: ecommercePublicAccess,
+      },
+      customers: {
+        slug: Users.slug,
+      },
+      products: {
+        variants: false,
+      },
+    }),
     ...(hasBlobToken
       ? [
           oddsoundVercelBlobStorage({
