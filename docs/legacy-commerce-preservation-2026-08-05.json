@@ -1,0 +1,105 @@
+{
+  "exportedAt": "2026-08-05T15:25:34.158Z",
+  "productCount": 2,
+  "profileCount": 2,
+  "products": [
+    {
+      "createdAt": "2026-06-07T20:00:51.096Z",
+      "updatedAt": "2026-06-07T20:03:25.096Z",
+      "owner": "6a17394c95e4b8ebed266db5",
+      "profile": "6a17394c95e4b8ebed266db9",
+      "title": "T-shirt",
+      "images": [
+        {
+          "image": "6a25cd8d93a528db2f03ac0b",
+          "id": "6a25cd61c65d34c603b37b35"
+        },
+        {
+          "image": "6a25cdca93a528db2f03aca6",
+          "id": "6a25cd92c65d34c603b37b39"
+        }
+      ],
+      "productType": "physical",
+      "status": "active",
+      "price": 35000,
+      "currency": "COP",
+      "inventoryMode": "limited",
+      "inventoryQuantity": 12,
+      "fulfillmentType": "external",
+      "externalCheckoutURL": "https://arley.dev/",
+      "publishedAt": "2026-06-07T20:00:51.095Z",
+      "generateSlug": false,
+      "slug": "t-shirt",
+      "description": "La camiseta que te quieres poner, yeahhhh!",
+      "id": "6a25cdf393a528db2f03add2",
+      "checkoutProvider": "other",
+      "checkoutButtonLabel": "Comprar"
+    },
+    {
+      "createdAt": "2026-06-07T18:59:15.112Z",
+      "updatedAt": "2026-06-07T19:21:11.223Z",
+      "owner": "6a17394c95e4b8ebed266db5",
+      "profile": "6a17394c95e4b8ebed266db9",
+      "title": "Test LP last albúm",
+      "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+      "images": [
+        {
+          "image": "6a25bf4a93a528db2f0388d4",
+          "id": "6a25befc8fc1d971fb8950d1"
+        }
+      ],
+      "productType": "physical",
+      "status": "active",
+      "price": 95,
+      "currency": "COP",
+      "inventoryMode": "limited",
+      "inventoryQuantity": 20,
+      "fulfillmentType": "external",
+      "externalCheckoutURL": "https://arley.dev/",
+      "generateSlug": false,
+      "slug": "test-lp-last-albm",
+      "publishedAt": "2026-06-07T19:21:11.222Z",
+      "id": "6a25bf8393a528db2f0389cf",
+      "checkoutProvider": "other",
+      "checkoutButtonLabel": "Comprar"
+    }
+  ],
+  "profiles": [
+    {
+      "createdAt": "2026-06-10T00:17:03.121Z",
+      "updatedAt": "2026-06-10T00:27:00.523Z",
+      "owner": "6a28acfec8741b000924cf57",
+      "displayName": "Ellie G",
+      "accountType": "artist",
+      "contactEmail": "elizabethgarcialorduy@gmail.com",
+      "shopEnabled": false,
+      "shopCurrency": "COP",
+      "shopExternalCheckoutOnly": true,
+      "generateSlug": false,
+      "slug": "ellie-g",
+      "genre": "Pop",
+      "location": "Colombia",
+      "socialLinks": [],
+      "avatar": "6a28af08c8741b000924d00c",
+      "id": "6a28acffc8741b000924cf74"
+    },
+    {
+      "createdAt": "2026-06-07T00:12:54.318Z",
+      "updatedAt": "2026-06-15T19:49:28.865Z",
+      "owner": "6a24b786d723c9eac1c01901",
+      "displayName": "With The Lights Out",
+      "accountType": "band",
+      "contactEmail": "wtloband.co@gmail.com",
+      "generateSlug": false,
+      "slug": "wtlo",
+      "genre": "Metal Alternativo",
+      "location": "Colombia",
+      "socialLinks": [],
+      "shopCurrency": "COP",
+      "shopEnabled": false,
+      "shopExternalCheckoutOnly": true,
+      "avatar": "6a24bc39e871f89c594fcb3a",
+      "id": "6a24b786d723c9eac1c01907"
+    }
+  ]
+}

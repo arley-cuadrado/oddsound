@@ -189,14 +189,6 @@ export default async function ReleaseDetailPage({ params: paramsPromise }: Args)
           >
             Bio
           </Link>
-          {creatorProfile.shopEnabled ? (
-            <Link
-              href={`/${creatorProfile.slug}/shop`}
-              className="inline-flex items-center text-[13px] font-medium text-[#777] underline underline-offset-4 dark:text-[#858c98]"
-            >
-              shop
-            </Link>
-          ) : null}
         </div>
       ) : null}
       <RenderBlocks blocks={artistLayout} hiddenBlockTypes={['socialMediaBlock']} />
