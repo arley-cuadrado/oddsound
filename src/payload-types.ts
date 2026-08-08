@@ -78,6 +78,7 @@ export interface Config {
     media: Media;
     categories: Category;
     profiles: Profile;
+    'seller-payment-accounts': SellerPaymentAccount;
     users: User;
     redirects: Redirect;
     forms: Form;
@@ -106,6 +107,7 @@ export interface Config {
     media: MediaSelect<false> | MediaSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     profiles: ProfilesSelect<false> | ProfilesSelect<true>;
+    'seller-payment-accounts': SellerPaymentAccountsSelect<false> | SellerPaymentAccountsSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
@@ -129,10 +131,12 @@ export interface Config {
   globals: {
     header: Header;
     footer: Footer;
+    'marketplace-settings': MarketplaceSetting;
   };
   globalsSelect: {
     header: HeaderSelect<false> | HeaderSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
+    'marketplace-settings': MarketplaceSettingsSelect<false> | MarketplaceSettingsSelect<true>;
   };
   locale: null;
   widgets: {
@@ -467,6 +471,12 @@ export interface Product {
   profile?: (string | null) | Profile;
   title: string;
   description?: string | null;
+  productType: 'physical' | 'digital';
+  requiresShipping?: boolean | null;
+  /**
+   * Se usa para el calculo interno de envios por zonas.
+   */
+  weightInGrams?: number | null;
   coverImage?: (string | null) | Media;
   /**
    * La primera imagen puede reutilizarse luego en la vitrina publica del producto.
@@ -478,7 +488,7 @@ export interface Product {
       }[]
     | null;
   release?: (string | null) | Page;
-  checkoutProvider: 'stripe' | 'shopify' | 'eventbrite' | 'other';
+  checkoutProvider: 'stripe' | 'shopify' | 'eventbrite' | 'mercadopago' | 'other';
   /**
    * Prepara productos con checkout externo mientras definimos la integracion final de pagos.
    */
@@ -1027,6 +1037,35 @@ export interface Biography {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "seller-payment-accounts".
+ */
+export interface SellerPaymentAccount {
+  id: string;
+  owner?: (string | null) | User;
+  profile: string | Profile;
+  provider: 'mercadopago';
+  accountStatus: 'disconnected' | 'pending' | 'connected' | 'restricted' | 'revoked';
+  kycStatus: 'unknown' | 'pending' | 'approved' | 'rejected' | 'restricted';
+  canReceivePayments?: boolean | null;
+  providerSellerID?: string | null;
+  providerSellerEmail?: string | null;
+  providerSellerNickname?: string | null;
+  oauthState?: string | null;
+  encryptedAccessToken?: string | null;
+  encryptedRefreshToken?: string | null;
+  oauthScope?: string | null;
+  accessTokenExpiresAt?: string | null;
+  oauthConnectedAt?: string | null;
+  oauthRevokedAt?: string | null;
+  lastSyncedAt?: string | null;
+  lastError?: string | null;
+  shippingOriginDepartment?: string | null;
+  defaultDispatchLeadTimeDays?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects".
  */
 export interface Redirect {
@@ -1214,6 +1253,24 @@ export interface Order {
   status?: OrderStatus;
   amount?: number | null;
   currency?: 'USD' | null;
+  artistProfile?: (string | null) | Profile;
+  sellerPaymentAccount?: (string | null) | SellerPaymentAccount;
+  paymentProvider?: 'mercadopago' | null;
+  splitMode?: 'marketplace_split_1_1' | null;
+  settlementCurrencyCode?: 'COP' | null;
+  subtotalCOP?: number | null;
+  shippingAmountCOP?: number | null;
+  platformFeeAmountCOP?: number | null;
+  processorFeeAmountCOP?: number | null;
+  artistNetAmountCOP?: number | null;
+  paymentProviderOrderId?: string | null;
+  paymentProviderPaymentId?: string | null;
+  shippingZoneCode?: string | null;
+  fulfillmentStatus?:
+    | ('pending_payment' | 'ready_to_ship' | 'shipped' | 'delivered' | 'not_required' | 'cancelled' | 'refunded')
+    | null;
+  carrierName?: string | null;
+  trackingNumber?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1250,6 +1307,18 @@ export interface Transaction {
   cart?: (string | null) | Cart;
   amount?: number | null;
   currency?: 'USD' | null;
+  artistProfile?: (string | null) | Profile;
+  sellerPaymentAccount?: (string | null) | SellerPaymentAccount;
+  paymentProvider?: 'mercadopago' | null;
+  settlementCurrencyCode?: 'COP' | null;
+  providerEventType?: string | null;
+  providerEventId?: string | null;
+  paymentProviderPaymentId?: string | null;
+  platformFeeAmountCOP?: number | null;
+  processorFeeAmountCOP?: number | null;
+  artistNetAmountCOP?: number | null;
+  refundAmountCOP?: number | null;
+  chargebackAmountCOP?: number | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1392,6 +1461,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'profiles';
         value: string | Profile;
+      } | null)
+    | ({
+        relationTo: 'seller-payment-accounts';
+        value: string | SellerPaymentAccount;
       } | null)
     | ({
         relationTo: 'users';
@@ -1903,6 +1976,34 @@ export interface ProfilesSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "seller-payment-accounts_select".
+ */
+export interface SellerPaymentAccountsSelect<T extends boolean = true> {
+  owner?: T;
+  profile?: T;
+  provider?: T;
+  accountStatus?: T;
+  kycStatus?: T;
+  canReceivePayments?: T;
+  providerSellerID?: T;
+  providerSellerEmail?: T;
+  providerSellerNickname?: T;
+  oauthState?: T;
+  encryptedAccessToken?: T;
+  encryptedRefreshToken?: T;
+  oauthScope?: T;
+  accessTokenExpiresAt?: T;
+  oauthConnectedAt?: T;
+  oauthRevokedAt?: T;
+  lastSyncedAt?: T;
+  lastError?: T;
+  shippingOriginDepartment?: T;
+  defaultDispatchLeadTimeDays?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
@@ -2156,6 +2257,9 @@ export interface ProductsSelect<T extends boolean = true> {
   profile?: T;
   title?: T;
   description?: T;
+  productType?: T;
+  requiresShipping?: T;
+  weightInGrams?: T;
   coverImage?: T;
   images?:
     | T
@@ -2232,6 +2336,22 @@ export interface OrdersSelect<T extends boolean = true> {
   status?: T;
   amount?: T;
   currency?: T;
+  artistProfile?: T;
+  sellerPaymentAccount?: T;
+  paymentProvider?: T;
+  splitMode?: T;
+  settlementCurrencyCode?: T;
+  subtotalCOP?: T;
+  shippingAmountCOP?: T;
+  platformFeeAmountCOP?: T;
+  processorFeeAmountCOP?: T;
+  artistNetAmountCOP?: T;
+  paymentProviderOrderId?: T;
+  paymentProviderPaymentId?: T;
+  shippingZoneCode?: T;
+  fulfillmentStatus?: T;
+  carrierName?: T;
+  trackingNumber?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -2269,6 +2389,18 @@ export interface TransactionsSelect<T extends boolean = true> {
   cart?: T;
   amount?: T;
   currency?: T;
+  artistProfile?: T;
+  sellerPaymentAccount?: T;
+  paymentProvider?: T;
+  settlementCurrencyCode?: T;
+  providerEventType?: T;
+  providerEventId?: T;
+  paymentProviderPaymentId?: T;
+  platformFeeAmountCOP?: T;
+  processorFeeAmountCOP?: T;
+  artistNetAmountCOP?: T;
+  refundAmountCOP?: T;
+  chargebackAmountCOP?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -2403,6 +2535,40 @@ export interface Footer {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "marketplace-settings".
+ */
+export interface MarketplaceSetting {
+  id: string;
+  provider: 'mercadopago';
+  platformFeePercent: number;
+  checkoutCurrencyCode: 'COP';
+  usdToCopRate: number;
+  /**
+   * Se agrega como token de verificación en la URL de notificación para validar los webhooks de Mercado Pago.
+   */
+  webhookAuthToken?: string | null;
+  shippingZones?:
+    | {
+        code: string;
+        label: string;
+        stateKeywords?:
+          | {
+              value: string;
+              id?: string | null;
+            }[]
+          | null;
+        baseRateCOP: number;
+        additionalKgRateCOP: number;
+        estimatedBusinessDays: number;
+        freeShippingThresholdCOP?: number | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "header_select".
  */
 export interface HeaderSelect<T extends boolean = true> {
@@ -2441,6 +2607,37 @@ export interface FooterSelect<T extends boolean = true> {
               url?: T;
               label?: T;
             };
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "marketplace-settings_select".
+ */
+export interface MarketplaceSettingsSelect<T extends boolean = true> {
+  provider?: T;
+  platformFeePercent?: T;
+  checkoutCurrencyCode?: T;
+  usdToCopRate?: T;
+  webhookAuthToken?: T;
+  shippingZones?:
+    | T
+    | {
+        code?: T;
+        label?: T;
+        stateKeywords?:
+          | T
+          | {
+              value?: T;
+              id?: T;
+            };
+        baseRateCOP?: T;
+        additionalKgRateCOP?: T;
+        estimatedBusinessDays?: T;
+        freeShippingThresholdCOP?: T;
         id?: T;
       };
   updatedAt?: T;

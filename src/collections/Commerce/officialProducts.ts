@@ -134,6 +134,42 @@ export function extendEcommerceProductsCollection({ defaultCollection }: Overrid
         label: 'Descripcion',
       },
       {
+        name: 'productType',
+        type: 'select',
+        label: 'Tipo de producto',
+        defaultValue: 'physical',
+        options: [
+          {
+            label: 'Fisico',
+            value: 'physical',
+          },
+          {
+            label: 'Digital',
+            value: 'digital',
+          },
+        ],
+        required: true,
+      },
+      {
+        name: 'requiresShipping',
+        type: 'checkbox',
+        label: 'Requiere envio',
+        defaultValue: true,
+        admin: {
+          condition: (_data, siblingData) => siblingData?.productType !== 'digital',
+        },
+      },
+      {
+        name: 'weightInGrams',
+        type: 'number',
+        label: 'Peso (gramos)',
+        min: 0,
+        admin: {
+          condition: (_data, siblingData) => siblingData?.productType !== 'digital',
+          description: 'Se usa para el calculo interno de envios por zonas.',
+        },
+      },
+      {
         name: 'coverImage',
         type: 'upload',
         label: 'Imagen de portada',
@@ -180,6 +216,10 @@ export function extendEcommerceProductsCollection({ defaultCollection }: Overrid
           {
             label: 'Eventbrite',
             value: 'eventbrite',
+          },
+          {
+            label: 'Mercado Pago',
+            value: 'mercadopago',
           },
           {
             label: 'Otro',
