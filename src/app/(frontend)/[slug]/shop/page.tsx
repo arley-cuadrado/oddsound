@@ -10,6 +10,7 @@ import { Media as MediaComponent } from '@/components/Media'
 import { ShopBackButton } from './ShopBackButton'
 import { findPublicProfileBySlug } from '@/utilities/publicProfiles'
 import { listCommerceProducts } from '@/utilities/commerceProducts'
+import { isMercadoPagoReadyForProfile } from '@/utilities/mercadoPagoCheckout'
 import { normalizePublicSlugParam } from '@/utilities/publicSlugs'
 
 type Args = {
@@ -188,9 +189,16 @@ export default async function ArtistShopPage({ params: paramsPromise }: Args) {
                       >
                         {product.checkoutButtonLabel || 'Comprar'}
                       </a>
+                    ) : product.checkoutProvider === 'mercadopago' && isMercadoPagoReadyForProfile(profile) ? (
+                      <a
+                        className="inline-flex h-11 items-center justify-center rounded-full bg-[#312e2e] px-5 text-[13px] font-medium text-white transition hover:opacity-90"
+                        href={`/creator-api/payments/checkout/start?product=${product.id}&profile=${profile.slug}`}
+                      >
+                        Comprar con Mercado Pago
+                      </a>
                     ) : product.checkoutProvider === 'mercadopago' ? (
                       <span className="inline-flex h-11 items-center justify-center rounded-full border border-border px-5 text-[13px] font-medium text-foreground/60 dark:border-white/15 dark:text-white/60">
-                        Mercado Pago pronto
+                        Mercado Pago no disponible
                       </span>
                     ) : null}
                     {product.release?.slug ? (
