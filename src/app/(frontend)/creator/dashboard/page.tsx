@@ -3,14 +3,8 @@ import Link from 'next/link'
 import { getPayload } from 'payload'
 
 import { CommerceOverview } from './CommerceOverview'
-import { PaymentsOverview } from './PaymentsOverview'
 import { listCommerceProducts, resolveUserProfileID } from '@/utilities/commerceProducts'
 import { getMeUser } from '@/utilities/getMeUser'
-import { getMarketplaceSettings } from '@/utilities/marketplaceSettings'
-import {
-  findSellerPaymentAccountByOwner,
-  sanitizeSellerPaymentAccount,
-} from '@/utilities/marketplaceSellerAccounts'
 
 export default async function CreatorDashboardPage() {
   const { user } = await getMeUser({
@@ -18,11 +12,6 @@ export default async function CreatorDashboardPage() {
   })
   const payload = await getPayload({ config })
   const profileID = resolveUserProfileID(user)
-  const sellerAccount = await findSellerPaymentAccountByOwner({
-    ownerID: String(user.id),
-    payload,
-  })
-  const marketplaceSettings = await getMarketplaceSettings(payload)
   const products = await listCommerceProducts({
     includeDrafts: true,
     ownerID: user.role === 'admin' ? null : String(user.id),
@@ -77,11 +66,6 @@ export default async function CreatorDashboardPage() {
           apiPath="/creator-api/commerce/products"
           products={products}
           profileSlug={publicProfileSlug}
-        />
-
-        <PaymentsOverview
-          platformFeePercent={marketplaceSettings.platformFeePercent}
-          sellerAccount={sanitizeSellerPaymentAccount(sellerAccount)}
         />
       </div>
     </main>

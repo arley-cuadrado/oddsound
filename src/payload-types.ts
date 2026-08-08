@@ -78,7 +78,6 @@ export interface Config {
     media: Media;
     categories: Category;
     profiles: Profile;
-    'seller-payment-accounts': SellerPaymentAccount;
     users: User;
     redirects: Redirect;
     forms: Form;
@@ -107,7 +106,6 @@ export interface Config {
     media: MediaSelect<false> | MediaSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     profiles: ProfilesSelect<false> | ProfilesSelect<true>;
-    'seller-payment-accounts': SellerPaymentAccountsSelect<false> | SellerPaymentAccountsSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
@@ -131,12 +129,10 @@ export interface Config {
   globals: {
     header: Header;
     footer: Footer;
-    'marketplace-settings': MarketplaceSetting;
   };
   globalsSelect: {
     header: HeaderSelect<false> | HeaderSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
-    'marketplace-settings': MarketplaceSettingsSelect<false> | MarketplaceSettingsSelect<true>;
   };
   locale: null;
   widgets: {
@@ -1037,35 +1033,6 @@ export interface Biography {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "seller-payment-accounts".
- */
-export interface SellerPaymentAccount {
-  id: string;
-  owner?: (string | null) | User;
-  profile: string | Profile;
-  provider: 'mercadopago';
-  accountStatus: 'disconnected' | 'pending' | 'connected' | 'restricted' | 'revoked';
-  kycStatus: 'unknown' | 'pending' | 'approved' | 'rejected' | 'restricted';
-  canReceivePayments?: boolean | null;
-  providerSellerID?: string | null;
-  providerSellerEmail?: string | null;
-  providerSellerNickname?: string | null;
-  oauthState?: string | null;
-  encryptedAccessToken?: string | null;
-  encryptedRefreshToken?: string | null;
-  oauthScope?: string | null;
-  accessTokenExpiresAt?: string | null;
-  oauthConnectedAt?: string | null;
-  oauthRevokedAt?: string | null;
-  lastSyncedAt?: string | null;
-  lastError?: string | null;
-  shippingOriginDepartment?: string | null;
-  defaultDispatchLeadTimeDays?: number | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects".
  */
 export interface Redirect {
@@ -1254,9 +1221,7 @@ export interface Order {
   amount?: number | null;
   currency?: 'USD' | null;
   artistProfile?: (string | null) | Profile;
-  sellerPaymentAccount?: (string | null) | SellerPaymentAccount;
   paymentProvider?: 'mercadopago' | null;
-  splitMode?: 'marketplace_split_1_1' | null;
   settlementCurrencyCode?: 'COP' | null;
   subtotalCOP?: number | null;
   shippingAmountCOP?: number | null;
@@ -1308,7 +1273,6 @@ export interface Transaction {
   amount?: number | null;
   currency?: 'USD' | null;
   artistProfile?: (string | null) | Profile;
-  sellerPaymentAccount?: (string | null) | SellerPaymentAccount;
   paymentProvider?: 'mercadopago' | null;
   settlementCurrencyCode?: 'COP' | null;
   providerEventType?: string | null;
@@ -1461,10 +1425,6 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'profiles';
         value: string | Profile;
-      } | null)
-    | ({
-        relationTo: 'seller-payment-accounts';
-        value: string | SellerPaymentAccount;
       } | null)
     | ({
         relationTo: 'users';
@@ -1976,34 +1936,6 @@ export interface ProfilesSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "seller-payment-accounts_select".
- */
-export interface SellerPaymentAccountsSelect<T extends boolean = true> {
-  owner?: T;
-  profile?: T;
-  provider?: T;
-  accountStatus?: T;
-  kycStatus?: T;
-  canReceivePayments?: T;
-  providerSellerID?: T;
-  providerSellerEmail?: T;
-  providerSellerNickname?: T;
-  oauthState?: T;
-  encryptedAccessToken?: T;
-  encryptedRefreshToken?: T;
-  oauthScope?: T;
-  accessTokenExpiresAt?: T;
-  oauthConnectedAt?: T;
-  oauthRevokedAt?: T;
-  lastSyncedAt?: T;
-  lastError?: T;
-  shippingOriginDepartment?: T;
-  defaultDispatchLeadTimeDays?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
@@ -2337,9 +2269,7 @@ export interface OrdersSelect<T extends boolean = true> {
   amount?: T;
   currency?: T;
   artistProfile?: T;
-  sellerPaymentAccount?: T;
   paymentProvider?: T;
-  splitMode?: T;
   settlementCurrencyCode?: T;
   subtotalCOP?: T;
   shippingAmountCOP?: T;
@@ -2390,7 +2320,6 @@ export interface TransactionsSelect<T extends boolean = true> {
   amount?: T;
   currency?: T;
   artistProfile?: T;
-  sellerPaymentAccount?: T;
   paymentProvider?: T;
   settlementCurrencyCode?: T;
   providerEventType?: T;
@@ -2535,40 +2464,6 @@ export interface Footer {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "marketplace-settings".
- */
-export interface MarketplaceSetting {
-  id: string;
-  provider: 'mercadopago';
-  platformFeePercent: number;
-  checkoutCurrencyCode: 'COP';
-  usdToCopRate: number;
-  /**
-   * Se agrega como token de verificación en la URL de notificación para validar los webhooks de Mercado Pago.
-   */
-  webhookAuthToken?: string | null;
-  shippingZones?:
-    | {
-        code: string;
-        label: string;
-        stateKeywords?:
-          | {
-              value: string;
-              id?: string | null;
-            }[]
-          | null;
-        baseRateCOP: number;
-        additionalKgRateCOP: number;
-        estimatedBusinessDays: number;
-        freeShippingThresholdCOP?: number | null;
-        id?: string | null;
-      }[]
-    | null;
-  updatedAt?: string | null;
-  createdAt?: string | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "header_select".
  */
 export interface HeaderSelect<T extends boolean = true> {
@@ -2607,37 +2502,6 @@ export interface FooterSelect<T extends boolean = true> {
               url?: T;
               label?: T;
             };
-        id?: T;
-      };
-  updatedAt?: T;
-  createdAt?: T;
-  globalType?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "marketplace-settings_select".
- */
-export interface MarketplaceSettingsSelect<T extends boolean = true> {
-  provider?: T;
-  platformFeePercent?: T;
-  checkoutCurrencyCode?: T;
-  usdToCopRate?: T;
-  webhookAuthToken?: T;
-  shippingZones?:
-    | T
-    | {
-        code?: T;
-        label?: T;
-        stateKeywords?:
-          | T
-          | {
-              value?: T;
-              id?: T;
-            };
-        baseRateCOP?: T;
-        additionalKgRateCOP?: T;
-        estimatedBusinessDays?: T;
-        freeShippingThresholdCOP?: T;
         id?: T;
       };
   updatedAt?: T;

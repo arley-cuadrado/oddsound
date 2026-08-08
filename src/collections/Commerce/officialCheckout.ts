@@ -34,24 +34,10 @@ export function extendEcommerceOrdersCollection({ defaultCollection }: OverrideA
         },
       },
       {
-        name: 'sellerPaymentAccount',
-        type: 'relationship',
-        relationTo: 'seller-payment-accounts',
-        admin: {
-          position: 'sidebar',
-        },
-      },
-      {
         name: 'paymentProvider',
         type: 'select',
         defaultValue: 'mercadopago',
         options: [{ label: 'Mercado Pago', value: 'mercadopago' }],
-      },
-      {
-        name: 'splitMode',
-        type: 'select',
-        defaultValue: 'marketplace_split_1_1',
-        options: [{ label: 'Marketplace split 1:1', value: 'marketplace_split_1_1' }],
       },
       {
         name: 'settlementCurrencyCode',
@@ -131,14 +117,6 @@ export function extendEcommerceTransactionsCollection({ defaultCollection }: Ove
         name: 'artistProfile',
         type: 'relationship',
         relationTo: 'profiles',
-        admin: {
-          position: 'sidebar',
-        },
-      },
-      {
-        name: 'sellerPaymentAccount',
-        type: 'relationship',
-        relationTo: 'seller-payment-accounts',
         admin: {
           position: 'sidebar',
         },

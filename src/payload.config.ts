@@ -27,11 +27,9 @@ import { Media } from './collections/Media'
 import { Pages } from './collections/Pages'
 import { Profiles } from './collections/Profiles'
 import { Posts } from './collections/Posts'
-import { SellerPaymentAccounts } from './collections/SellerPaymentAccounts'
 import { Users } from './collections/Users'
 import { Footer } from './Footer/config'
 import { Header } from './Header/config'
-import { MarketplaceSettings } from './globals/MarketplaceSettings'
 import { oddsoundVercelBlobStorage } from './plugins/oddsoundVercelBlob'
 import { plugins } from './plugins'
 import { payloadUploadOptions } from '@/config/uploadLimits'
@@ -133,9 +131,9 @@ export default buildConfig({
           } as any,
         }),
   }),
-  collections: [Pages, Posts, Biographies, Media, Categories, Profiles, SellerPaymentAccounts, Users],
+  collections: [Pages, Posts, Biographies, Media, Categories, Profiles, Users],
   cors: trustedServerURLs,
-  globals: [Header, Footer, MarketplaceSettings],
+  globals: [Header, Footer],
   i18n: {
     fallbackLanguage: 'es',
     supportedLanguages: {

@@ -10,11 +10,6 @@ import { Media as MediaComponent } from '@/components/Media'
 import { ShopBackButton } from './ShopBackButton'
 import { findPublicProfileBySlug } from '@/utilities/publicProfiles'
 import { listCommerceProducts } from '@/utilities/commerceProducts'
-import { canUseMarketplaceCheckout } from '@/utilities/marketplaceCheckout'
-import {
-  findSellerPaymentAccountByProfile,
-  sanitizeSellerPaymentAccount,
-} from '@/utilities/marketplaceSellerAccounts'
 import { normalizePublicSlugParam } from '@/utilities/publicSlugs'
 
 type Args = {
@@ -50,17 +45,10 @@ async function queryShopByProfileSlug(slug: string) {
     payload,
     profile: profile.id,
   })
-  const sellerAccount = sanitizeSellerPaymentAccount(
-    await findSellerPaymentAccountByProfile({
-      payload,
-      profileID: profile.id,
-    }),
-  )
 
   return {
     products,
     profile,
-    sellerAccount,
   }
 }
 
@@ -84,7 +72,7 @@ export async function generateMetadata({ params: paramsPromise }: Args): Promise
 export default async function ArtistShopPage({ params: paramsPromise }: Args) {
   const { slug = '' } = await paramsPromise
   const decodedSlug = normalizePublicSlugParam(slug)
-  const { products, profile, sellerAccount } = await queryShopByProfileSlug(decodedSlug)
+  const { products, profile } = await queryShopByProfileSlug(decodedSlug)
 
   if (!profile) {
     notFound()
@@ -191,18 +179,7 @@ export default async function ArtistShopPage({ params: paramsPromise }: Args) {
                   </div>
 
                   <div className="flex flex-wrap gap-3">
-                    {canUseMarketplaceCheckout({
-                      checkoutProvider: product.checkoutProvider,
-                      externalCheckoutURL: product.externalCheckoutURL,
-                      sellerAccount,
-                    }) ? (
-                      <Link
-                        className="inline-flex h-11 items-center justify-center rounded-full bg-[#312e2e] px-5 text-[13px] font-medium text-white transition hover:opacity-90"
-                        href={`/${profile.slug}/shop/checkout/${product.id}`}
-                      >
-                        Comprar con Oddsound
-                      </Link>
-                    ) : product.externalCheckoutURL ? (
+                    {product.externalCheckoutURL ? (
                       <a
                         className="inline-flex h-11 items-center justify-center rounded-full bg-[#312e2e] px-5 text-[13px] font-medium text-white transition hover:opacity-90"
                         href={product.externalCheckoutURL}
@@ -211,6 +188,10 @@ export default async function ArtistShopPage({ params: paramsPromise }: Args) {
                       >
                         {product.checkoutButtonLabel || 'Comprar'}
                       </a>
+                    ) : product.checkoutProvider === 'mercadopago' ? (
+                      <span className="inline-flex h-11 items-center justify-center rounded-full border border-border px-5 text-[13px] font-medium text-foreground/60 dark:border-white/15 dark:text-white/60">
+                        Mercado Pago pronto
+                      </span>
                     ) : null}
                     {product.release?.slug ? (
                       <Link
