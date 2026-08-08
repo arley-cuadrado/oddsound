@@ -3,8 +3,13 @@ import Link from 'next/link'
 import { getPayload } from 'payload'
 
 import { CommerceOverview } from './CommerceOverview'
+import { MercadoPagoConnectionCard } from './MercadoPagoConnectionCard'
 import { listCommerceProducts, resolveUserProfileID } from '@/utilities/commerceProducts'
 import { getMeUser } from '@/utilities/getMeUser'
+import {
+  findCreatorProfileByID,
+  sanitizeMercadoPagoConnection,
+} from '@/utilities/mercadoPagoOAuth'
 
 export default async function CreatorDashboardPage() {
   const { user } = await getMeUser({
@@ -12,6 +17,12 @@ export default async function CreatorDashboardPage() {
   })
   const payload = await getPayload({ config })
   const profileID = resolveUserProfileID(user)
+  const profile = profileID
+    ? await findCreatorProfileByID({
+        id: String(profileID),
+        payload,
+      })
+    : null
   const products = await listCommerceProducts({
     includeDrafts: true,
     ownerID: user.role === 'admin' ? null : String(user.id),
@@ -67,6 +78,8 @@ export default async function CreatorDashboardPage() {
           products={products}
           profileSlug={publicProfileSlug}
         />
+
+        <MercadoPagoConnectionCard connection={sanitizeMercadoPagoConnection(profile)} />
       </div>
     </main>
   )

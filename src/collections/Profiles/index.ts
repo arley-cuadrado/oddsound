@@ -183,6 +183,84 @@ export const Profiles: CollectionConfig = {
         },
       ],
     },
+    {
+      name: 'mercadoPagoConnection',
+      type: 'group',
+      admin: {
+        hidden: true,
+      },
+      fields: [
+        {
+          name: 'status',
+          type: 'select',
+          defaultValue: 'not_connected',
+          options: [
+            {
+              label: 'Not connected',
+              value: 'not_connected',
+            },
+            {
+              label: 'Connecting',
+              value: 'connecting',
+            },
+            {
+              label: 'Connected',
+              value: 'connected',
+            },
+            {
+              label: 'Action required',
+              value: 'action_required',
+            },
+          ],
+        },
+        {
+          name: 'sellerID',
+          type: 'text',
+        },
+        {
+          name: 'sellerEmail',
+          type: 'email',
+        },
+        {
+          name: 'sellerNickname',
+          type: 'text',
+        },
+        {
+          name: 'oauthState',
+          type: 'text',
+        },
+        {
+          name: 'encryptedAccessToken',
+          type: 'textarea',
+        },
+        {
+          name: 'encryptedRefreshToken',
+          type: 'textarea',
+        },
+        {
+          name: 'accessTokenExpiresAt',
+          type: 'date',
+          admin: {
+            date: {
+              pickerAppearance: 'dayAndTime',
+            },
+          },
+        },
+        {
+          name: 'lastConnectedAt',
+          type: 'date',
+          admin: {
+            date: {
+              pickerAppearance: 'dayAndTime',
+            },
+          },
+        },
+        {
+          name: 'lastError',
+          type: 'textarea',
+        },
+      ],
+    },
     slugField({
       useAsSlug: 'displayName',
     }),

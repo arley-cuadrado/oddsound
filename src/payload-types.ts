@@ -355,6 +355,18 @@ export interface Profile {
         id?: string | null;
       }[]
     | null;
+  mercadoPagoConnection?: {
+    status?: ('not_connected' | 'connecting' | 'connected' | 'action_required') | null;
+    sellerID?: string | null;
+    sellerEmail?: string | null;
+    sellerNickname?: string | null;
+    oauthState?: string | null;
+    encryptedAccessToken?: string | null;
+    encryptedRefreshToken?: string | null;
+    accessTokenExpiresAt?: string | null;
+    lastConnectedAt?: string | null;
+    lastError?: string | null;
+  };
   /**
    * When enabled, the slug will auto-generate from the title field on save and autosave.
    */
@@ -1928,6 +1940,20 @@ export interface ProfilesSelect<T extends boolean = true> {
         label?: T;
         url?: T;
         id?: T;
+      };
+  mercadoPagoConnection?:
+    | T
+    | {
+        status?: T;
+        sellerID?: T;
+        sellerEmail?: T;
+        sellerNickname?: T;
+        oauthState?: T;
+        encryptedAccessToken?: T;
+        encryptedRefreshToken?: T;
+        accessTokenExpiresAt?: T;
+        lastConnectedAt?: T;
+        lastError?: T;
       };
   generateSlug?: T;
   slug?: T;
