@@ -1,28 +1,20 @@
-'use client'
-
-import { useAuth } from '@payloadcms/ui'
 import Link from 'next/link'
-import { usePathname, useSearchParams } from 'next/navigation'
 
-type AuthUser = {
-  role?: null | string
-}
+import { getMeUser } from '@/utilities/getMeUser'
+import { isAdminUser } from '@/utilities/isAdminUser'
 
-export default function EditorsNavLink() {
-  const { user } = useAuth<AuthUser>()
-  const pathname = usePathname()
-  const searchParams = useSearchParams()
+export default async function EditorsNavLink() {
+  const session = await getMeUser().catch(() => null)
 
-  if (user?.role !== 'admin') return null
-
-  const href = '/dashboard/collections/users?where[editorAccess][equals]=true&editors=1'
-  const isActive =
-    pathname === '/dashboard/collections/users' && searchParams.get('editors') === '1'
+  if (!isAdminUser(session?.user)) return null
 
   return (
     <div className="editors-nav-link">
       <p className="editors-nav-link__label">Usuarios</p>
-      <Link className={isActive ? 'editors-nav-link__link is-active' : 'editors-nav-link__link'} href={href}>
+      <Link
+        className="editors-nav-link__link"
+        href="/dashboard/collections/users?where[editorAccess][equals]=true&editors=1"
+      >
         Editors
       </Link>
     </div>

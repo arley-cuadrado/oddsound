@@ -138,6 +138,32 @@ const BeforeDashboard = async () => {
         )}
       </section>
 
+      {userRole === 'admin' ? (
+        <section className={`${baseClass}__section`} aria-labelledby="before-dashboard-editors">
+          <div className={`${baseClass}__header`}>
+            <div>
+              <h4 id="before-dashboard-editors">Editors</h4>
+              <p>
+                Acceso directo al modulo de cuentas editoriales. Desde ahi puedes crear nuevos
+                redactores y administrar sus accesos sin mezclarlos con cuentas de artista o banda.
+              </p>
+            </div>
+          </div>
+
+          <div className={`${baseClass}__links`}>
+            <Link
+              className={`${baseClass}__link`}
+              href="/dashboard/collections/users?where[editorAccess][equals]=true&editors=1"
+            >
+              Abrir Editors
+            </Link>
+            <Link className={`${baseClass}__link`} href="/dashboard/collections/users">
+              Abrir Users
+            </Link>
+          </div>
+        </section>
+      ) : null}
+
       {userRole === 'admin' || userRole === 'creator' ? (
         <section className={`${baseClass}__section`} aria-labelledby="before-dashboard-commerce">
           <div className={`${baseClass}__header`}>
