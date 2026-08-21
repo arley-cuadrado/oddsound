@@ -16,6 +16,7 @@ export const createProfile: CollectionAfterOperationHook<'users'> = async ({
     req,
     user: {
       accountType: result.accountType,
+      editorAccess: result.editorAccess,
       email: result.email,
       id: result.id,
       name: result.name,

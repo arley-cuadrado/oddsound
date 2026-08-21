@@ -92,7 +92,7 @@ export const ensureCreatorDefaults: CollectionBeforeChangeHook = async ({
     nextData.editorAccess = false
   }
 
-  if (!nextData.accountType) {
+  if (!nextData.editorAccess && !nextData.accountType) {
     nextData.accountType = 'artist'
   }
 
