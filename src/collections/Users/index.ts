@@ -11,6 +11,8 @@ import {
   CREATOR_RESET_PASSWORD_EXPIRATION_MS,
   generateCreatorResetPasswordEmailHTML,
   generateCreatorResetPasswordEmailSubject,
+  generateEditorVerificationEmailHTML,
+  generateEditorVerificationEmailSubject,
   generateCreatorVerificationEmailHTML,
   generateCreatorVerificationEmailSubject,
 } from '@/utilities/emailVerification'
@@ -53,7 +55,7 @@ export const Users: CollectionConfig = {
     components: {
       beforeList: ['@/components/UsersListSelectionGuard', '@/components/CreateRedactorButton'],
     },
-    defaultColumns: ['name', 'email', 'role', 'accountType'],
+    defaultColumns: ['name', 'username', 'email', 'role', 'editorAccess'],
     hidden: ({ user }) => !isAdminUser(user as { role?: null | string } | null | undefined),
     useAsTitle: 'name',
   },
@@ -74,11 +76,19 @@ export const Users: CollectionConfig = {
     },
     verify: {
       generateEmailHTML: ({ token, user }) =>
-        generateCreatorVerificationEmailHTML({
-          token,
-          user,
-        }),
-      generateEmailSubject: generateCreatorVerificationEmailSubject,
+        user?.editorAccess
+          ? generateEditorVerificationEmailHTML({
+              token,
+              user,
+            })
+          : generateCreatorVerificationEmailHTML({
+              token,
+              user,
+            }),
+      generateEmailSubject: ({ user }) =>
+        user?.editorAccess
+          ? generateEditorVerificationEmailSubject()
+          : generateCreatorVerificationEmailSubject(),
     },
   },
   fields: [
@@ -86,6 +96,7 @@ export const Users: CollectionConfig = {
       name: 'name',
       label: 'Nombre',
       type: 'text',
+      required: true,
       access: {
         update: async ({ req, data, siblingData }) => {
           const user = req.user
@@ -94,6 +105,24 @@ export const Users: CollectionConfig = {
           if (await hasFreshAdminAccess(req as any)) return true
           
           // Creators can only update their own name
+          return data?.id === user.id || siblingData?.id === user.id
+        },
+      },
+    },
+    {
+      name: 'username',
+      type: 'text',
+      label: 'Nombre de usuario',
+      index: true,
+      required: true,
+      unique: true,
+      access: {
+        update: async ({ req, data, siblingData }) => {
+          const user = req.user
+
+          if (!user) return false
+          if (await hasFreshAdminAccess(req as any)) return true
+
           return data?.id === user.id || siblingData?.id === user.id
         },
       },
@@ -160,6 +189,20 @@ export const Users: CollectionConfig = {
       label: 'Rol',
     },
     {
+      name: 'editorAccess',
+      type: 'checkbox',
+      defaultValue: false,
+      label: 'Cuenta de redactor',
+      admin: {
+        condition: (_data, siblingData, { user }) =>
+          isAdminUser(user as { role?: null | string } | null | undefined) &&
+          siblingData?.role !== 'admin',
+        description:
+          'Identifica cuentas editoriales creadas por admin para publicar articulos.',
+        readOnly: true,
+      },
+    },
+    {
       name: 'accountType',
       type: 'select',
       defaultValue: 'artist',
@@ -167,8 +210,10 @@ export const Users: CollectionConfig = {
       admin: {
         condition: (_data, siblingData, { user }) => {
           const isAdmin = isAdminUser(user as { role?: null | string } | null | undefined)
-          // Show only to admins OR when editing non-admin users
-          return isAdmin && siblingData?.role !== 'admin'
+          if (!isAdmin || siblingData?.role === 'admin') return false
+          if (siblingData?.editorAccess) return false
+
+          return true
         },
       },
       access: {

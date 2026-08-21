@@ -9,7 +9,7 @@ import {
 
 describe('Users auth config', () => {
   it('locks login attempts temporarily instead of indefinitely', () => {
-    if (!Users.auth) {
+    if (!Users.auth || Users.auth === true) {
       throw new Error('Users auth config not found.')
     }
 

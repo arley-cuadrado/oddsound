@@ -1,18 +1,28 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { Button } from '@payloadcms/ui'
 
 export default function CreateRedactorButton() {
+  const isEditorsView = useMemo(() => {
+    if (typeof window === 'undefined') return false
+    if (!window.location.pathname.includes('/dashboard/collections/users')) return false
+
+    return new URLSearchParams(window.location.search).get('editors') === '1'
+  }, [])
+
   const [showForm, setShowForm] = useState(false)
   const [formData, setFormData] = useState({
     email: '',
-    name: '',
+    fullName: '',
+    username: '',
     password: '',
     confirmPassword: '',
   })
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+
+  if (!isEditorsView) return null
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -28,16 +38,17 @@ export default function CreateRedactorButton() {
     setMessage(null)
 
     try {
-      // Validate passwords match
       if (formData.password !== formData.confirmPassword) {
-        setMessage({ type: 'error', text: 'Las contraseñas no coinciden' })
+        setMessage({ type: 'error', text: 'Las contrasenas no coinciden.' })
         setLoading(false)
         return
       }
 
-      // Validate all fields are filled
-      if (!formData.email || !formData.name || !formData.password) {
-        setMessage({ type: 'error', text: 'Todos los campos son obligatorios' })
+      if (!formData.email || !formData.fullName || !formData.username || !formData.password) {
+        setMessage({
+          type: 'error',
+          text: 'Email, nombre completo, username y contrasena son obligatorios.',
+        })
         setLoading(false)
         return
       }
@@ -48,38 +59,39 @@ export default function CreateRedactorButton() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+          editorAccess: true,
           email: formData.email,
-          name: formData.name,
+          name: formData.fullName,
           password: formData.password,
           role: 'creator',
-          accountType: 'artist',
+          username: formData.username,
         }),
       })
 
       if (!response.ok) {
         const error = await response.json()
-        throw new Error(error.message || 'Error al crear el redactor')
+        throw new Error(error.message || 'No fue posible crear el redactor.')
       }
 
       setMessage({
         type: 'success',
-        text: 'Redactor creado exitosamente. Se ha enviado un correo de verificación.',
+        text: 'Editor creado correctamente. Ya enviamos el correo para confirmar la cuenta editor.',
       })
       setFormData({
         email: '',
-        name: '',
+        fullName: '',
+        username: '',
         password: '',
         confirmPassword: '',
       })
 
-      // Refresh the page after a short delay
       setTimeout(() => {
         window.location.reload()
-      }, 2000)
+      }, 1200)
     } catch (error) {
       setMessage({
         type: 'error',
-        text: error instanceof Error ? error.message : 'Error al crear el redactor',
+        text: error instanceof Error ? error.message : 'No fue posible crear el redactor.',
       })
     } finally {
       setLoading(false)
@@ -87,7 +99,7 @@ export default function CreateRedactorButton() {
   }
 
   return (
-    <div className="create-redactor-section" style={{ padding: '1.5rem', marginBottom: '2rem' }}>
+    <div className="create-redactor-section">
       {!showForm ? (
         <Button
           onClick={() => setShowForm(true)}
@@ -95,155 +107,99 @@ export default function CreateRedactorButton() {
           el="button"
           type="button"
         >
-          + Crear Nuevo Redactor
+          Crear editor
         </Button>
       ) : (
-        <div
-          style={{
-            border: '1px solid #e0e0e0',
-            borderRadius: '0.5rem',
-            padding: '1.5rem',
-            backgroundColor: '#f9f9f9',
-          }}
-        >
-          <h3 style={{ marginTop: 0, marginBottom: '1.5rem' }}>Crear Nuevo Redactor</h3>
+        <div className="create-redactor-section__panel">
+          <div className="create-redactor-section__header">
+            <h3>Crear editor</h3>
+            <p>
+              Los nuevos editores reciben un correo para confirmar su cuenta y luego iniciar
+              sesion.
+            </p>
+          </div>
 
-          {message && (
+          {message ? (
             <div
-              style={{
-                padding: '0.75rem',
-                marginBottom: '1rem',
-                borderRadius: '0.25rem',
-                backgroundColor: message.type === 'success' ? '#d4edda' : '#f8d7da',
-                color: message.type === 'success' ? '#155724' : '#721c24',
-                border: `1px solid ${message.type === 'success' ? '#c3e6cb' : '#f5c6cb'}`,
-              }}
+              className={
+                message.type === 'success'
+                  ? 'create-redactor-section__message is-success'
+                  : 'create-redactor-section__message is-error'
+              }
             >
               {message.text}
             </div>
-          )}
+          ) : null}
 
-          <form onSubmit={handleSubmit}>
-            <div style={{ marginBottom: '1rem' }}>
-              <label
-                style={{
-                  display: 'block',
-                  marginBottom: '0.5rem',
-                  fontWeight: 500,
-                }}
-              >
-                Nombre *
-              </label>
+          <form className="create-redactor-section__form" onSubmit={handleSubmit}>
+            <div className="create-redactor-section__field">
+              <label htmlFor="editor-full-name">Nombre completo *</label>
               <input
+                id="editor-full-name"
                 type="text"
-                name="name"
-                value={formData.name}
+                name="fullName"
+                value={formData.fullName}
                 onChange={handleChange}
-                placeholder="Nombre del redactor"
+                placeholder="Nombre completo del redactor"
                 required
-                style={{
-                  width: '100%',
-                  padding: '0.5rem',
-                  border: '1px solid #ddd',
-                  borderRadius: '0.25rem',
-                  fontSize: '1rem',
-                  boxSizing: 'border-box',
-                }}
               />
             </div>
 
-            <div style={{ marginBottom: '1rem' }}>
-              <label
-                style={{
-                  display: 'block',
-                  marginBottom: '0.5rem',
-                  fontWeight: 500,
-                }}
-              >
-                Correo Electrónico *
-              </label>
+            <div className="create-redactor-section__field">
+              <label htmlFor="editor-username">Nombre de usuario *</label>
               <input
+                id="editor-username"
+                type="text"
+                name="username"
+                value={formData.username}
+                onChange={handleChange}
+                placeholder="nombre.usuario"
+                required
+              />
+            </div>
+
+            <div className="create-redactor-section__field">
+              <label htmlFor="editor-email">Email *</label>
+              <input
+                id="editor-email"
                 type="email"
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
                 placeholder="redactor@example.com"
                 required
-                style={{
-                  width: '100%',
-                  padding: '0.5rem',
-                  border: '1px solid #ddd',
-                  borderRadius: '0.25rem',
-                  fontSize: '1rem',
-                  boxSizing: 'border-box',
-                }}
               />
             </div>
 
-            <div style={{ marginBottom: '1rem' }}>
-              <label
-                style={{
-                  display: 'block',
-                  marginBottom: '0.5rem',
-                  fontWeight: 500,
-                }}
-              >
-                Contraseña *
-              </label>
+            <div className="create-redactor-section__field">
+              <label htmlFor="editor-password">Contrasena *</label>
               <input
+                id="editor-password"
                 type="password"
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                placeholder="Contraseña"
+                placeholder="Contrasena"
                 required
-                style={{
-                  width: '100%',
-                  padding: '0.5rem',
-                  border: '1px solid #ddd',
-                  borderRadius: '0.25rem',
-                  fontSize: '1rem',
-                  boxSizing: 'border-box',
-                }}
               />
             </div>
 
-            <div style={{ marginBottom: '1.5rem' }}>
-              <label
-                style={{
-                  display: 'block',
-                  marginBottom: '0.5rem',
-                  fontWeight: 500,
-                }}
-              >
-                Confirmar Contraseña *
-              </label>
+            <div className="create-redactor-section__field">
+              <label htmlFor="editor-password-confirm">Confirmar contrasena *</label>
               <input
+                id="editor-password-confirm"
                 type="password"
                 name="confirmPassword"
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                placeholder="Confirmar contraseña"
+                placeholder="Confirmar contrasena"
                 required
-                style={{
-                  width: '100%',
-                  padding: '0.5rem',
-                  border: '1px solid #ddd',
-                  borderRadius: '0.25rem',
-                  fontSize: '1rem',
-                  boxSizing: 'border-box',
-                }}
               />
             </div>
 
-            <div style={{ display: 'flex', gap: '0.75rem' }}>
-              <Button
-                type="submit"
-                buttonStyle="primary"
-                disabled={loading}
-                el="button"
-              >
-                {loading ? 'Creando...' : 'Crear Redactor'}
+            <div className="create-redactor-section__actions">
+              <Button type="submit" buttonStyle="primary" disabled={loading} el="button">
+                {loading ? 'Creando...' : 'Crear redactor'}
               </Button>
               <Button
                 onClick={() => {

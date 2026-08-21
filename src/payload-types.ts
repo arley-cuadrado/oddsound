@@ -293,7 +293,8 @@ export interface Page {
  */
 export interface User {
   id: string;
-  name?: string | null;
+  name: string;
+  username: string;
   role?: ('admin' | 'creator') | null;
   /**
    * Esta cuenta es administrativa y no puede cambiarse a creador.
@@ -303,6 +304,10 @@ export interface User {
    * Esta cuenta es la única superadministradora y puede crear otras cuentas administrativas.
    */
   superAdminRoleLabel?: string | null;
+  /**
+   * Identifica cuentas editoriales creadas por admin para publicar articulos.
+   */
+  editorAccess?: boolean | null;
   accountType?: ('artist' | 'band') | null;
   profile?: (string | null) | Profile;
   isActive?: boolean | null;
@@ -1966,9 +1971,11 @@ export interface ProfilesSelect<T extends boolean = true> {
  */
 export interface UsersSelect<T extends boolean = true> {
   name?: T;
+  username?: T;
   role?: T;
   adminRoleLabel?: T;
   superAdminRoleLabel?: T;
+  editorAccess?: T;
   accountType?: T;
   profile?: T;
   isActive?: T;

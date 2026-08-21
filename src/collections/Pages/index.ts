@@ -45,18 +45,14 @@ export const Pages: CollectionConfig<'pages'> = {
   },
   access: {
     admin: authenticated,
-    create: authenticated,
+    create: async ({ req }) => hasFreshAdminAccess(req as any),
     delete: async ({ req }) => {
       const user = req.user
 
       if (!user) return false
       if (await hasFreshAdminAccess(req as any)) return true
 
-      return {
-        owner: {
-          equals: user.id,
-        },
-      }
+      return false
     },
     read: async ({ req }) => {
       const user = req.user
@@ -70,11 +66,7 @@ export const Pages: CollectionConfig<'pages'> = {
       }
       if (await hasFreshAdminAccess(req as any)) return true
 
-      return {
-        owner: {
-          equals: user.id,
-        },
-      } as any
+      return false
     },
     readVersions: ({ req: { user } }) => isSuperAdminUser(user),
     update: async ({ req }) => {
@@ -83,11 +75,7 @@ export const Pages: CollectionConfig<'pages'> = {
       if (!user) return false
       if (await hasFreshAdminAccess(req as any)) return true
 
-      return {
-        owner: {
-          equals: user.id,
-        },
-      }
+      return false
     },
   },
   // This config controls what's populated by default when a page is referenced

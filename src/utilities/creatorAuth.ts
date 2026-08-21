@@ -36,6 +36,22 @@ export type VerificationUser = {
 export const CREATOR_LEGAL_VERSION = '2026-05-14'
 export const CREATOR_VERIFICATION_ERROR_MESSAGE = 'Debes confirmar tu correo antes de iniciar sesión.'
 
+function buildUsernameSeed({ email, name }: { email: string; name: string }) {
+  const normalizedName = name
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9._-]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+
+  if (normalizedName) return normalizedName
+
+  return (email.split('@')[0] || 'creator')
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9._-]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+}
+
 export async function findUserByEmail(
   email: string,
   payloadArg?: Awaited<ReturnType<typeof getPayload>>,
@@ -117,6 +133,7 @@ export async function registerCreatorAccount(input: {
         name,
         password: input.password,
         role: 'creator',
+        username: buildUsernameSeed({ email, name }),
       },
       draft: false,
       overrideAccess: true,

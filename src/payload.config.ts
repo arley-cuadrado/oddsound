@@ -66,6 +66,7 @@ export default buildConfig({
       afterNavLinks: [
         '@/components/CreatorCollectionFilter',
         '@/components/CreatorNavLabelOverrides',
+        '@/components/EditorsNavLink',
         '@/components/EmailPreviewNavLink',
         '@/components/ScheduledPublishesNavLink',
       ],

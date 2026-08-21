@@ -9,6 +9,8 @@ import {
   VERIFICATION_RESEND_COOLDOWN_MS,
   generateCreatorVerificationEmailHTML,
   generateCreatorVerificationEmailSubject,
+  generateEditorVerificationEmailHTML,
+  generateEditorVerificationEmailSubject,
   getVerificationCooldownMessage,
 } from '@/utilities/emailVerification'
 import {
@@ -133,14 +135,26 @@ export async function resendVerificationEmail(input: {
     })
 
     await payload.sendEmail({
-      html: generateCreatorVerificationEmailHTML({
-        token,
-        user: {
-          email: updatedUser.email,
-          name: updatedUser.name || null,
-        },
-      }),
-      subject: generateCreatorVerificationEmailSubject(),
+      html: updatedUser.editorAccess
+        ? generateEditorVerificationEmailHTML({
+            token,
+            user: {
+              editorAccess: updatedUser.editorAccess,
+              email: updatedUser.email || email,
+              name: updatedUser.name || updatedUser.email || email,
+            },
+          })
+        : generateCreatorVerificationEmailHTML({
+            token,
+            user: {
+              editorAccess: updatedUser.editorAccess,
+              email: updatedUser.email || email,
+              name: updatedUser.name || updatedUser.email || email,
+            },
+          }),
+      subject: updatedUser.editorAccess
+        ? generateEditorVerificationEmailSubject()
+        : generateCreatorVerificationEmailSubject(),
       to: email,
     })
 

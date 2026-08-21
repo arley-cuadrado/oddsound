@@ -72,11 +72,7 @@ export const Biographies: CollectionConfig = {
       if (!user) return true
       if (await hasFreshAdminAccess(req as any)) return true
 
-      return {
-        owner: {
-          equals: user.id,
-        },
-      }
+      return false
     },
     update: async ({ req }) => {
       const user = req.user
@@ -84,11 +80,7 @@ export const Biographies: CollectionConfig = {
       if (!user) return false
       if (await hasFreshAdminAccess(req as any)) return true
 
-      return {
-        owner: {
-          equals: user.id,
-        },
-      }
+      return false
     },
   },
   admin: {

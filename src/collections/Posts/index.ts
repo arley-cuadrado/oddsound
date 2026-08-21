@@ -46,8 +46,19 @@ export const Posts: CollectionConfig<'posts'> = {
   ],
   access: {
     admin: authenticated,
-    create: async ({ req }) => hasFreshAdminAccess(req as any),
-    delete: async ({ req }) => hasFreshAdminAccess(req as any),
+    create: authenticated,
+    delete: async ({ req }) => {
+      const user = req.user
+
+      if (!user) return false
+      if (await hasFreshAdminAccess(req as any)) return true
+
+      return {
+        owner: {
+          equals: user.id,
+        },
+      }
+    },
     read: async ({ req }) => {
       const user = req.user
 

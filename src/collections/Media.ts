@@ -201,7 +201,7 @@ export const Media: CollectionConfig = {
     },
   },
   admin: {
-    hidden: ({ user }) => user?.role !== 'admin',
+    hidden: ({ user }) => user?.role !== 'admin' && user?.role !== 'creator',
     components: {
       views: {
         edit: {

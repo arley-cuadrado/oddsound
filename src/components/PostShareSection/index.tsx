@@ -72,7 +72,7 @@ export default function PostShareSection({ post }: PostShareSectionProps) {
   const heroImageUrl = getHeroImageUrl()
 
   return (
-    <div className="flex justify-center gap-4 my-8">
+    <div className="flex justify-center pt-6 pb-2">
       <SharePostButton
         title={post.title}
         slug={post.slug}

@@ -31,6 +31,7 @@ import { default as default_1a7510af427896d367a49dbf838d2de6 } from '@/component
 import { default as default_7b7a6a06e1a175e83c8563e02e5ba6a3 } from '@/components/CreatorRegisterLink'
 import { default as default_8723cecdd7713b01fe53fa7b7ecdc194 } from '@/components/CreatorCollectionFilter'
 import { default as default_2f5cca6fa9964ae988e12553dd3f3260 } from '@/components/CreatorNavLabelOverrides'
+import { default as default_26ca2df84690f50f2026b222b1679ddd } from '@/components/EditorsNavLink'
 import { default as default_15d097b404945aa79b02516efaab6869 } from '@/components/EmailPreviewNavLink'
 import { default as default_fe2fdadd74b93fff7bcfd59d92220a93 } from '@/components/ScheduledPublishesNavLink'
 import { default as default_8a7ab0eb7ab5c511aba12e68480bfe5e } from '@/components/BeforeLogin'
@@ -71,6 +72,7 @@ export const importMap = {
   "@/components/CreatorRegisterLink#default": default_7b7a6a06e1a175e83c8563e02e5ba6a3,
   "@/components/CreatorCollectionFilter#default": default_8723cecdd7713b01fe53fa7b7ecdc194,
   "@/components/CreatorNavLabelOverrides#default": default_2f5cca6fa9964ae988e12553dd3f3260,
+  "@/components/EditorsNavLink#default": default_26ca2df84690f50f2026b222b1679ddd,
   "@/components/EmailPreviewNavLink#default": default_15d097b404945aa79b02516efaab6869,
   "@/components/ScheduledPublishesNavLink#default": default_fe2fdadd74b93fff7bcfd59d92220a93,
   "@/components/BeforeLogin#default": default_8a7ab0eb7ab5c511aba12e68480bfe5e,
