@@ -347,6 +347,7 @@ export interface Profile {
   owner: string | User;
   displayName: string;
   editorialProfile?: boolean | null;
+  profileType?: ('artist' | 'band' | 'editorial') | null;
   accountType?: ('artist' | 'band') | null;
   bio?: string | null;
   avatar?: (string | null) | Media;
@@ -1941,6 +1942,7 @@ export interface ProfilesSelect<T extends boolean = true> {
   owner?: T;
   displayName?: T;
   editorialProfile?: T;
+  profileType?: T;
   accountType?: T;
   bio?: T;
   avatar?: T;
