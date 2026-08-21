@@ -78,6 +78,10 @@ Estos campos sí pertenecen a perfiles de editores:
 - Cuando el admin crea o edita artistas o bandas, debe seguir usando el flujo musical ya existente.
 - El admin no debe tener que corregir manualmente un perfil editorial que haya sido creado como `artist`.
 - Si el sistema detecta un usuario editorial con perfil musical heredado por error, debe existir una estrategia de normalización o migración.
+- El flujo de creación editorial desde admin debe estar separado del flujo musical a nivel real de renderizado y estado del formulario.
+- Si el admin entra al módulo de `Editors`, el formulario de creación o edición no debe renderizar controles editoriales de clasificación musical como `Account Type`.
+- Si el admin entra al flujo musical de artistas o bandas, el formulario no debe renderizar controles pensados para convertir esa cuenta en editorial dentro del mismo formulario.
+- La separación no puede depender únicamente de ocultar elementos con CSS o manipular el DOM después del render; la rama de formulario incorrecta no debe renderizarse.
 
 ---
 
@@ -87,6 +91,8 @@ Estos campos sí pertenecen a perfiles de editores:
 - Un editor no debe ver labels, dropdowns o inputs pensados para artista o banda.
 - Un artista o banda no debe ver campos de subtítulo editorial ni redes sociales del bloque de autor de posts.
 - La separación de UI debe ser clara y no depender únicamente de ocultar un solo campo; debe responder al tipo real de perfil.
+- En el módulo editorial de admin no debe aparecer ningún selector musical para crear o mantener un editor.
+- En el módulo musical no debe aparecer ningún control de activación o clasificación editorial como parte del flujo normal de artista o banda.
 
 ---
 
@@ -102,6 +108,8 @@ Estos campos sí pertenecen a perfiles de editores:
 
 - Crear un editor desde admin produce un perfil editorial y no un perfil `artist` o `band`.
 - Un perfil editorial no muestra `Account Type` ni otros campos musicales.
+- El flujo administrativo de `Editors` no renderiza `Account Type` ni controles mixtos de conversión editorial.
+- El flujo administrativo de artistas o bandas no renderiza controles editoriales ajenos a esa categoría.
 - Un perfil editorial no persiste `accountType` como valor de artista o banda.
 - Un perfil musical conserva su estructura actual sin contaminarse con campos editoriales.
 - El frontend de artículos usa información del perfil editorial correcto.

@@ -194,12 +194,11 @@ export const Users: CollectionConfig = {
       defaultValue: false,
       label: 'Cuenta de redactor',
       admin: {
-        condition: (_data, siblingData, { user }) =>
-          isAdminUser(user as { role?: null | string } | null | undefined) &&
-          siblingData?.role !== 'admin',
+        components: {
+          Field: '@/components/UsersEditorAccessField',
+        },
         description:
           'Identifica cuentas editoriales creadas por admin para publicar articulos.',
-        readOnly: true,
       },
     },
     {
@@ -208,6 +207,9 @@ export const Users: CollectionConfig = {
       defaultValue: 'artist',
       label: 'Tipo de cuenta',
       admin: {
+        components: {
+          Field: '@/components/UsersAccountTypeField',
+        },
         condition: (_data, siblingData, { user }) => {
           const isAdmin = isAdminUser(user as { role?: null | string } | null | undefined)
           if (!isAdmin || siblingData?.role === 'admin') return false
