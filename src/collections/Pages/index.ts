@@ -4,6 +4,7 @@ import { hasFreshAdminAccess } from '@/access/hasFreshAdminAccess'
 import { assignOwnership } from '@/hooks/assignOwnership'
 import { generateCreatorContentSlug } from '@/hooks/generateCreatorContentSlug'
 import { isAdminUser } from '@/utilities/isAdminUser'
+import { isMusicalCreatorUser } from '@/utilities/isEditorialUser'
 import { isSuperAdminUser } from '@/utilities/isSuperAdminUser'
 import { editorialBlocks } from '../shared/editorialBlocks'
 import { authenticated } from '../../access/authenticated'
@@ -45,14 +46,23 @@ export const Pages: CollectionConfig<'pages'> = {
   },
   access: {
     admin: authenticated,
-    create: async ({ req }) => hasFreshAdminAccess(req as any),
+    create: async ({ req }) => {
+      if (await hasFreshAdminAccess(req as any)) return true
+
+      return isMusicalCreatorUser(req.user)
+    },
     delete: async ({ req }) => {
       const user = req.user
 
       if (!user) return false
       if (await hasFreshAdminAccess(req as any)) return true
+      if (!isMusicalCreatorUser(user)) return false
 
-      return false
+      return {
+        owner: {
+          equals: user.id,
+        },
+      }
     },
     read: async ({ req }) => {
       const user = req.user
@@ -65,8 +75,13 @@ export const Pages: CollectionConfig<'pages'> = {
         } as any
       }
       if (await hasFreshAdminAccess(req as any)) return true
+      if (!isMusicalCreatorUser(user)) return false
 
-      return false
+      return {
+        owner: {
+          equals: user.id,
+        },
+      } as any
     },
     readVersions: ({ req: { user } }) => isSuperAdminUser(user),
     update: async ({ req }) => {
@@ -74,8 +89,13 @@ export const Pages: CollectionConfig<'pages'> = {
 
       if (!user) return false
       if (await hasFreshAdminAccess(req as any)) return true
+      if (!isMusicalCreatorUser(user)) return false
 
-      return false
+      return {
+        owner: {
+          equals: user.id,
+        },
+      }
     },
   },
   // This config controls what's populated by default when a page is referenced
@@ -87,7 +107,7 @@ export const Pages: CollectionConfig<'pages'> = {
     slug: true,
   },
   admin: {
-    hidden: ({ user }) => user?.role !== 'admin',
+    hidden: ({ user }) => !isAdminUser(user) && !isMusicalCreatorUser(user),
     components: {
       views: {
         edit: {

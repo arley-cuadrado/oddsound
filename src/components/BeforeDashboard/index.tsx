@@ -33,9 +33,10 @@ const BeforeDashboard = async () => {
   const currentUser = await getMeUser().catch(() => null)
   const user = currentUser?.user || null
   const userRole = user?.role || null
+  const isMusicalCreator = userRole === 'creator' && !Boolean(user?.editorAccess)
   const profileID = resolveUserProfileID(user)
   const commerceProducts =
-    userRole === 'admin' || userRole === 'creator'
+    userRole === 'admin' || isMusicalCreator
       ? await listCommerceProducts({
           includeDrafts: true,
           ownerID: userRole === 'admin' ? null : user?.id ? String(user.id) : null,
@@ -164,7 +165,7 @@ const BeforeDashboard = async () => {
         </section>
       ) : null}
 
-      {userRole === 'admin' || userRole === 'creator' ? (
+      {userRole === 'admin' || isMusicalCreator ? (
         <section className={`${baseClass}__section`} aria-labelledby="before-dashboard-commerce">
           <div className={`${baseClass}__header`}>
             <div>

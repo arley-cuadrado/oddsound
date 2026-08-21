@@ -43,6 +43,78 @@ describe('ensureCreatorProfile', () => {
     expect(payload.create).not.toHaveBeenCalled()
     expect(payload.update).not.toHaveBeenCalled()
   })
+
+  it('creates editorial profiles without musical account types', async () => {
+    const payload = {
+      create: vi.fn().mockResolvedValue({ id: 'profile-editor-1' }),
+      find: vi.fn().mockResolvedValue({
+        docs: [],
+      }),
+      update: vi.fn().mockResolvedValue({}),
+    }
+
+    await expect(
+      ensureCreatorProfile({
+        payload: payload as never,
+        user: {
+          editorAccess: true,
+          email: 'editor@example.com',
+          id: 'user-editor-1',
+          name: 'Editor One',
+          role: 'creator',
+        },
+      }),
+    ).resolves.toBe('profile-editor-1')
+
+    expect(payload.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        collection: 'profiles',
+        data: expect.objectContaining({
+          contactEmail: 'editor@example.com',
+          displayName: 'Editor One',
+          editorialProfile: true,
+          owner: 'user-editor-1',
+          profileType: 'editorial',
+        }),
+      }),
+    )
+
+    expect(payload.create.mock.calls[0]?.[0]?.data).not.toHaveProperty('accountType')
+  })
+
+  it('normalizes existing inline editorial profiles away from artist account types', async () => {
+    const payload = {
+      create: vi.fn(),
+      find: vi.fn(),
+      update: vi.fn().mockResolvedValue({}),
+    }
+
+    await expect(
+      ensureCreatorProfile({
+        payload: payload as never,
+        user: {
+          editorAccess: true,
+          email: 'editor@example.com',
+          id: 'user-editor-1',
+          profile: 'profile-editor-1',
+          role: 'creator',
+        },
+      }),
+    ).resolves.toBe('profile-editor-1')
+
+    expect(payload.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        collection: 'profiles',
+        data: expect.objectContaining({
+          accountType: null,
+          contactEmail: 'editor@example.com',
+          editorialProfile: true,
+          profileType: 'editorial',
+        }),
+        id: 'profile-editor-1',
+      }),
+    )
+  })
 })
 
 describe('assignOwnership', () => {

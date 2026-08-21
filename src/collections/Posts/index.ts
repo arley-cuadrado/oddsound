@@ -20,6 +20,7 @@ import { revalidateDelete, revalidatePost } from './hooks/revalidatePost'
 import { assignOwnership } from '@/hooks/assignOwnership'
 import { generateCreatorContentSlug } from '@/hooks/generateCreatorContentSlug'
 import { isAdminUser } from '@/utilities/isAdminUser'
+import { isEditorialUser } from '@/utilities/isEditorialUser'
 import { editorialBlocks } from '../shared/editorialBlocks'
 
 import {
@@ -46,12 +47,13 @@ export const Posts: CollectionConfig<'posts'> = {
   ],
   access: {
     admin: authenticated,
-    create: authenticated,
+    create: ({ req: { user } }) => isAdminUser(user) || isEditorialUser(user),
     delete: async ({ req }) => {
       const user = req.user
 
       if (!user) return false
       if (await hasFreshAdminAccess(req as any)) return true
+      if (!isEditorialUser(user)) return false
 
       return {
         owner: {
@@ -70,6 +72,7 @@ export const Posts: CollectionConfig<'posts'> = {
         } as any
       }
       if (await hasFreshAdminAccess(req as any)) return true
+      if (!isEditorialUser(user)) return false
 
       return {
         owner: {
@@ -82,6 +85,7 @@ export const Posts: CollectionConfig<'posts'> = {
 
       if (!user) return false
       if (await hasFreshAdminAccess(req as any)) return true
+      if (!isEditorialUser(user)) return false
 
       return {
         owner: {
@@ -103,7 +107,7 @@ export const Posts: CollectionConfig<'posts'> = {
     },
   },
   admin: {
-    hidden: ({ user }) => user?.role !== 'admin' && user?.role !== 'creator',
+    hidden: ({ user }) => !isAdminUser(user) && !isEditorialUser(user),
     defaultColumns: ['title', 'slug', 'updatedAt'],
     livePreview: {
       url: ({ data, req }) =>
