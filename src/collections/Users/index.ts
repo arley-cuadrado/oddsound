@@ -4,6 +4,7 @@ import { authenticated } from '@/access/authenticated'
 import { hasFreshAdminAccess } from '@/access/hasFreshAdminAccess'
 import { isAdmin } from '@/access/isAdmin'
 import { isAdminOrSelf } from '@/access/isAdminOrSelf'
+import { USERS_LOGIN_LOCK_TIME_MS, USERS_MAX_LOGIN_ATTEMPTS } from '@/utilities/authLocking'
 import { isAdminUser } from '@/utilities/isAdminUser'
 import { isConfiguredSuperAdminEmail, isSuperAdminUser } from '@/utilities/isSuperAdminUser'
 import {
@@ -56,6 +57,8 @@ export const Users: CollectionConfig = {
     useAsTitle: 'name',
   },
   auth: {
+    lockTime: USERS_LOGIN_LOCK_TIME_MS,
+    maxLoginAttempts: USERS_MAX_LOGIN_ATTEMPTS,
     forgotPassword: {
       expiration: CREATOR_RESET_PASSWORD_EXPIRATION_MS,
       generateEmailHTML: (args) =>

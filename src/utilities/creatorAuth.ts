@@ -1,6 +1,7 @@
 import config from '@payload-config'
 import { createLocalReq, getPayload } from 'payload'
 
+import { getTemporaryLoginLockMessage } from '@/utilities/authLocking'
 import { ensureCreatorProfile } from '@/utilities/creatorProfiles'
 
 export type AccountType = 'artist' | 'band'
@@ -223,6 +224,13 @@ export async function loginCreatorAccount(input: {
       },
     }
   } catch (error) {
+    if (error instanceof Error && error.name === 'LockedAuth') {
+      return {
+        message: getTemporaryLoginLockMessage(),
+        ok: false,
+      }
+    }
+
     if (error instanceof Error && error.name === 'UnverifiedEmail') {
       return {
         email: input.email.trim().toLowerCase(),
