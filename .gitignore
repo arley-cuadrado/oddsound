@@ -22,3 +22,7 @@ node_modules/
 /playwright/.cache/
 .env*
 tsconfig.tsbuildinfo
+
+# Local duplicate files created by Finder/editor copy flows, e.g. "index 2.tsx"
+src/**/* 2.*
+tests/**/* 2.*
