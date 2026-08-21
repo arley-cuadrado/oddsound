@@ -96,6 +96,7 @@ export async function ensureCreatorProfile({
           accountType: null,
           contactEmail: user.email || undefined,
           editorialProfile: true,
+          profileType: 'editorial',
         },
         depth: 0,
         overrideAccess: true,
@@ -120,6 +121,7 @@ export async function ensureCreatorProfile({
           accountType: null,
           contactEmail: user.email || undefined,
           editorialProfile: true,
+          profileType: 'editorial',
         },
         depth: 0,
         overrideAccess: true,
@@ -147,7 +149,14 @@ export async function ensureCreatorProfile({
   const profile = await payload.create({
     collection: 'profiles',
     data: {
-      ...(isEditorialProfile ? { editorialProfile: true } : {}),
+      ...(isEditorialProfile
+        ? {
+            editorialProfile: true,
+            profileType: 'editorial',
+          }
+        : {
+            profileType: user.accountType === 'band' ? 'band' : 'artist',
+          }),
       ...(!isEditorialProfile
         ? {
             accountType: user.accountType === 'band' ? 'band' : 'artist',

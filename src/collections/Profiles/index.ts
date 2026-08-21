@@ -16,7 +16,18 @@ type ProfileData = {
   contactEmail?: null | string
   displayName?: null | string
   editorialProfile?: boolean | null
+  profileType?: 'artist' | 'band' | 'editorial' | null
   owner?: number | string | { id?: number | string | null } | null
+}
+
+type ProfileType = NonNullable<ProfileData['profileType']>
+
+function isEditorialProfileType(profileType?: null | string): profileType is 'editorial' {
+  return profileType === 'editorial'
+}
+
+function isMusicProfileType(profileType?: null | string): profileType is 'artist' | 'band' {
+  return profileType === 'artist' || profileType === 'band'
 }
 
 function getOwnerID(owner: ProfileData['owner']) {
@@ -71,6 +82,21 @@ async function resolveEditorialProfileData(args: {
   }
 }
 
+function resolveProfileType(args: {
+  accountType?: null | ProfileData['accountType']
+  editorialProfile?: boolean | null
+  originalDoc?: null | ProfileData
+}): ProfileType {
+  if (args.editorialProfile) return 'editorial'
+  if (args.accountType === 'band') return 'band'
+  if (args.accountType === 'artist') return 'artist'
+  if (args.originalDoc?.profileType && isMusicProfileType(args.originalDoc.profileType)) {
+    return args.originalDoc.profileType
+  }
+
+  return 'artist'
+}
+
 const syncEditorialProfileState: CollectionBeforeChangeHook = async ({
   data,
   originalDoc,
@@ -93,10 +119,23 @@ const syncEditorialProfileState: CollectionBeforeChangeHook = async ({
     nextData.contactEmail = resolved.contactEmail
   }
 
-  if (resolved.editorialProfile) {
+  nextData.profileType = resolveProfileType({
+    accountType: nextData.accountType ?? originalDoc?.accountType ?? null,
+    editorialProfile: resolved.editorialProfile,
+    originalDoc: (originalDoc || null) as ProfileData | null,
+  })
+
+  if (isEditorialProfileType(nextData.profileType)) {
     nextData.accountType = null
-  } else if (!nextData.accountType && originalDoc?.accountType) {
-    nextData.accountType = originalDoc.accountType
+    nextData.coverImage = null
+    nextData.genre = null
+    nextData.location = null
+    nextData.mercadoPagoConnection = null
+    nextData.socialLinks = []
+  } else {
+    nextData.accountType = nextData.profileType
+    nextData.editorGender = null
+    nextData.editorSocials = null
   }
 
   return nextData
@@ -114,6 +153,11 @@ const populateEditorialProfileState: CollectionAfterReadHook = async ({ doc, req
   return {
     ...doc,
     editorialProfile: resolved.editorialProfile,
+    profileType: resolveProfileType({
+      accountType: (doc as ProfileData).accountType ?? null,
+      editorialProfile: resolved.editorialProfile,
+      originalDoc: doc as ProfileData,
+    }),
   }
 }
 
@@ -234,11 +278,38 @@ export const Profiles: CollectionConfig = {
       },
     },
     {
+      name: 'profileType',
+      type: 'select',
+      defaultValue: 'artist',
+      access: {
+        create: ({ req: { user } }) => isAdminUser(user),
+        read: ({ req: { user } }) => isAdminUser(user),
+        update: ({ req: { user } }) => isAdminUser(user),
+      },
+      admin: {
+        hidden: true,
+      },
+      options: [
+        {
+          label: 'Artist',
+          value: 'artist',
+        },
+        {
+          label: 'Band',
+          value: 'band',
+        },
+        {
+          label: 'Editorial',
+          value: 'editorial',
+        },
+      ],
+    },
+    {
       name: 'accountType',
       type: 'select',
       defaultValue: 'artist',
       admin: {
-        condition: (_data, siblingData) => !Boolean(siblingData?.editorialProfile),
+        condition: (_data, siblingData) => !isEditorialProfileType(siblingData?.profileType),
       },
       options: [
         {
@@ -251,7 +322,7 @@ export const Profiles: CollectionConfig = {
         },
       ],
       validate: ((value: string | null | undefined, { siblingData }: any) => {
-        if (siblingData?.editorialProfile) return true
+        if (isEditorialProfileType(siblingData?.profileType)) return true
 
         return value ? true : 'El tipo de cuenta es obligatorio para perfiles de artistas o bandas.'
       }) as any,
@@ -260,7 +331,7 @@ export const Profiles: CollectionConfig = {
       name: 'bio',
       type: 'textarea',
       admin: {
-        hidden: true,
+        condition: (_data, siblingData) => isEditorialProfileType(siblingData?.profileType),
       },
     },
     {
@@ -273,17 +344,17 @@ export const Profiles: CollectionConfig = {
       type: 'upload',
       relationTo: 'media',
       admin: {
-        hidden: true,
+        condition: (_data, siblingData) => !isEditorialProfileType(siblingData?.profileType),
       },
     },
     {
       name: 'location',
       type: 'text',
       validate: ((value, options) => {
-        const siblingData = (options as { siblingData?: { editorialProfile?: boolean | null } })
+        const siblingData = (options as { siblingData?: { profileType?: ProfileType | null } })
           .siblingData
 
-        if (siblingData?.editorialProfile) return true
+        if (isEditorialProfileType(siblingData?.profileType)) return true
         if (options.req.user?.role !== 'creator') return true
         if (options.operation === 'create') return true
 
@@ -291,17 +362,23 @@ export const Profiles: CollectionConfig = {
           ? true
           : 'El país es obligatorio para creadores.'
       }) as TextFieldSingleValidation,
+      admin: {
+        condition: (_data, siblingData) => !isEditorialProfileType(siblingData?.profileType),
+      },
     },
     {
       name: 'genre',
       type: 'text',
+      admin: {
+        condition: (_data, siblingData) => !isEditorialProfileType(siblingData?.profileType),
+      },
     },
     {
       name: 'editorGender',
       type: 'select',
       label: 'Género editorial',
       admin: {
-        condition: (_data, siblingData) => Boolean(siblingData?.editorialProfile),
+        condition: (_data, siblingData) => isEditorialProfileType(siblingData?.profileType),
       },
       options: [
         {
@@ -327,7 +404,7 @@ export const Profiles: CollectionConfig = {
       type: 'group',
       label: 'Redes sociales del editor',
       admin: {
-        condition: (_data, siblingData) => Boolean(siblingData?.editorialProfile),
+        condition: (_data, siblingData) => isEditorialProfileType(siblingData?.profileType),
       },
       fields: [
         {

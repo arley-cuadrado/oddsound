@@ -36,6 +36,9 @@ function normalizeSocialUrl(platform: 'facebook' | 'instagram' | 'threads' | 'x'
 
 function getEditorialProfile(profile: EditorialProfile) {
   if (!profile || typeof profile !== 'object') return null
+  if ('profileType' in profile && profile.profileType === 'editorial') {
+    return profile as Profile
+  }
   if (!('editorialProfile' in profile) || !profile.editorialProfile) return null
 
   return profile as Profile
