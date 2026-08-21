@@ -64,6 +64,7 @@ export default buildConfig({
       afterLogin: ['@/components/CreatorRegisterLink'],
       afterDashboard: ['@/components/BeforeDashboard'],
       afterNavLinks: [
+        '@/components/CreatorCollectionFilter',
         '@/components/CreatorNavLabelOverrides',
         '@/components/EmailPreviewNavLink',
         '@/components/ScheduledPublishesNavLink',

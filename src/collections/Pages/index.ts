@@ -99,6 +99,7 @@ export const Pages: CollectionConfig<'pages'> = {
     slug: true,
   },
   admin: {
+    hidden: ({ user }) => user?.role !== 'admin',
     components: {
       views: {
         edit: {

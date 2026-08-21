@@ -92,6 +92,7 @@ export const Biographies: CollectionConfig = {
     },
   },
   admin: {
+    hidden: ({ user }) => user?.role !== 'admin',
     components: {
       beforeList: ['@/components/CreatorBiographyListRedirect'],
       views: {

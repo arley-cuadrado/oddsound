@@ -14,6 +14,7 @@ import {
   generateCreatorVerificationEmailHTML,
   generateCreatorVerificationEmailSubject,
 } from '@/utilities/emailVerification'
+import { isCreatorOrAdmin } from '@/access/isCreatorOrAdmin'
 import { createProfile } from './hooks/createProfile'
 import { deleteCreatorData } from './hooks/deleteCreatorData'
 import { ensureCreatorDefaults } from './hooks/ensureCreatorDefaults'
@@ -50,7 +51,7 @@ export const Users: CollectionConfig = {
   },
   admin: {
     components: {
-      beforeList: ['@/components/UsersListSelectionGuard'],
+      beforeList: ['@/components/UsersListSelectionGuard', '@/components/CreateRedactorButton'],
     },
     defaultColumns: ['name', 'email', 'role', 'accountType'],
     hidden: ({ user }) => !isAdminUser(user as { role?: null | string } | null | undefined),
@@ -85,17 +86,37 @@ export const Users: CollectionConfig = {
       name: 'name',
       label: 'Nombre',
       type: 'text',
+      access: {
+        update: async ({ req, data, siblingData }) => {
+          const user = req.user
+          
+          if (!user) return false
+          if (await hasFreshAdminAccess(req as any)) return true
+          
+          // Creators can only update their own name
+          return data?.id === user.id || siblingData?.id === user.id
+        },
+      },
     },
     {
       name: 'role',
       type: 'select',
       defaultValue: 'creator',
       admin: {
-        condition: (_data, siblingData, { user }) =>
-          isSuperAdminUser(user as { email?: null | string; role?: null | string } | null | undefined) &&
-          siblingData?.role !== 'admin',
+        condition: (_data, siblingData, { user }) => {
+          const isSuperAdmin = isSuperAdminUser(user as { email?: null | string; role?: null | string } | null | undefined)
+          
+          // Only superadmin can see role field
+          return isSuperAdmin && siblingData?.role !== 'admin'
+        },
       },
       label: 'Rol',
+      access: {
+        update: async ({ req }) => {
+          // Only superadmin can update roles
+          return isSuperAdminUser(req.user as { email?: null | string; role?: null | string } | null | undefined)
+        },
+      },
       options: [
         {
           label: 'Administrador',
@@ -144,7 +165,17 @@ export const Users: CollectionConfig = {
       defaultValue: 'artist',
       label: 'Tipo de cuenta',
       admin: {
-        condition: (_data, siblingData) => siblingData?.role !== 'admin',
+        condition: (_data, siblingData, { user }) => {
+          const isAdmin = isAdminUser(user as { role?: null | string } | null | undefined)
+          // Show only to admins OR when editing non-admin users
+          return isAdmin && siblingData?.role !== 'admin'
+        },
+      },
+      access: {
+        update: async ({ req }) => {
+          // Only admins can update account type
+          return await hasFreshAdminAccess(req as any)
+        },
       },
       options: [
         {
@@ -176,6 +207,16 @@ export const Users: CollectionConfig = {
       type: 'checkbox',
       defaultValue: true,
       label: 'Está activa',
+      admin: {
+        condition: (_data, _siblingData, { user }) =>
+          isAdminUser(user as { role?: null | string } | null | undefined),
+      },
+      access: {
+        update: async ({ req }) => {
+          // Only admins can update isActive status
+          return await hasFreshAdminAccess(req as any)
+        },
+      },
     },
     {
       name: 'legalAccepted',

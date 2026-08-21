@@ -15,6 +15,7 @@ import { generateMeta } from '@/utilities/generateMeta'
 import PageClient from './page.client'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
 import { RenderBlocks } from '@/blocks/RenderBlocks'
+import PostShareSection from '@/components/PostShareSection'
 
 export async function generateStaticParams() {
   const payload = await getPayload({ config: configPromise })
@@ -70,6 +71,9 @@ export default async function Post({ params: paramsPromise }: Args) {
             data={post.content}
             enableGutter={false}
           />
+          
+          <PostShareSection post={post} />
+          
           {Array.isArray(post.layout) && post.layout.length > 0 ? (
             <div className="mx-auto max-w-[48rem] px-4 md:px-0">
               <RenderBlocks blocks={post.layout} disableInnerContainer />

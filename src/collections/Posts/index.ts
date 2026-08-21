@@ -92,7 +92,7 @@ export const Posts: CollectionConfig<'posts'> = {
     },
   },
   admin: {
-    hidden: ({ user }) => user?.role !== 'admin',
+    hidden: ({ user }) => user?.role !== 'admin' && user?.role !== 'creator',
     defaultColumns: ['title', 'slug', 'updatedAt'],
     livePreview: {
       url: ({ data, req }) =>
