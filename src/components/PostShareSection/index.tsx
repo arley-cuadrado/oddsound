@@ -74,6 +74,7 @@ export default function PostShareSection({ post }: PostShareSectionProps) {
   return (
     <div className="flex justify-center pt-6 pb-2">
       <SharePostButton
+        context="posts"
         title={post.title}
         slug={post.slug}
         content={contentText}
