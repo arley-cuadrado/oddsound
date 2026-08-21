@@ -2,6 +2,7 @@ import type { Payload, PayloadRequest } from 'payload'
 
 type CreatorLike = {
   accountType?: null | 'artist' | 'band' | 'label'
+  editorAccess?: boolean | null
   email?: null | string
   id: string
   name?: null | string
@@ -83,9 +84,27 @@ export async function ensureCreatorProfile({
 }) {
   if (user.role !== 'creator') return user.profile || null
 
+  const isEditorialProfile = Boolean(user.editorAccess)
   const inlineProfileId = getInlineProfileId(user)
 
-  if (inlineProfileId) return inlineProfileId
+  if (inlineProfileId) {
+    if (isEditorialProfile) {
+      await payload.update({
+        collection: 'profiles',
+        id: inlineProfileId,
+        data: {
+          accountType: null,
+          contactEmail: user.email || undefined,
+          editorialProfile: true,
+        },
+        depth: 0,
+        overrideAccess: true,
+        ...(req ? { req } : {}),
+      })
+    }
+
+    return inlineProfileId
+  }
 
   const existingProfileId = await findCreatorProfileByOwner({
     ownerID: user.id,
@@ -93,6 +112,21 @@ export async function ensureCreatorProfile({
   })
 
   if (existingProfileId) {
+    if (isEditorialProfile) {
+      await payload.update({
+        collection: 'profiles',
+        id: existingProfileId,
+        data: {
+          accountType: null,
+          contactEmail: user.email || undefined,
+          editorialProfile: true,
+        },
+        depth: 0,
+        overrideAccess: true,
+        ...(req ? { req } : {}),
+      })
+    }
+
     await payload.update({
       collection: 'users',
       id: user.id,
@@ -113,7 +147,12 @@ export async function ensureCreatorProfile({
   const profile = await payload.create({
     collection: 'profiles',
     data: {
-      accountType: user.accountType === 'band' ? 'band' : 'artist',
+      ...(isEditorialProfile ? { editorialProfile: true } : {}),
+      ...(!isEditorialProfile
+        ? {
+            accountType: user.accountType === 'band' ? 'band' : 'artist',
+          }
+        : {}),
       contactEmail: user.email || undefined,
       displayName,
       owner: user.id,

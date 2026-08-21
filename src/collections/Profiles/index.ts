@@ -1,9 +1,121 @@
-import type { CollectionConfig, TextFieldSingleValidation } from 'payload'
+import type {
+  CollectionAfterReadHook,
+  CollectionBeforeChangeHook,
+  CollectionConfig,
+  Payload,
+  TextFieldSingleValidation,
+} from 'payload'
 
 import { authenticated } from '@/access/authenticated'
 import { hasFreshAdminAccess } from '@/access/hasFreshAdminAccess'
 import { isAdminUser } from '@/utilities/isAdminUser'
 import { slugField } from 'payload'
+
+type ProfileData = {
+  accountType?: 'artist' | 'band' | null
+  contactEmail?: null | string
+  displayName?: null | string
+  editorialProfile?: boolean | null
+  owner?: number | string | { id?: number | string | null } | null
+}
+
+function getOwnerID(owner: ProfileData['owner']) {
+  if (typeof owner === 'string' || typeof owner === 'number') return String(owner)
+  if (owner && typeof owner === 'object' && owner.id) return String(owner.id)
+
+  return null
+}
+
+async function resolveEditorialProfileData(args: {
+  data?: null | ProfileData
+  originalDoc?: null | ProfileData
+  payload: Payload
+}) {
+  const ownerID = getOwnerID(args.data?.owner) || getOwnerID(args.originalDoc?.owner)
+
+  if (!ownerID) {
+    return {
+      contactEmail: args.data?.contactEmail ?? args.originalDoc?.contactEmail ?? null,
+      displayName: args.data?.displayName ?? args.originalDoc?.displayName ?? null,
+      editorialProfile: Boolean(args.data?.editorialProfile ?? args.originalDoc?.editorialProfile),
+    }
+  }
+
+  try {
+    const owner = await args.payload.findByID({
+      collection: 'users',
+      id: ownerID,
+      depth: 0,
+      overrideAccess: true,
+    })
+
+    return {
+      contactEmail:
+        args.data?.contactEmail ??
+        args.originalDoc?.contactEmail ??
+        owner?.email ??
+        null,
+      displayName:
+        args.data?.displayName ??
+        args.originalDoc?.displayName ??
+        owner?.name ??
+        null,
+      editorialProfile: Boolean(owner?.editorAccess),
+    }
+  } catch {
+    return {
+      contactEmail: args.data?.contactEmail ?? args.originalDoc?.contactEmail ?? null,
+      displayName: args.data?.displayName ?? args.originalDoc?.displayName ?? null,
+      editorialProfile: Boolean(args.data?.editorialProfile ?? args.originalDoc?.editorialProfile),
+    }
+  }
+}
+
+const syncEditorialProfileState: CollectionBeforeChangeHook = async ({
+  data,
+  originalDoc,
+  req,
+}) => {
+  const nextData = { ...(data || {}) }
+  const resolved = await resolveEditorialProfileData({
+    data: nextData,
+    originalDoc: (originalDoc || null) as ProfileData | null,
+    payload: req.payload,
+  })
+
+  nextData.editorialProfile = resolved.editorialProfile
+
+  if (resolved.displayName && !nextData.displayName) {
+    nextData.displayName = resolved.displayName
+  }
+
+  if (resolved.contactEmail && !nextData.contactEmail) {
+    nextData.contactEmail = resolved.contactEmail
+  }
+
+  if (resolved.editorialProfile) {
+    nextData.accountType = null
+  } else if (!nextData.accountType && originalDoc?.accountType) {
+    nextData.accountType = originalDoc.accountType
+  }
+
+  return nextData
+}
+
+const populateEditorialProfileState: CollectionAfterReadHook = async ({ doc, req }) => {
+  if (!doc || typeof doc !== 'object') return doc
+
+  const resolved = await resolveEditorialProfileData({
+    data: doc as ProfileData,
+    originalDoc: doc as ProfileData,
+    payload: req.payload,
+  })
+
+  return {
+    ...doc,
+    editorialProfile: resolved.editorialProfile,
+  }
+}
 
 export const Profiles: CollectionConfig = {
   slug: 'profiles',
@@ -85,7 +197,7 @@ export const Profiles: CollectionConfig = {
         },
       },
     },
-    defaultColumns: ['displayName', 'accountType', 'slug', 'updatedAt'],
+    defaultColumns: ['displayName', 'slug', 'updatedAt'],
     useAsTitle: 'displayName',
   },
   fields: [
@@ -109,9 +221,25 @@ export const Profiles: CollectionConfig = {
       required: true,
     },
     {
+      name: 'editorialProfile',
+      type: 'checkbox',
+      defaultValue: false,
+      access: {
+        create: ({ req: { user } }) => isAdminUser(user),
+        read: ({ req: { user } }) => isAdminUser(user),
+        update: ({ req: { user } }) => isAdminUser(user),
+      },
+      admin: {
+        hidden: true,
+      },
+    },
+    {
       name: 'accountType',
       type: 'select',
       defaultValue: 'artist',
+      admin: {
+        condition: (_data, siblingData) => !Boolean(siblingData?.editorialProfile),
+      },
       options: [
         {
           label: 'Artista',
@@ -122,7 +250,11 @@ export const Profiles: CollectionConfig = {
           value: 'band',
         },
       ],
-      required: true,
+      validate: ((value: string | null | undefined, { siblingData }: any) => {
+        if (siblingData?.editorialProfile) return true
+
+        return value ? true : 'El tipo de cuenta es obligatorio para perfiles de artistas o bandas.'
+      }) as any,
     },
     {
       name: 'bio',
@@ -148,6 +280,10 @@ export const Profiles: CollectionConfig = {
       name: 'location',
       type: 'text',
       validate: ((value, options) => {
+        const siblingData = (options as { siblingData?: { editorialProfile?: boolean | null } })
+          .siblingData
+
+        if (siblingData?.editorialProfile) return true
         if (options.req.user?.role !== 'creator') return true
         if (options.operation === 'create') return true
 
@@ -161,8 +297,60 @@ export const Profiles: CollectionConfig = {
       type: 'text',
     },
     {
+      name: 'editorGender',
+      type: 'select',
+      label: 'Género editorial',
+      admin: {
+        condition: (_data, siblingData) => Boolean(siblingData?.editorialProfile),
+      },
+      options: [
+        {
+          label: 'Hombre',
+          value: 'male',
+        },
+        {
+          label: 'Mujer',
+          value: 'female',
+        },
+        {
+          label: 'Indeterminado',
+          value: 'indeterminate',
+        },
+      ],
+    },
+    {
       name: 'contactEmail',
       type: 'email',
+    },
+    {
+      name: 'editorSocials',
+      type: 'group',
+      label: 'Redes sociales del editor',
+      admin: {
+        condition: (_data, siblingData) => Boolean(siblingData?.editorialProfile),
+      },
+      fields: [
+        {
+          name: 'instagram',
+          type: 'text',
+          label: 'Instagram',
+        },
+        {
+          name: 'x',
+          type: 'text',
+          label: 'X',
+        },
+        {
+          name: 'threads',
+          type: 'text',
+          label: 'Threads',
+        },
+        {
+          name: 'facebook',
+          type: 'text',
+          label: 'Facebook',
+        },
+      ],
     },
     {
       name: 'socialLinks',
@@ -265,4 +453,8 @@ export const Profiles: CollectionConfig = {
       useAsSlug: 'displayName',
     }),
   ],
+  hooks: {
+    beforeChange: [syncEditorialProfileState],
+    afterRead: [populateEditorialProfileState],
+  },
 }

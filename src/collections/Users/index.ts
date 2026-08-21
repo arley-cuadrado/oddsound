@@ -232,7 +232,11 @@ export const Users: CollectionConfig = {
           value: 'band',
         },
       ],
-      required: true,
+      validate: ((value: string | null | undefined, { siblingData }: any) => {
+        if (siblingData?.editorAccess) return true
+
+        return value ? true : 'El tipo de cuenta es obligatorio para cuentas de artista o banda.'
+      }) as any,
     },
     {
       name: 'profile',

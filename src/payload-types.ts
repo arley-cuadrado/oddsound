@@ -346,13 +346,21 @@ export interface Profile {
   id: string;
   owner: string | User;
   displayName: string;
-  accountType: 'artist' | 'band';
+  editorialProfile?: boolean | null;
+  accountType?: ('artist' | 'band') | null;
   bio?: string | null;
   avatar?: (string | null) | Media;
   coverImage?: (string | null) | Media;
   location?: string | null;
   genre?: string | null;
+  editorGender?: ('male' | 'female' | 'indeterminate') | null;
   contactEmail?: string | null;
+  editorSocials?: {
+    instagram?: string | null;
+    x?: string | null;
+    threads?: string | null;
+    facebook?: string | null;
+  };
   socialLinks?:
     | {
         label: string;
@@ -1932,13 +1940,23 @@ export interface CategoriesSelect<T extends boolean = true> {
 export interface ProfilesSelect<T extends boolean = true> {
   owner?: T;
   displayName?: T;
+  editorialProfile?: T;
   accountType?: T;
   bio?: T;
   avatar?: T;
   coverImage?: T;
   location?: T;
   genre?: T;
+  editorGender?: T;
   contactEmail?: T;
+  editorSocials?:
+    | T
+    | {
+        instagram?: T;
+        x?: T;
+        threads?: T;
+        facebook?: T;
+      };
   socialLinks?:
     | T
     | {
