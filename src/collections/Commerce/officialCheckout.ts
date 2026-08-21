@@ -16,6 +16,8 @@ export function extendEcommerceCartsCollection({ defaultCollection }: OverrideAr
 }
 
 export function extendEcommerceOrdersCollection({ defaultCollection }: OverrideArgs): CollectionConfig {
+  const defaultFields = defaultCollection.fields || []
+
   return {
     ...defaultCollection,
     admin: {
@@ -24,7 +26,7 @@ export function extendEcommerceOrdersCollection({ defaultCollection }: OverrideA
       useAsTitle: 'customerEmail',
     },
     fields: [
-      ...defaultCollection.fields,
+      ...defaultFields,
       {
         name: 'artistProfile',
         type: 'relationship',
@@ -104,6 +106,8 @@ export function extendEcommerceOrdersCollection({ defaultCollection }: OverrideA
 }
 
 export function extendEcommerceTransactionsCollection({ defaultCollection }: OverrideArgs): CollectionConfig {
+  const defaultFields = defaultCollection.fields || []
+
   return {
     ...defaultCollection,
     admin: {
@@ -112,7 +116,7 @@ export function extendEcommerceTransactionsCollection({ defaultCollection }: Ove
       useAsTitle: 'customerEmail',
     },
     fields: [
-      ...defaultCollection.fields,
+      ...defaultFields,
       {
         name: 'artistProfile',
         type: 'relationship',

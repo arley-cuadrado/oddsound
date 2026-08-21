@@ -110,9 +110,9 @@ export default function CreateRedactorButton() {
           Crear editor
         </Button>
       ) : (
-        <div className="create-redactor-section__panel">
+        <section className="create-redactor-section__content" aria-labelledby="create-redactor-title">
           <div className="create-redactor-section__header">
-            <h3>Crear editor</h3>
+            <h3 id="create-redactor-title">Crear editor</h3>
             <p>
               Los nuevos editores reciben un correo para confirmar su cuenta y luego iniciar
               sesion.
@@ -215,7 +215,7 @@ export default function CreateRedactorButton() {
               </Button>
             </div>
           </form>
-        </div>
+        </section>
       )}
     </div>
   )

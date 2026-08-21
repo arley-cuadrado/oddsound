@@ -1,5 +1,6 @@
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
+import Link from 'next/link'
 import React from 'react'
 
 import { getMeUser } from '@/utilities/getMeUser'
@@ -109,10 +110,10 @@ const BeforeDashboard = async () => {
 
   return (
     <section className={baseClass} id="scheduled-publishes">
-      <div className={`${baseClass}__panel`}>
+      <section className={`${baseClass}__section`} aria-labelledby="before-dashboard-scheduled">
         <div className={`${baseClass}__header`}>
           <div>
-            <h4>Publicaciones programadas</h4>
+            <h4 id="before-dashboard-scheduled">Publicaciones programadas</h4>
             <p>
               Próximas tareas de publicación y despublicación. Hora editorial oficial:
               <strong> America/Bogota</strong>.
@@ -135,13 +136,13 @@ const BeforeDashboard = async () => {
         ) : (
           <p className={`${baseClass}__empty`}>No hay publicaciones programadas próximas.</p>
         )}
-      </div>
+      </section>
 
       {userRole === 'admin' || userRole === 'creator' ? (
-        <div className={`${baseClass}__panel`}>
+        <section className={`${baseClass}__section`} aria-labelledby="before-dashboard-commerce">
           <div className={`${baseClass}__header`}>
             <div>
-              <h4>Commerce oficial</h4>
+              <h4 id="before-dashboard-commerce">Commerce oficial</h4>
               <p>
                 Acceso directo al catalogo que ya corre con Payload ecommerce dentro del dashboard
                 individual.
@@ -149,31 +150,31 @@ const BeforeDashboard = async () => {
             </div>
           </div>
 
-          <div className={`${baseClass}__commerce-grid`}>
-            <article className={`${baseClass}__commerce-card`}>
+          <ul className={`${baseClass}__meta-list`}>
+            <li className={`${baseClass}__meta-item`}>
               <span>Productos visibles aqui</span>
               <strong>{commerceProducts.length}</strong>
-            </article>
-            <article className={`${baseClass}__commerce-card`}>
+            </li>
+            <li className={`${baseClass}__meta-item`}>
               <span>Perfil vinculado</span>
               <strong>{profileID || 'Sin perfil'}</strong>
-            </article>
-          </div>
+            </li>
+          </ul>
 
-          <div className={`${baseClass}__actions`}>
-            <a className={`${baseClass}__action`} href="/creator/dashboard">
+          <div className={`${baseClass}__links`}>
+            <Link className={`${baseClass}__link`} href="/creator/dashboard">
               Abrir vista remota de commerce
-            </a>
-            <a className={`${baseClass}__action`} href="/dashboard/collections/products">
+            </Link>
+            <Link className={`${baseClass}__link`} href="/dashboard/collections/products">
               Gestionar productos
-            </a>
+            </Link>
             {commerceProfileSlug ? (
-              <a className={`${baseClass}__action`} href={`/${commerceProfileSlug}/shop`}>
+              <Link className={`${baseClass}__link`} href={`/${commerceProfileSlug}/shop`}>
                 Abrir shop publico
-              </a>
+              </Link>
             ) : null}
           </div>
-        </div>
+        </section>
       ) : null}
     </section>
   )

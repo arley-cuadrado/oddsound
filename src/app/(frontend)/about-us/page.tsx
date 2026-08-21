@@ -32,7 +32,7 @@ const sections = [
   {
     title: '',
     body: [
-      <>
+      <span key="about-us-feedback">
         Si ves detalles de diseño o mejoras de funcionalidad que se deban ajustar, escríbeme a{' '}
         <Link
           className="underline underline-offset-2 title"
@@ -41,8 +41,8 @@ const sections = [
           hello@oddsound.co
         </Link>
         , con gusto lo revisaré y corregiré, a menos que se acabe el mundo en ese proceso.
-      </>,
-      <ArloSignature />,
+      </span>,
+      <ArloSignature key="about-us-signature" />,
     ],
   },
 ]
