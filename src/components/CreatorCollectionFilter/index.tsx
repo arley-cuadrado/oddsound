@@ -4,6 +4,7 @@ import { useAuth } from '@payloadcms/ui'
 import { useEffect } from 'react'
 
 type AuthUser = {
+  editorAccess?: boolean | null
   id?: null | string
   role?: null | string
 }
@@ -15,8 +16,9 @@ export default function CreatorCollectionFilter() {
     if (user?.role !== 'creator') return
 
     const hideCollectionsForCreators = () => {
-      // Allowed collections for creators
-      const allowedCollections = ['posts', 'profiles', 'media']
+      const allowedCollections = user?.editorAccess
+        ? ['posts', 'profiles', 'media']
+        : ['pages', 'biographies', 'products', 'profiles', 'media']
 
       // Find all collection links in the navigation
       const navLinks = Array.from(
@@ -46,7 +48,6 @@ export default function CreatorCollectionFilter() {
 
         // Hide links to collections that aren't in allowedCollections
         const isCollectionLink = href.includes('/dashboard/collections/')
-        const isAccountLink = href.includes('/dashboard/account') || text.includes('account')
 
         if (isCollectionLink) {
           const isAllowed = allowedCollections.some((collection) => href.includes(`/collections/${collection}`))
@@ -76,7 +77,7 @@ export default function CreatorCollectionFilter() {
     return () => {
       observer.disconnect()
     }
-  }, [user?.role])
+  }, [user?.editorAccess, user?.role])
 
   return null
 }

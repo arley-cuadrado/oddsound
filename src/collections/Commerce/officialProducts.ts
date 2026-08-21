@@ -5,6 +5,7 @@ import { authenticated } from '@/access/authenticated'
 import { hasFreshAdminAccess } from '@/access/hasFreshAdminAccess'
 import { assignOwnership } from '@/hooks/assignOwnership'
 import { isAdminUser } from '@/utilities/isAdminUser'
+import { isMusicalCreatorUser } from '@/utilities/isEditorialUser'
 
 type OverrideArgs = {
   defaultCollection: CollectionConfig
@@ -29,12 +30,13 @@ function validateExternalCheckoutURL(
 
 const canManageOwnedProducts: CollectionConfig['access'] = {
   admin: authenticated,
-  create: ({ req: { user } }) => Boolean(user),
+  create: ({ req: { user } }) => isAdminUser(user) || isMusicalCreatorUser(user),
   delete: async ({ req }) => {
     const user = req.user
 
     if (!user) return false
     if (await hasFreshAdminAccess(req as any)) return true
+    if (!isMusicalCreatorUser(user)) return false
 
     return {
       owner: {
@@ -54,6 +56,7 @@ const canManageOwnedProducts: CollectionConfig['access'] = {
     }
 
     if (await hasFreshAdminAccess(req as any)) return true
+    if (!isMusicalCreatorUser(user)) return false
 
     return {
       owner: {
@@ -91,6 +94,7 @@ export function extendEcommerceProductsCollection({ defaultCollection }: Overrid
     admin: {
       ...(defaultCollection.admin || {}),
       defaultColumns: ['title', 'priceInUSD', 'inventory', 'updatedAt'],
+      hidden: ({ user }) => !isAdminUser(user) && !isMusicalCreatorUser(user),
       useAsTitle: 'title',
     },
     fields: [

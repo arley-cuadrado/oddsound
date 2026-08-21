@@ -1,7 +1,7 @@
-type UserLike = {
-  role?: null | string
-} | null | undefined
+type UserLike = unknown
 
 export function isAdminUser(user: UserLike) {
-  return user?.role === 'admin'
+  if (!user || typeof user !== 'object') return false
+
+  return (user as { role?: null | string }).role === 'admin'
 }
