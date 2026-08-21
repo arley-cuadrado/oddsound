@@ -356,6 +356,9 @@ export interface Profile {
   genre?: string | null;
   editorGender?: ('male' | 'female' | 'indeterminate') | null;
   contactEmail?: string | null;
+  /**
+   * Registra al menos una red social para el perfil editorial.
+   */
   editorSocials?: {
     instagram?: string | null;
     x?: string | null;

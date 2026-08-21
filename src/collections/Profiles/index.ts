@@ -376,7 +376,7 @@ export const Profiles: CollectionConfig = {
     {
       name: 'editorGender',
       type: 'select',
-      label: 'Género editorial',
+      label: 'Género',
       admin: {
         condition: (_data, siblingData) => isEditorialProfileType(siblingData?.profileType),
       },
@@ -394,6 +394,11 @@ export const Profiles: CollectionConfig = {
           value: 'indeterminate',
         },
       ],
+      validate: ((value: string | null | undefined, { siblingData }: any) => {
+        if (!isEditorialProfileType(siblingData?.profileType)) return true
+
+        return value ? true : 'El genero del editor es obligatorio.'
+      }) as any,
     },
     {
       name: 'contactEmail',
@@ -402,10 +407,22 @@ export const Profiles: CollectionConfig = {
     {
       name: 'editorSocials',
       type: 'group',
-      label: 'Redes sociales del editor',
+      label: 'Redes sociales',
       admin: {
         condition: (_data, siblingData) => isEditorialProfileType(siblingData?.profileType),
+        description: 'Registra al menos una red social para el perfil editorial.',
       },
+      validate: ((value: Record<string, unknown> | null | undefined, { siblingData }: any) => {
+        if (!isEditorialProfileType(siblingData?.profileType)) return true
+
+        const hasAtLeastOneValue = Object.values(value || {}).some(
+          (item) => typeof item === 'string' && item.trim().length > 0,
+        )
+
+        return hasAtLeastOneValue
+          ? true
+          : 'Debes registrar al menos una red social del editor.'
+      }) as any,
       fields: [
         {
           name: 'instagram',
