@@ -12,6 +12,7 @@ interface SharePostButtonProps {
   title: string
   slug: string
   content: string
+  context?: 'default' | 'posts'
   bannerImageUrl?: string
   authorName?: string
   authorAvatarUrl?: string
@@ -24,6 +25,7 @@ export default function SharePostButton({
   title,
   slug,
   content,
+  context = 'default',
   bannerImageUrl,
   authorName,
   authorAvatarUrl,
@@ -34,6 +36,7 @@ export default function SharePostButton({
 
   const imageUrl = bannerImageUrl || heroImage?.url || ''
   const description = extractTextContent(content, 3)
+  const summaryText = description || extractTextContent(content, 1)
 
   const shareUrls = useMemo(
     () =>
@@ -131,7 +134,7 @@ export default function SharePostButton({
           <div
             aria-labelledby="share-post-title"
             aria-modal="true"
-            className="share-modal"
+            className={context === 'posts' ? 'share-modal share-modal--posts' : 'share-modal'}
             onClick={(e) => e.stopPropagation()}
             role="dialog"
           >
@@ -162,7 +165,7 @@ export default function SharePostButton({
               ) : null}
 
               <p className="share-modal__description">
-                {description || 'Comparte este articulo en oddsound.'}
+                {summaryText}
               </p>
 
               {authorName ? (
@@ -180,7 +183,7 @@ export default function SharePostButton({
             </div>
 
             <div className="share-modal__section">
-              <p className="share-modal__eyebrow">Elige la plataforma</p>
+              <p className="share-modal__eyebrow share-modal__section-label">Elige la plataforma</p>
 
               <div className="share-modal__actions">
                 {shareButtons.map((button) => {
@@ -220,24 +223,6 @@ export default function SharePostButton({
                   )
                 })}
               </div>
-            </div>
-
-            <div className="share-modal__footer">
-              <button
-                className={simpleLinkClassName}
-                onClick={() => void handleCopy('post-link')}
-                type="button"
-              >
-                {copiedState === 'post-link' ? 'Link copiado' : 'Copiar enlace del articulo'}
-              </button>
-
-              <button
-                className={simpleLinkClassName}
-                onClick={() => setShowShareModal(false)}
-                type="button"
-              >
-                Cerrar
-              </button>
             </div>
           </div>
         </div>

@@ -26,6 +26,13 @@
 - No usar iconografía externa para redes sociales o acciones si no existe un patrón visual oficial ya adoptado por Oddsound. En ese caso, resolver con texto.
 - No mezclar estilos inline con estilos de sistema para resolver un mismo componente visible al usuario final.
 - No introducir colores de marca de terceros dentro de módulos editoriales o de sharing si eso rompe la paleta neutral del producto.
+- En módulos de sharing editorial, el texto descriptivo principal debe salir del contenido real del artículo por defecto; no usar copys genéricos si ya existe un extracto válido.
+- Si el modal ya tiene una acción clara de cierre en el encabezado, no duplicarla en el footer.
+- No repetir en el footer acciones secundarias de copiar enlace si ya existen dentro del flujo principal de opciones.
+- Los títulos de sección dentro de modales o popups deben conservar una separación vertical consistente con la relación título-opciones ya usada por el frontend de Oddsound.
+- El texto editorial dentro de modales de sharing debe usar la misma fuente del bloque de contenido del artículo.
+  Referencia actual validada: el bloque `RichText` del frontend hereda el stack global de Oddsound, no `Times New Roman`.
+  Stack vigente: `SF Pro Display`, `SF Pro Text`, `Helvetica Neue`, `Helvetica`, `Arial`, `sans-serif`.
 
 #### Estructura estricta para módulos públicos
 
@@ -35,6 +42,7 @@
 - Cuerpo: contenido útil, escaneable y con separación clara.
 - Acciones: lista o grupo de acciones con una jerarquía textual consistente.
 - Estados: copiado, deshabilitado, error o vacío resueltos con texto breve y el mismo lenguaje visual del resto de la plataforma.
+- Footer: solo debe existir si aporta una acción distinta y necesaria; si duplica acciones del header o del cuerpo, se elimina.
 
 #### Estructura estricta para módulos de admin
 
