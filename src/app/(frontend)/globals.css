@@ -151,17 +151,10 @@
     line-height: 1.3;
   }
 
+  .post-editorial-prose,
   .share-modal--posts .share-modal__description {
     margin: 0;
-    font-family:
-      "SF Pro Display",
-      "SF Pro Text",
-      -apple-system,
-      BlinkMacSystemFont,
-      "Helvetica Neue",
-      Helvetica,
-      Arial,
-      sans-serif;
+    font-family: Georgia, "Times New Roman", Times, serif;
     line-height: 1.6;
   }
 

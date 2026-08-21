@@ -8,28 +8,38 @@ interface PostShareSectionProps {
   post: Post
 }
 
-export default function PostShareSection({ post }: PostShareSectionProps) {
-  // Extract content text from Lexical structure
-  const extractContentFromLexical = (content: any): string => {
-    if (!content || typeof content !== 'object') return ''
+type LexicalNode = {
+  children?: LexicalNode[]
+  text?: string
+  type?: string
+}
 
-    if (content.root && Array.isArray(content.root.children)) {
-      return content.root.children
-        .map((child: any) => {
-          if (child.children && Array.isArray(child.children)) {
-            return child.children
-              .map((textNode: any) => textNode.text || '')
-              .join('')
-          }
-          return child.text || ''
-        })
-        .filter(Boolean)
-        .join('\n')
-    }
+function extractContentFromLexical(content: unknown): string {
+  if (!content || typeof content !== 'object' || !('root' in content)) return ''
 
-    return ''
+  const root = (content as { root?: LexicalNode }).root
+  if (!root) return ''
+
+  const blockTypes = new Set(['heading', 'listitem', 'paragraph', 'quote'])
+
+  const visit = (node: LexicalNode): string => {
+    const text = typeof node.text === 'string' ? node.text : ''
+    const childrenText = Array.isArray(node.children) ? node.children.map(visit).join('') : ''
+    const combined = `${text}${childrenText}`.trim()
+
+    if (!combined) return ''
+
+    return blockTypes.has(node.type || '') ? `${combined}\n` : combined
   }
 
+  return visit(root)
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .join('\n')
+}
+
+export default function PostShareSection({ post }: PostShareSectionProps) {
   // Get profile avatar URL
   const getAvatarUrl = (): string | undefined => {
     const profile = post.profile

@@ -30,9 +30,9 @@
 - Si el modal ya tiene una acción clara de cierre en el encabezado, no duplicarla en el footer.
 - No repetir en el footer acciones secundarias de copiar enlace si ya existen dentro del flujo principal de opciones.
 - Los títulos de sección dentro de modales o popups deben conservar una separación vertical consistente con la relación título-opciones ya usada por el frontend de Oddsound.
-- El texto editorial dentro de modales de sharing debe usar la misma fuente del bloque de contenido del artículo.
-  Referencia actual validada: el bloque `RichText` del frontend hereda el stack global de Oddsound, no `Times New Roman`.
-  Stack vigente: `SF Pro Display`, `SF Pro Text`, `Helvetica Neue`, `Helvetica`, `Arial`, `sans-serif`.
+- En artículos de `posts`, el cuerpo editorial debe usar una tipografía serif con carácter de lectura larga, similar a `Times New Roman`.
+- En el modal de compartir de `posts`, el extracto editorial debe usar esa misma familia serif del artículo.
+- El resumen visible del modal de compartir debe extraerse del contenido real del texto enriquecido y resolver hasta tres líneas útiles cuando el contenido exista.
 
 #### Estructura estricta para módulos públicos
 
@@ -43,6 +43,7 @@
 - Acciones: lista o grupo de acciones con una jerarquía textual consistente.
 - Estados: copiado, deshabilitado, error o vacío resueltos con texto breve y el mismo lenguaje visual del resto de la plataforma.
 - Footer: solo debe existir si aporta una acción distinta y necesaria; si duplica acciones del header o del cuerpo, se elimina.
+- Resumen editorial: en `posts`, debe salir del contenido del artículo y no puede omitirse si existe texto legible en el rich text.
 
 #### Estructura estricta para módulos de admin
 
