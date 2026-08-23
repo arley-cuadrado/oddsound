@@ -1,76 +1,50 @@
 import React from 'react'
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { Search } from '@/search/Component'
 
-const replaceMock = vi.fn()
-const usePathnameMock = vi.fn()
-const useRouterMock = vi.fn()
-const useSearchParamsMock = vi.fn()
-
-vi.mock('next/navigation', () => ({
-  usePathname: () => usePathnameMock(),
-  useRouter: () => useRouterMock(),
-  useSearchParams: () => useSearchParamsMock(),
-}))
-
-function createSearchParams(query = '') {
-  const params = new URLSearchParams(query)
-
-  return {
-    get: (key: string) => params.get(key),
-    toString: () => params.toString(),
-  }
-}
+const PLACEHOLDER = 'Comienza a descubrir ;)'
 
 describe('Search', () => {
   afterEach(() => {
     cleanup()
   })
 
-  beforeEach(() => {
-    replaceMock.mockReset()
-    usePathnameMock.mockReturnValue('/search')
-    useRouterMock.mockReturnValue({ replace: replaceMock })
-    useSearchParamsMock.mockReturnValue(createSearchParams())
-  })
+  it('reports every keystroke so results filter while typing', () => {
+    const onValueChange = vi.fn()
 
-  it('does not search while the user is typing', () => {
-    render(React.createElement(Search))
+    render(React.createElement(Search, { onValueChange, value: '' }))
 
-    fireEvent.change(screen.getByPlaceholderText('Comienza a descubrir ;)'), {
+    fireEvent.change(screen.getByPlaceholderText(PLACEHOLDER), {
       target: { value: 'indie rock' },
     })
 
-    expect(replaceMock).not.toHaveBeenCalled()
+    expect(onValueChange).toHaveBeenCalledWith('indie rock')
   })
 
-  it('searches when the user submits the form', () => {
-    render(React.createElement(Search))
+  it('does not navigate when the form is submitted', () => {
+    const onValueChange = vi.fn()
 
-    fireEvent.change(screen.getByPlaceholderText('Comienza a descubrir ;)'), {
-      target: { value: 'indie rock' },
-    })
+    render(React.createElement(Search, { onValueChange, value: 'indie rock' }))
 
-    fireEvent.click(screen.getByRole('button', { name: 'Buscar' }))
+    const form = screen.getByPlaceholderText(PLACEHOLDER).closest('form') as HTMLFormElement
+    const submitEvent = new Event('submit', { bubbles: true, cancelable: true })
 
-    expect(replaceMock).toHaveBeenCalledWith('/search?q=indie+rock', { scroll: false })
+    form.dispatchEvent(submitEvent)
+
+    expect(submitEvent.defaultPrevented).toBe(true)
   })
 
-  it('removes the query parameter when the submitted value is empty', () => {
-    useSearchParamsMock.mockReturnValue(createSearchParams('q=indie+rock'))
+  it('exposes a clear action only when there is a value', () => {
+    const onValueChange = vi.fn()
+    const { rerender } = render(React.createElement(Search, { onValueChange, value: '' }))
 
-    render(React.createElement(Search))
+    expect(screen.queryByRole('button', { name: 'Limpiar búsqueda' })).toBeNull()
 
-    const input = screen.getByPlaceholderText('Comienza a descubrir ;)')
+    rerender(React.createElement(Search, { onValueChange, value: 'indie rock' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Limpiar búsqueda' }))
 
-    fireEvent.change(input, {
-      target: { value: '' },
-    })
-
-    fireEvent.submit(input.closest('form') as HTMLFormElement)
-
-    expect(replaceMock).toHaveBeenCalledWith('/search', { scroll: false })
+    expect(onValueChange).toHaveBeenCalledWith('')
   })
 })
