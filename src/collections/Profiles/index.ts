@@ -125,17 +125,20 @@ const syncEditorialProfileState: CollectionBeforeChangeHook = async ({
     originalDoc: (originalDoc || null) as ProfileData | null,
   })
 
+  // Group fields are cleared with an empty object, never null: Payload walks
+  // their subfields during validation and a null sibling throws before any
+  // profile can be written.
   if (isEditorialProfileType(nextData.profileType)) {
     nextData.accountType = null
     nextData.coverImage = null
     nextData.genre = null
     nextData.location = null
-    nextData.mercadoPagoConnection = null
+    nextData.mercadoPagoConnection = {}
     nextData.socialLinks = []
   } else {
     nextData.accountType = nextData.profileType
     nextData.editorGender = null
-    nextData.editorSocials = null
+    nextData.editorSocials = {}
   }
 
   return nextData
