@@ -64,24 +64,24 @@ function removeRepeatedTitle(text: string, title: string) {
   return text.replace(titlePattern, '').trim()
 }
 
-function getProfileValue(profile: null | Profile | string | undefined) {
+export function getProfileValue(profile: null | Profile | string | undefined) {
   if (!profile || typeof profile === 'string') return null
 
   return profile
 }
 
-function getOwnerId(page: Page) {
+export function getOwnerId(page: Page) {
   if (!page.owner) return null
   if (typeof page.owner === 'string') return page.owner
   return page.owner.id
 }
 
-function getOwnerName(page: Page) {
+export function getOwnerName(page: Page) {
   if (!page.owner || typeof page.owner === 'string') return null
   return page.owner.name || null
 }
 
-function isAdminOwnedRelease(page: Page) {
+export function isAdminOwnedRelease(page: Page) {
   if (!page.owner || typeof page.owner === 'string') return false
 
   return page.owner.role === 'admin'
