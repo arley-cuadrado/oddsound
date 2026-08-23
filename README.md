@@ -40,12 +40,45 @@ pnpx create-payload-app my-project -t website
 ### Development
 
 1. First [clone the repo](#clone) if you have not done so already
-1. `cd my-project && cp .env.example .env` to copy the example environment variables
+1. `cp .env.example .env` and set `DATABASE_URL`, `PAYLOAD_SECRET` and `NEXT_PUBLIC_SERVER_URL`
 1. Enable Corepack and use the repo-pinned pnpm version: `corepack enable && corepack use pnpm@11.1.1`
-1. `pnpm install && pnpm dev` to install dependencies and start the dev server
-1. open `http://localhost:3000` to open the app in your browser
+1. `docker compose up -d mongo` to start the local database
+1. `pnpm install && pnpm seed` to install dependencies and load test data
+1. `pnpm dev` and open `http://localhost:3000`
 
-That's it! Changes made in `./src` will be reflected in your app. Follow the on-screen instructions to login and create your first admin user. Then check out [Production](#production) once you're ready to build and serve your app, and [Deployment](#deployment) when you're ready to go live.
+For a local database, point `DATABASE_URL` at the Docker service:
+
+```
+DATABASE_URL=mongodb://127.0.0.1:27017/oddsound?replicaSet=rs0
+```
+
+The `replicaSet` part is required. Payload's mongoose adapter opens a transaction
+for every write and standalone MongoDB rejects them, so `docker-compose.yml`
+starts Mongo with `--replSet rs0` and initialises it from the healthcheck.
+
+That's it! Changes made in `./src` will be reflected in your app. Then check out [Production](#production) once you're ready to build and serve your app, and [Deployment](#deployment) when you're ready to go live.
+
+### Seeding test data
+
+`pnpm seed` fills the database with a catalogue big enough to exercise Discovery:
+8 artists across 7 genres and 8 countries, 32 releases, 6 scenes, 8 biographies
+and 4 shop products, with cover art generated on the fly by `sharp`.
+
+| Command | What it does |
+| --- | --- |
+| `pnpm seed` | Upserts everything. Safe to re-run: it never deletes and never duplicates. |
+| `pnpm seed --fresh` | Deletes the previously seeded data, then seeds again. |
+| `pnpm seed --stress` | Adds 20 more artists and 120 more releases to gauge catalogue limits. |
+| `pnpm seed --force` | Skips the guard that refuses to run against a non-local database. |
+
+**Cuentas:** `admin@seed.oddsound.test` y `los-petirrojos@seed.oddsound.test` (y el
+resto de slugs), clave `oddsound123`.
+
+Every seeded account lives under `@seed.oddsound.test`, and cleanup finds seeded
+documents through those accounts, so `--fresh` never touches real content.
+
+The seed refuses to run when `NODE_ENV=production` or when `DATABASE_URL` does not
+point at localhost, unless you pass `--force`.
 
 ## How it works
 
