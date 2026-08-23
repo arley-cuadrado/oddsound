@@ -7,6 +7,9 @@ node_modules
 next-env.d.ts
 .vercel
 
+# JetBrains IDE settings, personal to each machine (.vscode is shared on purpose)
+.idea/
+
 # Payload default media upload directory
 public/media/
 
