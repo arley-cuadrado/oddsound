@@ -10,6 +10,7 @@ import { getPayload } from 'payload'
 import ReleasesHomeSection from './home-components/ReleasesHomeSection'
 import { getMediaResourceURL } from '@/utilities/getMediaUrl'
 import { HOME_DESCRIPTION, SITE_NAME, SITE_TITLE } from '@/seo/site'
+import { mergeOpenGraph } from '@/utilities/mergeOpenGraph'
 
 const FALLBACK_SLIDER_IMAGE = '/home-images/hero.jpeg'
 const LEGACY_MEDIA_API_SEGMENT = '/api/media/file/'
@@ -20,12 +21,12 @@ export const metadata: Metadata = {
   alternates: {
     canonical: '/',
   },
-  openGraph: {
+  openGraph: mergeOpenGraph({
     description: HOME_DESCRIPTION,
     title: SITE_NAME,
     type: 'website',
     url: '/',
-  },
+  }),
 }
 
 export default async function HomePage() {
