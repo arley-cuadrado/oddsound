@@ -20,6 +20,10 @@
 #### Reglas obligatorias para frontend público
 
 - Cualquier módulo nuevo debe heredar la tipografía, escala, color y ritmo visual ya visibles en Oddsound.
+- `Release` y `Shop` se consideran desde ahora entidades visuales de referencia obligatoria para cualquier módulo nuevo vinculado a lanzamientos, comentarios, compra, tracking, cuenta de fan o navegación derivada.
+- Ningún módulo nuevo relacionado con consumo musical, commerce, comentarios o cuenta de usuario puede introducir un lenguaje visual distinto al ya visible en las interfaces públicas de `Release` y `Shop`.
+- Las interfaces actuales de `Release` y `Shop` no son inspiración opcional. Son patrón obligatorio de implementación y de cumplimiento estricto.
+- Si una propuesta de UI no puede explicarse como extensión directa de `Release` o `Shop`, esa propuesta debe rechazarse y rediseñarse.
 - Priorizar links de texto, títulos, párrafos, listas, divisores y espaciado existente antes que construir botones, cards, chips o popups decorativos nuevos.
 - Modales, popups, drawers o overlays deben ser sobrios: fondo del sistema, contraste existente, sin sombras pesadas, sin gradientes y sin ornamentos nuevos.
 - Las acciones de compartir, copiar, cerrar, navegar o confirmar deben verse como extensiones del patrón editorial actual, no como widgets de red social embebidos.
@@ -45,6 +49,31 @@
 - Footer: solo debe existir si aporta una acción distinta y necesaria; si duplica acciones del header o del cuerpo, se elimina.
 - Resumen editorial: en `posts`, debe salir del contenido del artículo y no puede omitirse si existe texto legible en el rich text.
 
+#### Referencias visuales obligatorias
+
+- Para módulos de lanzamientos, comentarios, actividad sobre música, feedback al artista o consumo editorial, la referencia obligatoria es la interfaz pública de `Release`.
+- Para módulos de compra, historial de compras, estado de pedido, catálogo, checkout relacionado y tracking de fan, la referencia obligatoria es la interfaz pública de `Shop`.
+- Para módulos híbridos de cuenta de fan, deben convivir ambos patrones sin introducir un tercer lenguaje visual.
+- No se autoriza reinterpretar `Release` y `Shop` con nuevas superficies, nuevas densidades visuales o nuevas jerarquías de acción.
+- Si existe duda entre varias soluciones, debe elegirse la que más se parezca al comportamiento visual ya presente en `Release` y `Shop`.
+
+#### Regla de cumplimiento obligatorio
+
+- Toda nueva interfaz pública debe declarar explícitamente si hereda de `Release`, de `Shop` o de ambas.
+- Ningún cambio de UI de módulos públicos debe avanzar a implementación si no identifica su referencia obligatoria.
+- `Release` y `Shop` deben permanecer como referencias estables del spec salvo instrucción expresa y documentada para rediseñarlas de forma global.
+- No se permiten desviaciones estilísticas locales, experimentales o improvisadas en módulos nuevos.
+- Este criterio aplica a comentarios, cuenta del fan, compras, tracking, estados de pedido, historial, autenticación de fan y cualquier extensión futura derivada.
+
+#### Reglas obligatorias de seguridad para fan
+
+- La cuenta `fan` no puede acceder al admin de Payload ni al dashboard interno.
+- La cuenta `fan` no puede ver ni crear lanzamientos, biografías, perfiles musicales, imágenes, productos, publicaciones programadas ni cualquier otro módulo editorial o de commerce interno.
+- La cuenta `fan` no puede crear ni gestionar carritos dentro del admin o del plugin ecommerce.
+- La cuenta `fan` solo puede interactuar con sus comentarios, su historial de compra y su tracking dentro del frontend autenticado de Oddsound.
+- Las restricciones para `fan` deben implementarse con access control real, no solo con ocultamiento visual o CSS.
+- Toda nueva extensión del módulo `fan` debe validar explícitamente que no reabra acceso a colecciones, rutas o acciones reservadas a admin, artista, banda o redacción.
+
 #### Estructura estricta para módulos de admin
 
 - Encabezado funcional con título y contexto corto.
@@ -56,6 +85,7 @@
 
 - Cualquier módulo nuevo de admin debe funcionar correctamente aun si se eliminan sus estilos decorativos.
 - Cualquier módulo nuevo del frontend debe seguir siendo coherente si se reduce a tipografía, espaciado, links y colores de sistema.
+- Cualquier módulo nuevo asociado a consumo, feedback o commerce debe seguir siendo coherente si se compara directamente con `Release` y `Shop`.
 - Antes de agregar CSS, comprobar si el componente sigue siendo claro usando solo markup semántico, clases mínimas de layout y componentes oficiales de Payload.
 - Si un módulo necesita una sección, debe resolverse como flujo de contenido con títulos, texto, listas, inputs y acciones nativas; no como tarjeta o bloque visual independiente.
 - Si una integración visual no puede hacerse con el lenguaje oficial de Payload, se simplifica el módulo en vez de diseñar una alternativa custom.

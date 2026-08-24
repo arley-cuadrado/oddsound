@@ -80,6 +80,18 @@ documents through those accounts, so `--fresh` never touches real content.
 The seed refuses to run when `NODE_ENV=production` or when `DATABASE_URL` does not
 point at localhost, unless you pass `--force`.
 
+If you want to test `consumer` registration or login with Google locally, also configure:
+
+```env
+GOOGLE_OAUTH_CLIENT_ID=google_oauth_client_id
+GOOGLE_OAUTH_CLIENT_SECRET=google_oauth_client_secret
+GOOGLE_OAUTH_REDIRECT_URI=http://localhost:3000/consumer-api/auth/google/callback
+```
+
+The authorized Google redirect URI must match that callback exactly in local development.
+
+That's it! Changes made in `./src` will be reflected in your app. Follow the on-screen instructions to login and create your first admin user. Then check out [Production](#production) once you're ready to build and serve your app, and [Deployment](#deployment) when you're ready to go live.
+
 ## How it works
 
 The Payload config is tailored specifically to the needs of most websites. It is pre-configured in the following ways:
