@@ -30,7 +30,7 @@ export const Search: React.FC<SearchProps> = ({ onValueChange, value }) => {
           onChange={(event) => {
             onValueChange(event.target.value)
           }}
-          placeholder="Comienza a descubrir ;)"
+          placeholder="Champeta, Cartagena, Keke Minowa …"
           spellCheck={false}
           value={value}
         />
