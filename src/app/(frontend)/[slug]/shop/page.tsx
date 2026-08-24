@@ -201,14 +201,6 @@ export default async function ArtistShopPage({ params: paramsPromise }: Args) {
                         Mercado Pago no disponible
                       </span>
                     ) : null}
-                    {product.release?.slug ? (
-                      <Link
-                        className="inline-flex h-11 items-center justify-center rounded-full border border-border px-5 text-[13px] font-medium text-foreground transition hover:bg-[#f3efe8] dark:border-white/15 dark:text-white dark:hover:bg-white/10"
-                        href={`/${profile.slug}/release/${product.release.slug}`}
-                      >
-                        Ver release
-                      </Link>
-                    ) : null}
                   </div>
                 </div>
               </article>

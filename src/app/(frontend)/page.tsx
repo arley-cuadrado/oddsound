@@ -34,7 +34,7 @@ export default async function HomePage() {
   const featuredScenes = await payload.find({
     collection: 'posts',
     depth: 1,
-    limit: 8,
+    limit: 6,
     overrideAccess: true,
     pagination: false,
     select: {
