@@ -2,7 +2,12 @@ import type { Page } from '@/payload-types'
 
 import { extractLexicalPlainText } from './extractLexicalPlainText'
 
-export function extractReleaseShareContent(page: Pick<Page, 'hero' | 'layout'>): string {
+type ReleaseShareSource = {
+  hero?: Page['hero']
+  layout?: Page['layout']
+}
+
+export function extractReleaseShareContent(page: ReleaseShareSource): string {
   const textParts: string[] = []
 
   const heroText = extractLexicalPlainText(page.hero?.richText)
