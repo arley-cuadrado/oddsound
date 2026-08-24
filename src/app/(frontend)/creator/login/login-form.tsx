@@ -45,7 +45,7 @@ export function CreatorLoginForm() {
           Correo electrónico <span className="text-[#ff6a6a]">*</span>
         </label>
         <input
-          className="h-12 w-full border border-border bg-background px-4 text-[13px] text-foreground outline-none"
+          className="h-12 w-full border border-border bg-background px-4 text-base text-foreground outline-none md:text-[13px]"
           id="email"
           name="email"
           required
@@ -59,7 +59,7 @@ export function CreatorLoginForm() {
         </label>
         <div className="relative">
           <input
-            className="h-12 w-full border border-border bg-background px-4 pr-20 text-[13px] text-foreground outline-none"
+            className="h-12 w-full border border-border bg-background px-4 pr-20 text-base text-foreground outline-none md:text-[13px]"
             id="password"
             name="password"
             required
