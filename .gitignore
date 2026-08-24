@@ -29,3 +29,8 @@ tsconfig.tsbuildinfo
 # Local duplicate files created by Finder/editor copy flows, e.g. "index 2.tsx"
 src/**/* 2.*
 tests/**/* 2.*
+
+# Internal planning artifacts that should stay local
+docs/consumer-identity-*.md
+docs/fan-identity-security-spec.md
+spread/*.csv
