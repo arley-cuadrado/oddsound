@@ -159,6 +159,16 @@
     line-height: 1.6;
   }
 
+  .share-modal__description {
+    margin: 0;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    text-overflow: ellipsis;
+  }
+
   .share-modal__image {
     width: 100%;
     max-height: 220px;
