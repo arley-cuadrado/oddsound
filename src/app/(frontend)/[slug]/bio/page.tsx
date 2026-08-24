@@ -124,7 +124,7 @@ export default async function ArtistBioPage({ params: paramsPromise }: Args) {
   }
 
   if (profile.slug && profile.slug !== decodedSlug) {
-    permanentRedirect(`/${profile.slug}`)
+    permanentRedirect(`/${profile.slug}/bio`)
   }
 
   const [biography, socialLinksSource] = await Promise.all([

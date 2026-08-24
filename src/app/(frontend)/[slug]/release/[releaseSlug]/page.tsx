@@ -192,7 +192,7 @@ export default async function ReleaseDetailPage({ params: paramsPromise }: Args)
             Ver lanzamientos
           </Link>
           <Link
-            href={`/${creatorProfile.slug}`}
+            href={`/${creatorProfile.slug}/bio`}
             className="inline-flex items-center text-[13px] font-medium text-[#777] underline underline-offset-4 dark:text-[#858c98]"
           >
             Bio
