@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import type { Page } from '@/payload-types'
 
 import { PayloadRedirects } from '@/components/PayloadRedirects'
 import { SocialMediaBlock } from '@/blocks/SocialMediaBlock/Component'
@@ -13,12 +14,15 @@ import { RenderBlocks } from '@/blocks/RenderBlocks'
 import { RenderHero } from '@/heros/RenderHero'
 import { generateMeta } from '@/utilities/generateMeta'
 import { hasPublishedCommerceProducts } from '@/utilities/commerceProducts'
+import { extractReleaseShareContent } from '@/utilities/extractReleaseShareContent'
+import { getReleaseCardImage } from '@/utilities/getReleaseCardImage'
 import { findPublicProfileBySlug } from '@/utilities/publicProfiles'
 import { normalizePublicSlugParam } from '@/utilities/publicSlugs'
 import PageClient from '../../page.client'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
 import { RELEASE_PAGE_SELECT } from '../../../home-components/getPublishedReleaseContext'
 import { ReleaseCommentsSection } from './ReleaseCommentsSection'
+import SharePostButton from '@/components/SharePostButton'
 
 type Args = {
   params: Promise<{
@@ -168,6 +172,16 @@ export default async function ReleaseDetailPage({ params: paramsPromise }: Args)
   const artistLayout = Array.isArray(layout)
     ? layout.filter((block) => block.blockType !== 'formBlock')
     : []
+  const releaseShareContent = extractReleaseShareContent({
+    hero: page.hero,
+    layout: artistLayout,
+  })
+  const releaseShareImage = getReleaseCardImage({
+    page: page as Page,
+    profile: creatorProfile || undefined,
+  })
+  const releaseShareUrlPath =
+    creatorProfile?.slug && page.slug ? `/${creatorProfile.slug}/release/${page.slug}` : url
 
   return (
     <article className="mx-auto max-w-4xl pb-0 [&_p]:text-[13px]">
@@ -209,7 +223,21 @@ export default async function ReleaseDetailPage({ params: paramsPromise }: Args)
       ) : null}
       <RenderBlocks blocks={artistLayout} hiddenBlockTypes={['socialMediaBlock']} />
       {typeof page.id === 'string' && creatorProfile?.id ? (
-        <ReleaseCommentsSection artistProfileId={String(creatorProfile.id)} releaseId={page.id} />
+        <ReleaseCommentsSection
+          artistProfileId={String(creatorProfile.id)}
+          releaseId={page.id}
+          shareControl={
+            <SharePostButton
+              authorName={creatorProfile?.displayName || undefined}
+              bannerImageUrl={releaseShareImage}
+              content={releaseShareContent}
+              resourceLabel="lanzamiento"
+              slug={page.slug || decodedReleaseSlug}
+              title={page.title}
+              urlPath={releaseShareUrlPath}
+            />
+          }
+        />
       ) : null}
       {Array.isArray(page.socialLinks) && page.socialLinks.length > 0 ? (
         <div className="px-4 pb-12 pt-6 md:px-0">
