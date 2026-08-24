@@ -95,58 +95,68 @@ async function getVisibleComments(args: {
 export async function ReleaseCommentsSection({ artistProfileId, releaseId }: Props) {
   const user = await getAuthenticatedUser().catch(() => null)
   const consumerProfileId = resolveUserConsumerProfileID(user)
-  const comments = await getVisibleComments({
-    consumerProfileId,
-    releaseId,
-  })
   const isFan = isFanUser(user)
+  const comments = isFan
+    ? await getVisibleComments({
+        consumerProfileId,
+        releaseId,
+      })
+    : []
 
   return (
     <section className="px-4 pb-16 pt-10 md:px-0">
       <div className="space-y-8 border-t border-border pt-8">
-        <div className="space-y-3">
-          <h2 className="text-lg font-medium text-foreground">Comentarios</h2>
-          <p className="text-[13px] leading-6 text-foreground/75">
-            Comparte lo que te dejó este lanzamiento y ayuda a mantener cerca al artista de las
-            reacciones de su audiencia.
-          </p>
-        </div>
+        <h2 className="text-lg font-medium text-foreground">Comentarios</h2>
 
         {isFan ? (
-          <ReleaseCommentsForm artistProfileId={artistProfileId} releaseId={releaseId} />
+          <>
+            <p className="text-[13px] leading-6 text-foreground/75">
+              Comparte lo que te dejó este lanzamiento y ayuda a mantener cerca al artista de las
+              reacciones de su audiencia.
+            </p>
+
+            <ReleaseCommentsForm artistProfileId={artistProfileId} releaseId={releaseId} />
+          </>
         ) : (
           <p className="text-[13px] leading-6 text-foreground/75">
-            <Link className="underline underline-offset-2" href="/fan/login">
+            <Link className="underline underline-offset-2 title" href="/fan/login">
               Inicia sesión como fan
             </Link>{' '}
             para comentar este lanzamiento.
           </p>
         )}
 
-        <div className="space-y-6">
-          {comments.length > 0 ? (
-            comments.map((comment) => {
-              const authorName =
-                comment.authorUser && typeof comment.authorUser === 'object' && comment.authorUser.name
-                  ? comment.authorUser.name
-                  : 'Fan'
+        {isFan ? (
+          <div className="space-y-6">
+            {comments.length > 0 ? (
+              comments.map((comment) => {
+                const authorName =
+                  comment.authorUser &&
+                  typeof comment.authorUser === 'object' &&
+                  comment.authorUser.name
+                    ? comment.authorUser.name
+                    : 'Fan'
 
-              return (
-                <article key={comment.id} className="space-y-2 border-t border-border pt-4 first:border-t-0 first:pt-0">
-                  <div className="flex flex-wrap gap-x-3 gap-y-1 text-[12px] text-foreground/60">
-                    <span>{authorName}</span>
-                    {comment.status === 'pending' ? <span>Pendiente de revisión</span> : null}
-                  </div>
-                  <p className="text-[13px] leading-6 text-foreground/80">{comment.content}</p>
-                </article>
-              )
-            })
-          ) : (
-            <p className="text-[13px] leading-6 text-foreground/75">
-              Aún no hay comentarios publicados para este lanzamiento.
-            </p>
-          )}
-        </div>
+                return (
+                  <article
+                    key={comment.id}
+                    className="space-y-2 border-t border-border pt-4 first:border-t-0 first:pt-0"
+                  >
+                    <div className="flex flex-wrap gap-x-3 gap-y-1 text-[12px] text-foreground/60">
+                      <span>{authorName}</span>
+                      {comment.status === 'pending' ? <span>Pendiente de revisión</span> : null}
+                    </div>
+                    <p className="text-[13px] leading-6 text-foreground/80">{comment.content}</p>
+                  </article>
+                )
+              })
+            ) : (
+              <p className="text-[13px] leading-6 text-foreground/75">
+                Aún no hay comentarios publicados para este lanzamiento.
+              </p>
+            )}
+          </div>
+        ) : null}
       </div>
     </section>
   )
