@@ -18,6 +18,7 @@ import { normalizePublicSlugParam } from '@/utilities/publicSlugs'
 import PageClient from '../../page.client'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
 import { RELEASE_PAGE_SELECT } from '../../../home-components/getPublishedReleaseContext'
+import { ReleaseCommentsSection } from './ReleaseCommentsSection'
 
 type Args = {
   params: Promise<{
@@ -207,6 +208,9 @@ export default async function ReleaseDetailPage({ params: paramsPromise }: Args)
         </div>
       ) : null}
       <RenderBlocks blocks={artistLayout} hiddenBlockTypes={['socialMediaBlock']} />
+      {typeof page.id === 'string' && creatorProfile?.id ? (
+        <ReleaseCommentsSection artistProfileId={String(creatorProfile.id)} releaseId={page.id} />
+      ) : null}
       {Array.isArray(page.socialLinks) && page.socialLinks.length > 0 ? (
         <div className="px-4 pb-12 pt-6 md:px-0">
           <SocialMediaBlock socialLinks={page.socialLinks} />

@@ -23,8 +23,11 @@ export type CreatorAuthResult = {
 }
 
 export type VerificationUser = {
+  authProvider?: null | string
   name?: null | string
   role?: null | string
+  userType?: null | string
+  username?: null | string
   _verificationToken?: null | string
   _verified?: boolean | null
   createdAt?: null | string
@@ -35,6 +38,12 @@ export type VerificationUser = {
 
 export const CREATOR_LEGAL_VERSION = '2026-05-14'
 export const CREATOR_VERIFICATION_ERROR_MESSAGE = 'Debes confirmar tu correo antes de iniciar sesión.'
+export const CROSS_ACCOUNT_EMAIL_CONFLICT_MESSAGE =
+  'Este correo ya está asociado a una cuenta de otro tipo dentro de Oddsound.'
+
+function isConsumerIdentity(user?: null | Pick<VerificationUser, 'authProvider' | 'userType'>) {
+  return user?.userType === 'consumer' || user?.userType === 'fan' || user?.authProvider === 'google'
+}
 
 function buildUsernameSeed({ email, name }: { email: string; name: string }) {
   const normalizedName = name
@@ -105,6 +114,13 @@ export async function registerCreatorAccount(input: {
     }
 
     const existingUser = await findUserByEmail(email, payload)
+
+    if (existingUser && isConsumerIdentity(existingUser)) {
+      return {
+        message: CROSS_ACCOUNT_EMAIL_CONFLICT_MESSAGE,
+        ok: false,
+      }
+    }
 
     if (existingUser && existingUser._verified !== false) {
       return {

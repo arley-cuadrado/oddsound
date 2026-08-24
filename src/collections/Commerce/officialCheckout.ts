@@ -28,9 +28,25 @@ export function extendEcommerceOrdersCollection({ defaultCollection }: OverrideA
     fields: [
       ...defaultFields,
       {
+        name: 'consumerProfile',
+        type: 'relationship',
+        relationTo: 'consumerProfiles',
+        admin: {
+          position: 'sidebar',
+        },
+      },
+      {
         name: 'artistProfile',
         type: 'relationship',
         relationTo: 'profiles',
+        admin: {
+          position: 'sidebar',
+        },
+      },
+      {
+        name: 'release',
+        type: 'relationship',
+        relationTo: 'pages',
         admin: {
           position: 'sidebar',
         },
@@ -118,9 +134,25 @@ export function extendEcommerceTransactionsCollection({ defaultCollection }: Ove
     fields: [
       ...defaultFields,
       {
+        name: 'consumerProfile',
+        type: 'relationship',
+        relationTo: 'consumerProfiles',
+        admin: {
+          position: 'sidebar',
+        },
+      },
+      {
         name: 'artistProfile',
         type: 'relationship',
         relationTo: 'profiles',
+        admin: {
+          position: 'sidebar',
+        },
+      },
+      {
+        name: 'release',
+        type: 'relationship',
+        relationTo: 'pages',
         admin: {
           position: 'sidebar',
         },

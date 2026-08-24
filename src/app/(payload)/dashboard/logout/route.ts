@@ -7,6 +7,7 @@ import { getServerSideURL } from '@/utilities/getURL'
 type MeResponse = {
   user?: {
     role?: null | string
+    userType?: null | string
   } | null
 }
 
@@ -28,7 +29,9 @@ export async function GET() {
       if (meResponse.ok) {
         const { user } = (await meResponse.json()) as MeResponse
 
-        if (user?.role === 'creator') {
+        if (user?.userType === 'consumer' || user?.userType === 'fan') {
+          redirectPath = '/fan/login'
+        } else if (user?.role === 'creator') {
           redirectPath = '/creator/login'
         }
       }

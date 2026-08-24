@@ -1,11 +1,13 @@
 import config from '@payload-config'
 import Link from 'next/link'
 import { getPayload } from 'payload'
+import { redirect } from 'next/navigation'
 
 import { CommerceOverview } from './CommerceOverview'
 import { MercadoPagoConnectionCard } from './MercadoPagoConnectionCard'
 import { listCommerceProducts, resolveUserProfileID } from '@/utilities/commerceProducts'
 import { getMeUser } from '@/utilities/getMeUser'
+import { isFanUser } from '@/utilities/isEditorialUser'
 import {
   findCreatorProfileByID,
   sanitizeMercadoPagoConnection,
@@ -15,6 +17,11 @@ export default async function CreatorDashboardPage() {
   const { user } = await getMeUser({
     nullUserRedirect: '/creator/login',
   })
+
+  if (isFanUser(user)) {
+    redirect('/fan/account')
+  }
+
   const payload = await getPayload({ config })
   const profileID = resolveUserProfileID(user)
   const profile = profileID
