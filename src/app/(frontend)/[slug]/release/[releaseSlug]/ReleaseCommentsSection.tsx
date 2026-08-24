@@ -2,6 +2,7 @@ import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 import { headers } from 'next/headers'
 import Link from 'next/link'
+import type { ReactNode } from 'react'
 
 import type { Comment as CommentDoc, User } from '@/payload-types'
 import { isFanUser } from '@/utilities/isEditorialUser'
@@ -11,6 +12,7 @@ import { ReleaseCommentsForm } from './ReleaseCommentsForm'
 type Props = {
   artistProfileId: string
   releaseId: string
+  shareControl?: ReactNode
 }
 
 type CommentWithAuthor = CommentDoc & {
@@ -92,7 +94,7 @@ async function getVisibleComments(args: {
   return result.docs as CommentWithAuthor[]
 }
 
-export async function ReleaseCommentsSection({ artistProfileId, releaseId }: Props) {
+export async function ReleaseCommentsSection({ artistProfileId, releaseId, shareControl }: Props) {
   const user = await getAuthenticatedUser().catch(() => null)
   const consumerProfileId = resolveUserConsumerProfileID(user)
   const isFan = isFanUser(user)
@@ -106,7 +108,10 @@ export async function ReleaseCommentsSection({ artistProfileId, releaseId }: Pro
   return (
     <section className="px-4 pb-16 pt-10 md:px-0">
       <div className="space-y-8 border-t border-border pt-8">
-        <h2 className="text-lg font-medium text-foreground">Comentarios</h2>
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <h2 className="text-lg font-medium text-foreground">Comentarios</h2>
+          {shareControl}
+        </div>
 
         {isFan ? (
           <>

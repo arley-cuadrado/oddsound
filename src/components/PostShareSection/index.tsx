@@ -3,40 +3,10 @@
 import React from 'react'
 import SharePostButton from '@/components/SharePostButton'
 import type { Post } from '@/payload-types'
+import { extractLexicalPlainText } from '@/utilities/extractLexicalPlainText'
 
 interface PostShareSectionProps {
   post: Post
-}
-
-type LexicalNode = {
-  children?: LexicalNode[]
-  text?: string
-  type?: string
-}
-
-function extractContentFromLexical(content: unknown): string {
-  if (!content || typeof content !== 'object' || !('root' in content)) return ''
-
-  const root = (content as { root?: LexicalNode }).root
-  if (!root) return ''
-
-  const blockTypes = new Set(['heading', 'listitem', 'paragraph', 'quote'])
-
-  const visit = (node: LexicalNode): string => {
-    const text = typeof node.text === 'string' ? node.text : ''
-    const childrenText = Array.isArray(node.children) ? node.children.map(visit).join('') : ''
-    const combined = `${text}${childrenText}`.trim()
-
-    if (!combined) return ''
-
-    return blockTypes.has(node.type || '') ? `${combined}\n` : combined
-  }
-
-  return visit(root)
-    .split('\n')
-    .map((line) => line.trim())
-    .filter(Boolean)
-    .join('\n')
 }
 
 export default function PostShareSection({ post }: PostShareSectionProps) {
@@ -76,7 +46,7 @@ export default function PostShareSection({ post }: PostShareSectionProps) {
     return undefined
   }
 
-  const contentText = extractContentFromLexical(post.content)
+  const contentText = extractLexicalPlainText(post.content)
   const authorName = getAuthorName()
   const avatarUrl = getAvatarUrl()
   const heroImageUrl = getHeroImageUrl()
@@ -88,6 +58,7 @@ export default function PostShareSection({ post }: PostShareSectionProps) {
         title={post.title}
         slug={post.slug}
         content={contentText}
+        urlPath={`/posts/${post.slug}`}
         bannerImageUrl={heroImageUrl}
         authorName={authorName}
         authorAvatarUrl={avatarUrl}

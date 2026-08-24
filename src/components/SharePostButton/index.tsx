@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import {
   extractTextContent,
   generateShareUrls,
+  getShareURL,
   getSharePostURL,
   type SharePostData,
 } from '@/utilities/sharePost'
@@ -12,7 +13,9 @@ interface SharePostButtonProps {
   title: string
   slug: string
   content: string
+  urlPath?: string
   context?: 'default' | 'posts'
+  resourceLabel?: string
   bannerImageUrl?: string
   authorName?: string
   authorAvatarUrl?: string
@@ -25,7 +28,9 @@ export default function SharePostButton({
   title,
   slug,
   content,
+  urlPath,
   context = 'default',
+  resourceLabel = 'articulo',
   bannerImageUrl,
   authorName,
   authorAvatarUrl,
@@ -47,8 +52,9 @@ export default function SharePostButton({
         imageUrl,
         authorName,
         authorAvatar: authorAvatarUrl,
+        urlPath,
       } satisfies SharePostData),
-    [authorAvatarUrl, authorName, description, imageUrl, slug, title],
+    [authorAvatarUrl, authorName, description, imageUrl, slug, title, urlPath],
   )
 
   useEffect(() => {
@@ -100,7 +106,7 @@ export default function SharePostButton({
 
   const handleCopy = async (id: string) => {
     try {
-      await navigator.clipboard.writeText(getSharePostURL(slug))
+      await navigator.clipboard.writeText(urlPath ? getShareURL(urlPath) : getSharePostURL(slug))
       setCopiedState(id)
 
       window.setTimeout(() => {
@@ -140,7 +146,7 @@ export default function SharePostButton({
           >
             <div className="share-modal__header">
               <div>
-                <p className="share-modal__eyebrow">Compartir articulo</p>
+                <p className="share-modal__eyebrow">{`Compartir ${resourceLabel}`}</p>
                 <h2 className="share-modal__title" id="share-post-title">
                   {title}
                 </h2>
@@ -165,7 +171,7 @@ export default function SharePostButton({
               ) : null}
 
               <p className="share-modal__description">
-                {summaryText}
+                {summaryText || `Comparte este ${resourceLabel} en Oddsound.`}
               </p>
 
               {authorName ? (
@@ -207,8 +213,7 @@ export default function SharePostButton({
                       {button.disabled ? (
                         <>
                           <p className="share-modal__note">
-                            Instagram no permite compartir articulos directamente. Copia el enlace
-                            y usalo en tu story.
+                            {`Instagram no permite compartir ${resourceLabel}s directamente. Copia el enlace y usalo en tu story.`}
                           </p>
                           <button
                             className={simpleLinkClassName}
