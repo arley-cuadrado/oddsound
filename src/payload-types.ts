@@ -78,6 +78,8 @@ export interface Config {
     media: Media;
     categories: Category;
     profiles: Profile;
+    consumerProfiles: ConsumerProfile;
+    comments: Comment;
     users: User;
     redirects: Redirect;
     forms: Form;
@@ -106,6 +108,8 @@ export interface Config {
     media: MediaSelect<false> | MediaSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     profiles: ProfilesSelect<false> | ProfilesSelect<true>;
+    consumerProfiles: ConsumerProfilesSelect<false> | ConsumerProfilesSelect<true>;
+    comments: CommentsSelect<false> | CommentsSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
@@ -308,8 +312,13 @@ export interface User {
    * Identifica cuentas editoriales creadas por admin para publicar articulos.
    */
   editorAccess?: boolean | null;
+  userType?: ('creator' | 'fan') | null;
   accountType?: ('artist' | 'band') | null;
   profile?: (string | null) | Profile;
+  consumerProfile?: (string | null) | ConsumerProfile;
+  authProvider?: 'google' | null;
+  googleSubjectId?: string | null;
+  avatar?: string | null;
   isActive?: boolean | null;
   /**
    * Indica si el usuario aceptó los términos legales durante el registro.
@@ -485,6 +494,22 @@ export interface Media {
       filename?: string | null;
     };
   };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "consumerProfiles".
+ */
+export interface ConsumerProfile {
+  id: string;
+  owner: string | User;
+  displayName: string;
+  email: string;
+  avatar?: string | null;
+  status: 'active' | 'suspended';
+  lastPurchaseAt?: string | null;
+  lastCommentAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1062,6 +1087,25 @@ export interface Biography {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "comments".
+ */
+export interface Comment {
+  id: string;
+  authorUser: string | User;
+  consumerProfile: string | ConsumerProfile;
+  release: string | Page;
+  artistProfile: string | Profile;
+  content: string;
+  status: 'pending' | 'approved' | 'rejected';
+  purchaseVerified?: boolean | null;
+  source: 'release-public';
+  moderatedAt?: string | null;
+  moderatedBy?: (string | null) | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects".
  */
 export interface Redirect {
@@ -1249,7 +1293,9 @@ export interface Order {
   status?: OrderStatus;
   amount?: number | null;
   currency?: 'USD' | null;
+  consumerProfile?: (string | null) | ConsumerProfile;
   artistProfile?: (string | null) | Profile;
+  release?: (string | null) | Page;
   paymentProvider?: 'mercadopago' | null;
   settlementCurrencyCode?: 'COP' | null;
   subtotalCOP?: number | null;
@@ -1301,7 +1347,9 @@ export interface Transaction {
   cart?: (string | null) | Cart;
   amount?: number | null;
   currency?: 'USD' | null;
+  consumerProfile?: (string | null) | ConsumerProfile;
   artistProfile?: (string | null) | Profile;
+  release?: (string | null) | Page;
   paymentProvider?: 'mercadopago' | null;
   settlementCurrencyCode?: 'COP' | null;
   providerEventType?: string | null;
@@ -1454,6 +1502,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'profiles';
         value: string | Profile;
+      } | null)
+    | ({
+        relationTo: 'consumerProfiles';
+        value: string | ConsumerProfile;
+      } | null)
+    | ({
+        relationTo: 'comments';
+        value: string | Comment;
       } | null)
     | ({
         relationTo: 'users';
@@ -1990,6 +2046,39 @@ export interface ProfilesSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "consumerProfiles_select".
+ */
+export interface ConsumerProfilesSelect<T extends boolean = true> {
+  owner?: T;
+  displayName?: T;
+  email?: T;
+  avatar?: T;
+  status?: T;
+  lastPurchaseAt?: T;
+  lastCommentAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "comments_select".
+ */
+export interface CommentsSelect<T extends boolean = true> {
+  authorUser?: T;
+  consumerProfile?: T;
+  release?: T;
+  artistProfile?: T;
+  content?: T;
+  status?: T;
+  purchaseVerified?: T;
+  source?: T;
+  moderatedAt?: T;
+  moderatedBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
@@ -1999,8 +2088,13 @@ export interface UsersSelect<T extends boolean = true> {
   adminRoleLabel?: T;
   superAdminRoleLabel?: T;
   editorAccess?: T;
+  userType?: T;
   accountType?: T;
   profile?: T;
+  consumerProfile?: T;
+  authProvider?: T;
+  googleSubjectId?: T;
+  avatar?: T;
   isActive?: T;
   legalAccepted?: T;
   legalAcceptedAt?: T;
@@ -2324,7 +2418,9 @@ export interface OrdersSelect<T extends boolean = true> {
   status?: T;
   amount?: T;
   currency?: T;
+  consumerProfile?: T;
   artistProfile?: T;
+  release?: T;
   paymentProvider?: T;
   settlementCurrencyCode?: T;
   subtotalCOP?: T;
@@ -2375,7 +2471,9 @@ export interface TransactionsSelect<T extends boolean = true> {
   cart?: T;
   amount?: T;
   currency?: T;
+  consumerProfile?: T;
   artistProfile?: T;
+  release?: T;
   paymentProvider?: T;
   settlementCurrencyCode?: T;
   providerEventType?: T;

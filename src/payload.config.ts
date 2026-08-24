@@ -28,6 +28,8 @@ import { Pages } from './collections/Pages'
 import { Profiles } from './collections/Profiles'
 import { Posts } from './collections/Posts'
 import { Users } from './collections/Users'
+import { ConsumerProfiles } from './collections/ConsumerProfiles'
+import { Comments } from './collections/Comments'
 import { Footer } from './Footer/config'
 import { Header } from './Header/config'
 import { oddsoundVercelBlobStorage } from './plugins/oddsoundVercelBlob'
@@ -133,7 +135,7 @@ export default buildConfig({
           } as any,
         }),
   }),
-  collections: [Pages, Posts, Biographies, Media, Categories, Profiles, Users],
+  collections: [Pages, Posts, Biographies, Media, Categories, Profiles, ConsumerProfiles, Comments, Users],
   cors: trustedServerURLs,
   globals: [Header, Footer],
   i18n: {

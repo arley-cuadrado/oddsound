@@ -8,6 +8,7 @@ type CreatorLike = {
   name?: null | string
   profile?: null | string | { id?: null | string }
   role?: null | string
+  userType?: null | string
 }
 
 function getInlineProfileId(user: CreatorLike | null | undefined) {

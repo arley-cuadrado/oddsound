@@ -83,7 +83,11 @@ const LocalizedPayloadAdminBar: React.FC<LocalizedPayloadAdminBarProps> = (props
   if (!user) return null
 
   const { id: userID } = user
-  const isCreatorUser = (user as PayloadMeUser & { role?: null | string })?.role === 'creator'
+  const typedUser = user as PayloadMeUser & { role?: null | string; userType?: null | string }
+  const isCreatorUser = typedUser?.role === 'creator'
+  const isFanUser = typedUser?.userType === 'consumer' || typedUser?.userType === 'fan'
+
+  if (isFanUser) return null
 
   const handleCreatorLogout = async () => {
     try {
@@ -171,7 +175,9 @@ export const AdminBar: React.FC<{
   const router = useRouter()
 
   const onAuthChange = React.useCallback((user: PayloadMeUser) => {
-    setShow(Boolean(user?.id))
+    const typedUser = user as PayloadMeUser & { userType?: null | string }
+    const isFanUser = typedUser?.userType === 'consumer' || typedUser?.userType === 'fan'
+    setShow(Boolean(user?.id) && !isFanUser)
   }, [])
 
   useEffect(() => {
