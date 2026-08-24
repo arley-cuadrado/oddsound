@@ -2,6 +2,7 @@ import type { Access, FieldAccess } from 'payload'
 
 import { hasFreshAdminAccess } from './hasFreshAdminAccess'
 import { isAdminUser } from '@/utilities/isAdminUser'
+import { isFanUser } from '@/utilities/isEditorialUser'
 
 type RequestUser = {
   id?: number | string
@@ -24,7 +25,7 @@ const hasEcommerceAdminAccess = async ({ req }: EcommerceAccessArgs) => {
 }
 
 export const ecommerceIsAuthenticated: Access = ({ req }) => {
-  return Boolean(req.user)
+  return Boolean(req.user) && !isFanUser(req.user)
 }
 
 export const ecommerceIsAdmin: Access = async ({ req }: EcommerceAccessArgs) => {
@@ -34,7 +35,7 @@ export const ecommerceIsAdmin: Access = async ({ req }: EcommerceAccessArgs) => 
 export const ecommerceIsCustomer: FieldAccess = ({ req }: EcommerceAccessArgs) => {
   const user = getUser({ req })
 
-  return Boolean(user) && !isAdminUser(user)
+  return Boolean(user) && !isAdminUser(user) && !isFanUser(user)
 }
 
 export const ecommerceAdminOnlyFieldAccess: FieldAccess = async ({ req }: EcommerceAccessArgs) => {
@@ -55,6 +56,7 @@ export const ecommerceIsDocumentOwner: Access = async ({ req }: EcommerceAccessA
   const user = getUser({ req })
 
   if (!user) return false
+  if (isFanUser(user)) return false
   if (await hasEcommerceAdminAccess({ req })) return true
 
   return {

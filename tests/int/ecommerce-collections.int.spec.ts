@@ -82,6 +82,16 @@ describe('official ecommerce collection overrides', () => {
     expect(orders.admin?.useAsTitle).toBe('customerEmail')
     expect(transactions.admin?.defaultColumns).toEqual(['customerEmail', 'status', 'amount', 'updatedAt'])
     expect(transactions.admin?.useAsTitle).toBe('customerEmail')
+
+    const orderFieldNames = orders.fields?.map((field: any) => field.name).filter(Boolean)
+    const transactionFieldNames = transactions.fields?.map((field: any) => field.name).filter(Boolean)
+
+    expect(orderFieldNames).toEqual(
+      expect.arrayContaining(['artistProfile', 'consumerProfile', 'release', 'paymentProviderOrderId', 'trackingNumber']),
+    )
+    expect(transactionFieldNames).toEqual(
+      expect.arrayContaining(['artistProfile', 'consumerProfile', 'release', 'providerEventId', 'paymentProviderPaymentId']),
+    )
   })
 
   it('exposes joined shop products from releases without duplicating relationships', () => {

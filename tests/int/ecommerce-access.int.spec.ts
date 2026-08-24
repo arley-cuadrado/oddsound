@@ -34,6 +34,23 @@ describe('ecommerce access helpers', () => {
     expect(ecommerceIsCustomer({ req } as never)).toBe(true)
   })
 
+  it('blocks fan users from ecommerce customer access', async () => {
+    mockedHasFreshAdminAccess.mockResolvedValue(false)
+
+    const req = {
+      payload: {},
+      user: {
+        id: 'fan-1',
+        role: 'creator',
+        userType: 'fan',
+      },
+    }
+
+    expect(ecommerceIsAuthenticated({ req } as never)).toBe(false)
+    expect(ecommerceIsCustomer({ req } as never)).toBe(false)
+    await expect(ecommerceIsDocumentOwner({ req } as never)).resolves.toBe(false)
+  })
+
   it('treats admins as non-customer users with full field access', async () => {
     const req = {
       payload: {},

@@ -7,6 +7,7 @@ type AuthUser = {
   editorAccess?: boolean | null
   id?: null | string
   role?: null | string
+  userType?: null | string
 }
 
 export default function CreatorCollectionFilter() {
@@ -16,7 +17,10 @@ export default function CreatorCollectionFilter() {
     if (user?.role !== 'creator') return
 
     const hideCollectionsForCreators = () => {
-      const allowedCollections = user?.editorAccess
+      const isFanUser = user?.userType === 'consumer' || user?.userType === 'fan'
+      const allowedCollections = isFanUser
+        ? []
+        : user?.editorAccess
         ? ['posts', 'profiles', 'media']
         : ['pages', 'biographies', 'products', 'profiles', 'media']
 
@@ -77,7 +81,7 @@ export default function CreatorCollectionFilter() {
     return () => {
       observer.disconnect()
     }
-  }, [user?.editorAccess, user?.role])
+  }, [user?.editorAccess, user?.role, user?.userType])
 
   return null
 }
