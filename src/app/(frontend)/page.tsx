@@ -81,7 +81,7 @@ export default async function HomePage() {
       ) : null}
       <main className="text-sm container">
         <div className="flex flex-col justify-between md:flex-row">
-          <section className="w-full min-w-0 pt-4 pb-4 pr-0 md:pr-24">
+          <section className="w-full min-w-0 pb-4 pt-0 md:pr-24 md:pt-4">
             <div className="w-full min-w-0">
               <Suspense
                 fallback={

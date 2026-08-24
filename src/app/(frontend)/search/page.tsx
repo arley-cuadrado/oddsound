@@ -29,7 +29,7 @@ export default async function Page({ searchParams: searchParamsPromise }: Args) 
   const pool = await getDiscoveryPool()
 
   return (
-    <div className="pt-24 pb-24">
+    <div className="pb-24 pt-0 md:pt-24">
       <PageClient />
       <div className="container mx-auto max-w-4xl">
         <div className="mb-8">
