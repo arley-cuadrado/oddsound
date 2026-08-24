@@ -61,7 +61,7 @@ export default async function ConsumerLoginView({ searchParams }: Props) {
           <h1 className="text-2xl font-medium text-foreground">Inicia sesión como fan</h1>
           <p className="text-[13px] leading-6 text-foreground/80">
             Crea tu acceso con Google para comentar y compartir a tu artista independiente
-            favorito, comprar y revisar tu tracking dentro de Oddsound.
+            favorito.
           </p>
         </div>
       }
