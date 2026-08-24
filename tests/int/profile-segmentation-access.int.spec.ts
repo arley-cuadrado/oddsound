@@ -15,6 +15,14 @@ const artistUser = {
   editorAccess: false,
   id: 'artist-1',
   role: 'creator' as const,
+  userType: 'creator' as const,
+}
+
+const fanUser = {
+  editorAccess: false,
+  id: 'fan-1',
+  role: 'creator' as const,
+  userType: 'fan' as const,
 }
 
 const adminUser = {
@@ -50,10 +58,14 @@ describe('profile segmentation access', () => {
   it('shows music release pages only to admins and musical creators', async () => {
     expect(pagesHidden({ user: editorUser })).toBe(true)
     expect(pagesHidden({ user: artistUser })).toBe(false)
+    expect(pagesHidden({ user: fanUser })).toBe(true)
     expect(pagesHidden({ user: adminUser })).toBe(false)
 
     await expect(Pages.access?.create?.({ req: { ...baseReq, user: artistUser } } as any)).resolves.toBe(
       true,
+    )
+    await expect(Pages.access?.create?.({ req: { ...baseReq, user: fanUser } } as any)).resolves.toBe(
+      false,
     )
     await expect(Pages.access?.create?.({ req: { ...baseReq, user: editorUser } } as any)).resolves.toBe(
       false,
@@ -63,18 +75,22 @@ describe('profile segmentation access', () => {
   it('shows biographies only to admins and musical creators', async () => {
     expect(biographiesHidden({ user: editorUser })).toBe(true)
     expect(biographiesHidden({ user: artistUser })).toBe(false)
+    expect(biographiesHidden({ user: fanUser })).toBe(true)
     expect(biographiesHidden({ user: adminUser })).toBe(false)
 
     expect(Biographies.access?.create?.({ req: { ...baseReq, user: artistUser } } as any)).toBe(true)
+    expect(Biographies.access?.create?.({ req: { ...baseReq, user: fanUser } } as any)).toBe(false)
     expect(Biographies.access?.create?.({ req: { ...baseReq, user: editorUser } } as any)).toBe(false)
   })
 
   it('shows commerce products only to admins and musical creators', () => {
     expect(productsHidden({ user: editorUser })).toBe(true)
     expect(productsHidden({ user: artistUser })).toBe(false)
+    expect(productsHidden({ user: fanUser })).toBe(true)
     expect(productsHidden({ user: adminUser })).toBe(false)
 
     expect(Products.access?.create?.({ req: { ...baseReq, user: artistUser } } as any)).toBe(true)
+    expect(Products.access?.create?.({ req: { ...baseReq, user: fanUser } } as any)).toBe(false)
     expect(Products.access?.create?.({ req: { ...baseReq, user: editorUser } } as any)).toBe(false)
   })
 })

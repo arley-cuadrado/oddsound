@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { assignOwnership } from '@/hooks/assignOwnership'
+import { ensureConsumerProfile, findConsumerProfileByOwner } from '@/utilities/consumerProfiles'
 import { ensureCreatorProfile, findCreatorProfileByOwner } from '@/utilities/creatorProfiles'
 
 describe('findCreatorProfileByOwner', () => {
@@ -112,6 +113,101 @@ describe('ensureCreatorProfile', () => {
           profileType: 'editorial',
         }),
         id: 'profile-editor-1',
+      }),
+    )
+  })
+})
+
+describe('findConsumerProfileByOwner', () => {
+  it('returns the first matching consumer profile id for an owner', async () => {
+    const payload = {
+      find: vi.fn().mockResolvedValue({
+        docs: [{ id: 'consumer-profile-1' }],
+      }),
+    }
+
+    await expect(
+      findConsumerProfileByOwner({
+        ownerID: 'user-1',
+        payload: payload as never,
+      }),
+    ).resolves.toBe('consumer-profile-1')
+  })
+})
+
+describe('ensureConsumerProfile', () => {
+  it('returns the inline consumer profile id without extra queries when it already exists', async () => {
+    const payload = {
+      find: vi.fn(),
+      create: vi.fn(),
+      update: vi.fn(),
+    }
+
+    await expect(
+      ensureConsumerProfile({
+        payload: payload as never,
+        user: {
+          consumerProfile: 'consumer-profile-1',
+          id: 'consumer-1',
+          userType: 'consumer',
+        },
+      }),
+    ).resolves.toBe('consumer-profile-1')
+
+    expect(payload.find).not.toHaveBeenCalled()
+    expect(payload.create).not.toHaveBeenCalled()
+    expect(payload.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        collection: 'consumerProfiles',
+        data: expect.objectContaining({
+          displayName: 'Fan',
+          email: '',
+        }),
+        id: 'consumer-profile-1',
+      }),
+    )
+  })
+
+  it('creates a consumer profile and links it back to the user', async () => {
+    const payload = {
+      create: vi.fn().mockResolvedValue({ id: 'consumer-profile-1' }),
+      find: vi.fn().mockResolvedValue({
+        docs: [],
+      }),
+      update: vi.fn().mockResolvedValue({}),
+    }
+
+    await expect(
+      ensureConsumerProfile({
+        payload: payload as never,
+        user: {
+          email: 'consumer@example.com',
+          id: 'consumer-1',
+          name: 'Consumer One',
+          userType: 'consumer',
+        },
+      }),
+    ).resolves.toBe('consumer-profile-1')
+
+    expect(payload.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        collection: 'consumerProfiles',
+        data: expect.objectContaining({
+          displayName: 'Consumer One',
+          email: 'consumer@example.com',
+          owner: 'consumer-1',
+          status: 'active',
+        }),
+      }),
+    )
+
+    expect(payload.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        collection: 'users',
+        data: expect.objectContaining({
+          consumerProfile: 'consumer-profile-1',
+        }),
+        id: 'consumer-1',
       }),
     )
   })

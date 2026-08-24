@@ -5,6 +5,7 @@ import React from 'react'
 
 import { getMeUser } from '@/utilities/getMeUser'
 import { listCommerceProducts, resolveUserProfileID } from '@/utilities/commerceProducts'
+import { canAccessPayloadDashboard } from '@/utilities/isEditorialUser'
 
 type ScheduledJobInput = {
   doc?: {
@@ -32,6 +33,7 @@ const BeforeDashboard = async () => {
   const now = new Date().toISOString()
   const currentUser = await getMeUser().catch(() => null)
   const user = currentUser?.user || null
+  if (!canAccessPayloadDashboard(user)) return null
   const userRole = user?.role || null
   const isMusicalCreator = userRole === 'creator' && !Boolean(user?.editorAccess)
   const profileID = resolveUserProfileID(user)
@@ -111,33 +113,35 @@ const BeforeDashboard = async () => {
 
   return (
     <section className={baseClass} id="scheduled-publishes">
-      <section className={`${baseClass}__section`} aria-labelledby="before-dashboard-scheduled">
-        <div className={`${baseClass}__header`}>
-          <div>
-            <h4 id="before-dashboard-scheduled">Publicaciones programadas</h4>
-            <p>
-              Próximas tareas de publicación y despublicación. Hora editorial oficial:
-              <strong> America/Bogota</strong>.
-            </p>
+      {userRole === 'admin' || isMusicalCreator ? (
+        <section className={`${baseClass}__section`} aria-labelledby="before-dashboard-scheduled">
+          <div className={`${baseClass}__header`}>
+            <div>
+              <h4 id="before-dashboard-scheduled">Publicaciones programadas</h4>
+              <p>
+                Próximas tareas de publicación y despublicación. Hora editorial oficial:
+                <strong> America/Bogota</strong>.
+              </p>
+            </div>
           </div>
-        </div>
 
-        {items.length > 0 ? (
-          <ul className={`${baseClass}__list`}>
-            {items.map((item) => (
-              <li className={`${baseClass}__item`} key={item.id}>
-                <div className={`${baseClass}__item-content`}>
-                  <strong>{item.target}</strong>
-                  <p>{item.typeLabel}</p>
-                </div>
-                <time>{item.scheduledFor}</time>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className={`${baseClass}__empty`}>No hay publicaciones programadas próximas.</p>
-        )}
-      </section>
+          {items.length > 0 ? (
+            <ul className={`${baseClass}__list`}>
+              {items.map((item) => (
+                <li className={`${baseClass}__item`} key={item.id}>
+                  <div className={`${baseClass}__item-content`}>
+                    <strong>{item.target}</strong>
+                    <p>{item.typeLabel}</p>
+                  </div>
+                  <time>{item.scheduledFor}</time>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className={`${baseClass}__empty`}>No hay publicaciones programadas próximas.</p>
+          )}
+        </section>
+      ) : null}
 
       {userRole === 'admin' ? (
         <section className={`${baseClass}__section`} aria-labelledby="before-dashboard-editors">

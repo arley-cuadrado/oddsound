@@ -14,6 +14,7 @@ import { authenticated } from '../access/authenticated'
 import { hasFreshAdminAccess } from '@/access/hasFreshAdminAccess'
 import { assignOwnership } from '@/hooks/assignOwnership'
 import { isAdminUser } from '@/utilities/isAdminUser'
+import { canAccessPayloadDashboard } from '@/utilities/isEditorialUser'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -161,8 +162,8 @@ export const Media: CollectionConfig = {
     },
   ],
   access: {
-    admin: authenticated,
-    create: authenticated,
+    admin: ({ req }) => canAccessPayloadDashboard(req.user),
+    create: ({ req }) => canAccessPayloadDashboard(req.user),
     delete: async ({ req }) => {
       const user = req.user
 
@@ -201,7 +202,7 @@ export const Media: CollectionConfig = {
     },
   },
   admin: {
-    hidden: ({ user }) => user?.role !== 'admin' && user?.role !== 'creator',
+    hidden: ({ user }) => !canAccessPayloadDashboard(user),
     components: {
       views: {
         edit: {
