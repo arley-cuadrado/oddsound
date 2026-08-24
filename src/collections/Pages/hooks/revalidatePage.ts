@@ -110,7 +110,7 @@ async function revalidateProfileReleaseSurfaces(args: {
 
   if (!profileSlug || !page.slug) return
 
-  const bioPath = `/${profileSlug}`
+  const bioPath = `/${profileSlug}/bio`
   const releasesPath = `/${profileSlug}/releases`
   const releaseDetailPath = `/${profileSlug}/release/${page.slug}`
 
