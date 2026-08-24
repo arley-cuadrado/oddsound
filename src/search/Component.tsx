@@ -25,7 +25,7 @@ export const Search: React.FC<SearchProps> = ({ onValueChange, value }) => {
           autoCapitalize="none"
           autoComplete="off"
           autoCorrect="off"
-          className="h-full border-0 bg-transparent px-4 text-[13px] placeholder:text-[13px] shadow-none focus-visible:ring-0 focus-visible:outline-none"
+          className="h-full border-0 bg-transparent px-4 text-base placeholder:text-base shadow-none focus-visible:ring-0 focus-visible:outline-none md:text-[13px] md:placeholder:text-[13px]"
           id="search"
           onChange={(event) => {
             onValueChange(event.target.value)

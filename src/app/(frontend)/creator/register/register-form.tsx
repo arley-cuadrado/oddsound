@@ -79,7 +79,7 @@ export function RegisterForm() {
           ¿Cuál es tu nombre?
         </label>
         <input
-          className="h-12 w-full border border-border bg-background px-4 text-[13px] text-foreground outline-none placeholder:text-[13px]"
+          className="h-12 w-full border border-border bg-background px-4 text-base text-foreground outline-none placeholder:text-base md:text-[13px] md:placeholder:text-[13px]"
           id="name"
           name="name"
           placeholder="Artista o Banda"
@@ -93,7 +93,7 @@ export function RegisterForm() {
           Elige tu tipo de cuenta
         </label>
         <select
-          className="h-12 w-full border border-border bg-background px-4 text-[13px] text-foreground outline-none"
+          className="h-12 w-full border border-border bg-background px-4 text-base text-foreground outline-none md:text-[13px]"
           defaultValue="artist"
           id="accountType"
           name="accountType"
@@ -110,7 +110,7 @@ export function RegisterForm() {
           Ingresa tu país
         </label>
         <input
-          className="h-12 w-full border border-border bg-background px-4 text-[13px] text-foreground outline-none placeholder:text-[13px]"
+          className="h-12 w-full border border-border bg-background px-4 text-base text-foreground outline-none placeholder:text-base md:text-[13px] md:placeholder:text-[13px]"
           id="country"
           name="country"
           placeholder="Colombia, México, EE. UU., etc..."
@@ -124,7 +124,7 @@ export function RegisterForm() {
           Ahora tu género musical
         </label>
         <input
-          className="h-12 w-full border border-border bg-background px-4 text-[13px] text-foreground outline-none placeholder:text-[13px]"
+          className="h-12 w-full border border-border bg-background px-4 text-base text-foreground outline-none placeholder:text-base md:text-[13px] md:placeholder:text-[13px]"
           id="genre"
           name="genre"
           placeholder="Indie Rock, Afrobeats, Champeta, Reggaetón, etc..."
@@ -138,7 +138,7 @@ export function RegisterForm() {
           Tu correo electrónico
         </label>
         <input
-          className="h-12 w-full border border-border bg-background px-4 text-[13px] text-foreground outline-none placeholder:text-[13px]"
+          className="h-12 w-full border border-border bg-background px-4 text-base text-foreground outline-none placeholder:text-base md:text-[13px] md:placeholder:text-[13px]"
           id="email"
           name="email"
           placeholder="name@mail.com"
@@ -153,7 +153,7 @@ export function RegisterForm() {
         </label>
         <div className="relative">
           <input
-            className="h-12 w-full border border-border bg-background px-4 pr-20 text-[13px] text-foreground outline-none placeholder:text-[13px]"
+            className="h-12 w-full border border-border bg-background px-4 pr-20 text-base text-foreground outline-none placeholder:text-base md:text-[13px] md:placeholder:text-[13px]"
             id="password"
             minLength={8}
             name="password"

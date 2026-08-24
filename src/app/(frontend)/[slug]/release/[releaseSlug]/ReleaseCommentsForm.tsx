@@ -57,7 +57,7 @@ export function ReleaseCommentsForm({ artistProfileId, releaseId }: Props) {
           Escribe tu comentario
         </label>
         <textarea
-          className="min-h-[120px] w-full border border-border bg-background px-4 py-3 text-[13px] text-foreground outline-none"
+          className="min-h-[120px] w-full border border-border bg-background px-4 py-3 text-base text-foreground outline-none placeholder:text-base md:text-[13px] md:placeholder:text-[13px]"
           id="release-comment"
           maxLength={1000}
           name="content"
