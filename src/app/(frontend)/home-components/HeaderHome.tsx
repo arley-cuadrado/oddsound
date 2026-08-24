@@ -10,6 +10,14 @@ interface SliderPost {
   title: string
 }
 
+interface SliderCard {
+  href: string
+  id: string
+  imageUrl?: string | null
+  title: string
+  variant?: 'default' | 'more'
+}
+
 const AUTO_SCROLL_MS = 5000
 const DESKTOP_VISIBLE_CARDS = 4
 const MOBILE_VISIBLE_CARDS = 2
@@ -23,7 +31,32 @@ const fallbackCards: SliderPost[] = Array.from({ length: 5 }, (_, index) => ({
 }))
 
 export default function SliderHeader({ posts }: { posts?: SliderPost[] }) {
-  const heroCards = posts?.length ? posts : fallbackCards
+  const sourceCards = posts?.length ? posts : fallbackCards
+  const visiblePosts = sourceCards.slice(0, 5)
+  const shouldShowMoreCard = sourceCards.length > 5
+  const heroCards: SliderCard[] = shouldShowMoreCard
+    ? [
+        ...visiblePosts.map((post) => ({
+          href: `/posts/${post.slug}`,
+          id: post.id,
+          imageUrl: post.imageUrl,
+          title: post.title,
+          variant: 'default' as const,
+        })),
+        {
+          href: '/posts',
+          id: 'more-posts-card',
+          title: 'Ver más',
+          variant: 'more' as const,
+        },
+      ]
+    : visiblePosts.map((post) => ({
+        href: `/posts/${post.slug}`,
+        id: post.id,
+        imageUrl: post.imageUrl,
+        title: post.title,
+        variant: 'default' as const,
+      }))
   const [activeIndex, setActiveIndex] = useState(0)
   const [visibleCards, setVisibleCards] = useState(DESKTOP_VISIBLE_CARDS)
   const [isDesktop, setIsDesktop] = useState(true)
@@ -96,21 +129,42 @@ export default function SliderHeader({ posts }: { posts?: SliderPost[] }) {
           {heroCards.map((card, index) => (
             <Link
               key={card.id}
-              href={`/posts/${card.slug}`}
+              href={card.href}
               ref={(node) => {
                 cardRefs.current[index] = node
               }}
-              className="relative block h-24 overflow-hidden bg-cover bg-center rounded-lg"
-              style={{
-                backgroundImage: `url('${card.imageUrl || '/home-images/hero.jpeg'}')`,
-              }}
+              className={
+                card.variant === 'more'
+                  ? 'relative flex h-24 items-center justify-center overflow-hidden rounded-lg border border-dashed border-black/20 bg-[#f3efe8] px-4 text-center transition hover:bg-[#ebe3d5] dark:border-white/15 dark:bg-white/5 dark:hover:bg-white/10'
+                  : 'relative block h-24 overflow-hidden rounded-lg bg-cover bg-center'
+              }
+              style={
+                card.variant === 'more'
+                  ? undefined
+                  : {
+                      backgroundImage: `url('${card.imageUrl || '/home-images/hero.jpeg'}')`,
+                    }
+              }
             >
-              <div className="absolute inset-0 bg-black/45" />
-              <div className="relative flex h-full items-end p-3 sm:p-4">
-                <h2 className="max-w-[18ch] text-sm font-semibold leading-tight text-white sm:text-base">
-                  {card.title}
-                </h2>
-              </div>
+              {card.variant === 'more' ? (
+                <div className="flex flex-col items-center gap-1">
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.24em] text-foreground/45 dark:text-white/45">
+                    Editorial
+                  </span>
+                  <span className="text-sm font-semibold leading-tight text-foreground dark:text-white sm:text-base">
+                    {card.title}
+                  </span>
+                </div>
+              ) : (
+                <>
+                  <div className="absolute inset-0 bg-black/45" />
+                  <div className="relative flex h-full items-end p-3 sm:p-4">
+                    <h2 className="max-w-[18ch] text-sm font-semibold leading-tight text-white sm:text-base">
+                      {card.title}
+                    </h2>
+                  </div>
+                </>
+              )}
             </Link>
           ))}
         </div>

@@ -133,6 +133,7 @@ export function mapRelease(page: Page, profilesByOwnerId: Map<string, Profile>):
     heroDescription ||
     profileDescription ||
     'No description available.'
+  const releaseHref = profile?.slug ? `/${profile.slug}/release/${page.slug}` : `/${page.slug}`
 
   return {
     id: page.id,
@@ -142,6 +143,7 @@ export function mapRelease(page: Page, profilesByOwnerId: Map<string, Profile>):
     genre: profile?.genre || '',
     imageUrl: getReleaseCardImage({ page, profile }),
     publishedAt: page.publishedAt || null,
+    releaseHref,
     releaseSlug: page.slug,
     releaseTitle: page.title,
     spotifyURL: getSpotifyURL(page),
