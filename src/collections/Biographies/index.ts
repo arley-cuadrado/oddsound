@@ -6,6 +6,7 @@ import { assignOwnership } from '@/hooks/assignOwnership'
 import { BiographyContent } from '@/blocks/Content/config'
 import { socialLinksField } from '@/fields/socialLinks'
 import { isAdminUser } from '@/utilities/isAdminUser'
+import { isMusicalCreatorUser } from '@/utilities/isEditorialUser'
 
 const biographyHero: Field = {
   name: 'hero',
@@ -57,20 +58,26 @@ export const Biographies: CollectionConfig = {
   ],
   access: {
     admin: authenticated,
-    create: ({ req }) => isAdminUser(req.user),
+    create: ({ req }) => isAdminUser(req.user) || isMusicalCreatorUser(req.user),
     delete: async ({ req }) => {
       const user = req.user
 
       if (!user) return false
       if (await hasFreshAdminAccess(req as any)) return true
+      if (!isMusicalCreatorUser(user)) return false
 
-      return false
+      return {
+        owner: {
+          equals: user.id,
+        },
+      }
     },
     read: async ({ req }) => {
       const user = req.user
 
       if (!user) return true
       if (await hasFreshAdminAccess(req as any)) return true
+      if (!isMusicalCreatorUser(user)) return false
 
       return {
         owner: {
@@ -83,6 +90,7 @@ export const Biographies: CollectionConfig = {
 
       if (!user) return false
       if (await hasFreshAdminAccess(req as any)) return true
+      if (!isMusicalCreatorUser(user)) return false
 
       return {
         owner: {
@@ -92,6 +100,7 @@ export const Biographies: CollectionConfig = {
     },
   },
   admin: {
+    hidden: ({ user }) => !isAdminUser(user) && !isMusicalCreatorUser(user),
     components: {
       beforeList: ['@/components/CreatorBiographyListRedirect'],
       views: {

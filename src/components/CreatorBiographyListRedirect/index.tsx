@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { findCreatorProfileByOwner } from '@/utilities/creatorProfiles'
 
 type CreatorUser = {
+  editorAccess?: boolean | null
   email?: null | string
   id?: null | string
   name?: null | string
@@ -16,7 +17,7 @@ export default async function CreatorBiographyListRedirect({
 }: BeforeListServerProps) {
   const creatorUser = user as CreatorUser | null
 
-  if (creatorUser?.role !== 'creator' || !creatorUser.id) {
+  if (creatorUser?.role !== 'creator' || creatorUser?.editorAccess || !creatorUser.id) {
     return null
   }
 

@@ -15,6 +15,8 @@ import { generateMeta } from '@/utilities/generateMeta'
 import PageClient from './page.client'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
 import { RenderBlocks } from '@/blocks/RenderBlocks'
+import PostShareSection from '@/components/PostShareSection'
+import PostEditorialFooter from '@/components/PostEditorialFooter'
 
 export async function generateStaticParams() {
   const payload = await getPayload({ config: configPromise })
@@ -66,15 +68,21 @@ export default async function Post({ params: paramsPromise }: Args) {
       <div className="flex flex-col items-center gap-4 pt-8">
         <div className="container">
           <RichText
-            className="mx-auto max-w-[48rem] px-4 md:px-0"
+            className="post-editorial-prose mx-auto max-w-[48rem] px-4 md:px-0"
             data={post.content}
             enableGutter={false}
           />
+          
+          <PostShareSection post={post} />
+          
           {Array.isArray(post.layout) && post.layout.length > 0 ? (
             <div className="mx-auto max-w-[48rem] px-4 md:px-0">
               <RenderBlocks blocks={post.layout} disableInnerContainer />
             </div>
           ) : null}
+
+          <PostEditorialFooter profile={post.profile} />
+
           {post.relatedPosts && post.relatedPosts.length > 0 && (
             <RelatedPosts
               className="col-start-1 col-span-3 mt-12 max-w-[52rem] px-4 md:px-0 lg:grid lg:grid-cols-subgrid grid-rows-[2fr]"

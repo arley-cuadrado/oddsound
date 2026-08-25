@@ -11,6 +11,7 @@ import { Media as MediaComponent } from '@/components/Media'
 import { SocialMediaBlock } from '@/blocks/SocialMediaBlock/Component'
 import { findPublicProfileBySlug } from '@/utilities/publicProfiles'
 import { normalizePublicSlugParam } from '@/utilities/publicSlugs'
+import { hasPublishedCommerceProducts } from '@/utilities/commerceProducts'
 
 type Args = {
   params: Promise<{
@@ -123,13 +124,17 @@ export default async function ArtistBioPage({ params: paramsPromise }: Args) {
   }
 
   if (profile.slug && profile.slug !== decodedSlug) {
-    permanentRedirect(`/${profile.slug}`)
+    permanentRedirect(`/${profile.slug}/bio`)
   }
 
   const [biography, socialLinksSource] = await Promise.all([
     queryBiographyByProfileID(profile.id),
     queryProfileSocialLinksByProfileID(profile.id),
   ])
+  const hasShop = await hasPublishedCommerceProducts({
+    payload: await getPayload({ config: configPromise }),
+    profile: profile.id,
+  })
   const bioLayout: NonNullable<Biography['layout']> =
     biography && Array.isArray(biography.layout)
       ? (biography.layout as NonNullable<Biography['layout']>)
@@ -208,6 +213,14 @@ export default async function ArtistBioPage({ params: paramsPromise }: Args) {
           >
             Ver lanzamientos
           </Link>
+          {hasShop ? (
+            <Link
+              href={`/${profile.slug}/shop`}
+              className="inline-flex items-center rounded-full border border-border px-4 py-2 text-[13px] font-medium text-foreground shadow-sm transition hover:-translate-y-0.5"
+            >
+              Shop
+            </Link>
+          ) : null}
         </div>
 
         {bioLayout.length > 0 ? (

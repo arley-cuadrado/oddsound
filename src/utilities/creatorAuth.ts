@@ -1,6 +1,7 @@
 import config from '@payload-config'
 import { createLocalReq, getPayload } from 'payload'
 
+import { getTemporaryLoginLockMessage } from '@/utilities/authLocking'
 import { ensureCreatorProfile } from '@/utilities/creatorProfiles'
 
 export type AccountType = 'artist' | 'band'
@@ -22,8 +23,11 @@ export type CreatorAuthResult = {
 }
 
 export type VerificationUser = {
+  authProvider?: null | string
   name?: null | string
   role?: null | string
+  userType?: null | string
+  username?: null | string
   _verificationToken?: null | string
   _verified?: boolean | null
   createdAt?: null | string
@@ -34,6 +38,28 @@ export type VerificationUser = {
 
 export const CREATOR_LEGAL_VERSION = '2026-05-14'
 export const CREATOR_VERIFICATION_ERROR_MESSAGE = 'Debes confirmar tu correo antes de iniciar sesión.'
+export const CROSS_ACCOUNT_EMAIL_CONFLICT_MESSAGE =
+  'Este correo ya está asociado a una cuenta de otro tipo dentro de Oddsound.'
+
+function isConsumerIdentity(user?: null | Pick<VerificationUser, 'authProvider' | 'userType'>) {
+  return user?.userType === 'consumer' || user?.userType === 'fan' || user?.authProvider === 'google'
+}
+
+function buildUsernameSeed({ email, name }: { email: string; name: string }) {
+  const normalizedName = name
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9._-]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+
+  if (normalizedName) return normalizedName
+
+  return (email.split('@')[0] || 'creator')
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9._-]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+}
 
 export async function findUserByEmail(
   email: string,
@@ -89,6 +115,13 @@ export async function registerCreatorAccount(input: {
 
     const existingUser = await findUserByEmail(email, payload)
 
+    if (existingUser && isConsumerIdentity(existingUser)) {
+      return {
+        message: CROSS_ACCOUNT_EMAIL_CONFLICT_MESSAGE,
+        ok: false,
+      }
+    }
+
     if (existingUser && existingUser._verified !== false) {
       return {
         message: 'Este usuario ya está registrado.',
@@ -116,6 +149,7 @@ export async function registerCreatorAccount(input: {
         name,
         password: input.password,
         role: 'creator',
+        username: buildUsernameSeed({ email, name }),
       },
       draft: false,
       overrideAccess: true,
@@ -223,6 +257,13 @@ export async function loginCreatorAccount(input: {
       },
     }
   } catch (error) {
+    if (error instanceof Error && error.name === 'LockedAuth') {
+      return {
+        message: getTemporaryLoginLockMessage(),
+        ok: false,
+      }
+    }
+
     if (error instanceof Error && error.name === 'UnverifiedEmail') {
       return {
         email: input.email.trim().toLowerCase(),

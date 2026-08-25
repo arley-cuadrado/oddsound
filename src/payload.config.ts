@@ -1,18 +1,35 @@
 import { mongooseAdapter } from '@payloadcms/db-mongodb'
 import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
+import { ecommercePlugin } from '@payloadcms/plugin-ecommerce'
 import sharp from 'sharp'
 import path from 'path'
 import { buildConfig, PayloadRequest } from 'payload'
 import { fileURLToPath } from 'url'
 
+import {
+  extendEcommerceCartsCollection,
+  extendEcommerceOrdersCollection,
+  extendEcommerceTransactionsCollection,
+} from '@/collections/Commerce/officialCheckout'
+import {
+  ecommerceAdminOnlyFieldAccess,
+  ecommerceAdminOrPublishedStatus,
+  ecommerceIsAdmin,
+  ecommerceIsAuthenticated,
+  ecommerceIsCustomer,
+  ecommerceIsDocumentOwner,
+  ecommercePublicAccess,
+} from '@/access/ecommerce'
+import { extendEcommerceProductsCollection } from '@/collections/Commerce/officialProducts'
 import { Categories } from './collections/Categories'
 import { Biographies } from './collections/Biographies'
 import { Media } from './collections/Media'
 import { Pages } from './collections/Pages'
 import { Profiles } from './collections/Profiles'
-import { Products } from './collections/Products'
 import { Posts } from './collections/Posts'
 import { Users } from './collections/Users'
+import { ConsumerProfiles } from './collections/ConsumerProfiles'
+import { Comments } from './collections/Comments'
 import { Footer } from './Footer/config'
 import { Header } from './Header/config'
 import { oddsoundVercelBlobStorage } from './plugins/oddsoundVercelBlob'
@@ -49,7 +66,9 @@ export default buildConfig({
       afterLogin: ['@/components/CreatorRegisterLink'],
       afterDashboard: ['@/components/BeforeDashboard'],
       afterNavLinks: [
+        '@/components/CreatorCollectionFilter',
         '@/components/CreatorNavLabelOverrides',
+        '@/components/EditorsNavLink',
         '@/components/EmailPreviewNavLink',
         '@/components/ScheduledPublishesNavLink',
       ],
@@ -116,7 +135,7 @@ export default buildConfig({
           } as any,
         }),
   }),
-  collections: [Pages, Posts, Products, Biographies, Media, Categories, Profiles, Users],
+  collections: [Pages, Posts, Biographies, Media, Categories, Profiles, ConsumerProfiles, Comments, Users],
   cors: trustedServerURLs,
   globals: [Header, Footer],
   i18n: {
@@ -127,6 +146,34 @@ export default buildConfig({
   },
   plugins: [
     ...plugins,
+    ecommercePlugin({
+      access: {
+        adminOnlyFieldAccess: ecommerceAdminOnlyFieldAccess,
+        adminOrPublishedStatus: ecommerceAdminOrPublishedStatus,
+        isAdmin: ecommerceIsAdmin,
+        isAuthenticated: ecommerceIsAuthenticated,
+        isCustomer: ecommerceIsCustomer,
+        isDocumentOwner: ecommerceIsDocumentOwner,
+        publicAccess: ecommercePublicAccess,
+      },
+      carts: {
+        allowGuestCarts: false,
+        cartsCollectionOverride: extendEcommerceCartsCollection,
+      },
+      customers: {
+        slug: Users.slug,
+      },
+      orders: {
+        ordersCollectionOverride: extendEcommerceOrdersCollection,
+      },
+      products: {
+        productsCollectionOverride: extendEcommerceProductsCollection,
+        variants: false,
+      },
+      transactions: {
+        transactionsCollectionOverride: extendEcommerceTransactionsCollection,
+      },
+    }),
     ...(hasBlobToken
       ? [
           oddsoundVercelBlobStorage({

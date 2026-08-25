@@ -59,7 +59,7 @@ export function CreatorResetPasswordForm({ token }: { token: string }) {
         </label>
         <div className="relative">
           <input
-            className="h-12 w-full border border-border bg-background px-4 pr-20 text-[13px] text-foreground outline-none"
+            className="h-12 w-full border border-border bg-background px-4 pr-20 text-base text-foreground outline-none md:text-[13px]"
             id="password"
             name="password"
             required
@@ -83,7 +83,7 @@ export function CreatorResetPasswordForm({ token }: { token: string }) {
         </label>
         <div className="relative">
           <input
-            className="h-12 w-full border border-border bg-background px-4 pr-20 text-[13px] text-foreground outline-none"
+            className="h-12 w-full border border-border bg-background px-4 pr-20 text-base text-foreground outline-none md:text-[13px]"
             id="confirmPassword"
             name="confirmPassword"
             required

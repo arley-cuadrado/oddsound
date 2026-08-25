@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import type { Media } from '@/payload-types'
 
 import AsideHome from './home-components/AsideHome'
 import SliderHeader from './home-components/HeaderHome'
@@ -7,7 +8,14 @@ import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 
 import ReleasesHomeSection from './home-components/ReleasesHomeSection'
+import { getMediaResourceURL } from '@/utilities/getMediaUrl'
 import { HOME_DESCRIPTION, SITE_NAME, SITE_TITLE } from '@/seo/site'
+import { mergeOpenGraph } from '@/utilities/mergeOpenGraph'
+
+const FALLBACK_SLIDER_IMAGE = '/home-images/hero.jpeg'
+const LEGACY_MEDIA_API_SEGMENT = '/api/media/file/'
+
+export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
   title: SITE_TITLE,
@@ -15,12 +23,12 @@ export const metadata: Metadata = {
   alternates: {
     canonical: '/',
   },
-  openGraph: {
+  openGraph: mergeOpenGraph({
     description: HOME_DESCRIPTION,
     title: SITE_NAME,
     type: 'website',
     url: '/',
-  },
+  }),
 }
 
 export default async function HomePage() {
@@ -29,7 +37,7 @@ export default async function HomePage() {
   const featuredScenes = await payload.find({
     collection: 'posts',
     depth: 1,
-    limit: 8,
+    limit: 6,
     overrideAccess: true,
     pagination: false,
     select: {
@@ -47,13 +55,24 @@ export default async function HomePage() {
 
   const sliderPosts = featuredScenes.docs
     .filter((post) => post.slug)
-    .map((post) => ({
-      id: post.id,
-      imageUrl:
-        post.heroImage && typeof post.heroImage === 'object' ? (post.heroImage.url ?? null) : null,
-      slug: post.slug as string,
-      title: post.title,
-    }))
+    .map((post) => {
+      const imageUrl =
+        post.heroImage && typeof post.heroImage === 'object'
+          ? getMediaResourceURL(post.heroImage as Media, post.heroImage.updatedAt)
+          : null
+
+      const safeImageUrl =
+        !process.env.BLOB_READ_WRITE_TOKEN && imageUrl?.startsWith(LEGACY_MEDIA_API_SEGMENT)
+          ? FALLBACK_SLIDER_IMAGE
+          : (imageUrl ?? FALLBACK_SLIDER_IMAGE)
+
+      return {
+        id: post.id,
+        imageUrl: safeImageUrl,
+        slug: post.slug as string,
+        title: post.title,
+      }
+    })
 
   return (
     <div className="mx-auto max-w-4xl">
@@ -64,7 +83,7 @@ export default async function HomePage() {
       ) : null}
       <main className="text-sm container">
         <div className="flex flex-col justify-between md:flex-row">
-          <section className="w-full min-w-0 pt-4 pb-4 pr-0 md:pr-24">
+          <section className="w-full min-w-0 pb-4 pt-0 md:pr-24 md:pt-4">
             <div className="w-full min-w-0">
               <Suspense
                 fallback={

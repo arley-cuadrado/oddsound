@@ -5,7 +5,9 @@ import { getServerSideURL } from '@/utilities/getURL'
 export const VERIFICATION_RESEND_COOLDOWN_MS = 5 * 60 * 1000
 export const CREATOR_RESET_PASSWORD_EXPIRATION_MS = 60 * 60 * 1000
 
-type VerificationUser = Pick<User, 'email' | 'name'>
+type VerificationUser = Pick<User, 'email' | 'name'> & {
+  editorAccess?: boolean | null
+}
 
 type EmailTemplateOptions = {
   actionLabel: string
@@ -529,6 +531,37 @@ export const generateCreatorVerificationEmailHTML = ({
 }
 
 export const generateCreatorVerificationEmailSubject = () => 'Confirma tu correo en oddsound'
+
+export const generateEditorVerificationEmailHTML = ({
+  token,
+  user,
+}: {
+  token: string
+  user: VerificationUser
+}) => {
+  const verificationURL = getCreatorVerificationURL({
+    email: user.email,
+    token,
+  })
+
+  return buildEmailTemplate({
+    actionLabel: 'Confirmar cuenta editor',
+    actionURL: verificationURL,
+    body: 'Tu cuenta de redactor en oddsound ya esta lista. Confirma tu correo y luego inicia sesion con tu correo y contrasena para comenzar a escribir en la plataforma.',
+    fallbackPrefix: 'Si el boton no abre, copia y pega este enlace en tu navegador:',
+    heroPhotographerName: EMAIL_VERIFICATION_HERO_PHOTOGRAPHER_NAME,
+    heroPhotographerPhotoURL: EMAIL_VERIFICATION_HERO_PHOTOGRAPHER_PHOTO_URL,
+    heroImageURL: EMAIL_VERIFICATION_HERO_IMAGE_URL,
+    outlookHeroImageURL: EMAIL_VERIFICATION_OUTLOOK_HERO_IMAGE_URL,
+    preheader:
+      'Confirma tu cuenta de editor en oddsound para entrar al panel y comenzar a escribir.',
+    recipientName: user.name,
+    title: 'Confirma tu cuenta de editor en oddsound',
+  })
+}
+
+export const generateEditorVerificationEmailSubject = () =>
+  'Confirma tu cuenta de editor en oddsound'
 
 export const getCreatorResetPasswordURL = (token: string) => {
   const url = new URL('/creator/reset-password', SITE_URL)

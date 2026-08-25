@@ -1,6 +1,11 @@
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
+import Link from 'next/link'
 import React from 'react'
+
+import { getMeUser } from '@/utilities/getMeUser'
+import { listCommerceProducts, resolveUserProfileID } from '@/utilities/commerceProducts'
+import { canAccessPayloadDashboard } from '@/utilities/isEditorialUser'
 
 type ScheduledJobInput = {
   doc?: {
@@ -26,6 +31,27 @@ const baseClass = 'before-dashboard'
 const BeforeDashboard = async () => {
   const payload = await getPayload({ config: configPromise })
   const now = new Date().toISOString()
+  const currentUser = await getMeUser().catch(() => null)
+  const user = currentUser?.user || null
+  if (!canAccessPayloadDashboard(user)) return null
+  const userRole = user?.role || null
+  const isMusicalCreator = userRole === 'creator' && !Boolean(user?.editorAccess)
+  const profileID = resolveUserProfileID(user)
+  const commerceProducts =
+    userRole === 'admin' || isMusicalCreator
+      ? await listCommerceProducts({
+          includeDrafts: true,
+          ownerID: userRole === 'admin' ? null : user?.id ? String(user.id) : null,
+          payload,
+          profile: profileID,
+        })
+      : []
+  const commerceProfileSlug =
+    (typeof user?.profile === 'object' && user?.profile && 'slug' in user.profile
+      ? user.profile.slug
+      : null) ||
+    commerceProducts.find((product) => product.profile?.slug)?.profile?.slug ||
+    null
 
   const upcomingJobs = await payload.find({
     collection: 'payload-jobs',
@@ -87,33 +113,97 @@ const BeforeDashboard = async () => {
 
   return (
     <section className={baseClass} id="scheduled-publishes">
-      <div className={`${baseClass}__panel`}>
-        <div className={`${baseClass}__header`}>
-          <div>
-            <h4>Publicaciones programadas</h4>
-            <p>
-              Próximas tareas de publicación y despublicación. Hora editorial oficial:
-              <strong> America/Bogota</strong>.
-            </p>
+      {userRole === 'admin' || isMusicalCreator ? (
+        <section className={`${baseClass}__section`} aria-labelledby="before-dashboard-scheduled">
+          <div className={`${baseClass}__header`}>
+            <div>
+              <h4 id="before-dashboard-scheduled">Publicaciones programadas</h4>
+              <p>
+                Próximas tareas de publicación y despublicación. Hora editorial oficial:
+                <strong> America/Bogota</strong>.
+              </p>
+            </div>
           </div>
-        </div>
 
-        {items.length > 0 ? (
-          <ul className={`${baseClass}__list`}>
-            {items.map((item) => (
-              <li className={`${baseClass}__item`} key={item.id}>
-                <div className={`${baseClass}__item-content`}>
-                  <strong>{item.target}</strong>
-                  <p>{item.typeLabel}</p>
-                </div>
-                <time>{item.scheduledFor}</time>
-              </li>
-            ))}
+          {items.length > 0 ? (
+            <ul className={`${baseClass}__list`}>
+              {items.map((item) => (
+                <li className={`${baseClass}__item`} key={item.id}>
+                  <div className={`${baseClass}__item-content`}>
+                    <strong>{item.target}</strong>
+                    <p>{item.typeLabel}</p>
+                  </div>
+                  <time>{item.scheduledFor}</time>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className={`${baseClass}__empty`}>No hay publicaciones programadas próximas.</p>
+          )}
+        </section>
+      ) : null}
+
+      {userRole === 'admin' ? (
+        <section className={`${baseClass}__section`} aria-labelledby="before-dashboard-editors">
+          <div className={`${baseClass}__header`}>
+            <div>
+              <h4 id="before-dashboard-editors">Editors</h4>
+              <p>
+                Acceso directo al modulo de cuentas editoriales. Desde ahi puedes crear nuevos
+                redactores y administrar sus accesos sin mezclarlos con cuentas de artista o banda.
+              </p>
+            </div>
+          </div>
+
+          <div className={`${baseClass}__links`}>
+            <Link
+              className={`${baseClass}__link`}
+              href="/dashboard/collections/users?where[editorAccess][equals]=true&editors=1"
+            >
+              Abrir Editors
+            </Link>
+            <Link className={`${baseClass}__link`} href="/dashboard/collections/users">
+              Abrir Users
+            </Link>
+          </div>
+        </section>
+      ) : null}
+
+      {userRole === 'admin' || isMusicalCreator ? (
+        <section className={`${baseClass}__section`} aria-labelledby="before-dashboard-commerce">
+          <div className={`${baseClass}__header`}>
+            <div>
+              <h4 id="before-dashboard-commerce">Commerce oficial</h4>
+              <p>
+                Acceso directo al catalogo que ya corre con Payload ecommerce dentro del dashboard
+                individual.
+              </p>
+            </div>
+          </div>
+
+          <ul className={`${baseClass}__meta-list`}>
+            <li className={`${baseClass}__meta-item`}>
+              <span>Productos visibles aqui</span>
+              <strong>{commerceProducts.length}</strong>
+            </li>
+            <li className={`${baseClass}__meta-item`}>
+              <span>Perfil vinculado</span>
+              <strong>{profileID || 'Sin perfil'}</strong>
+            </li>
           </ul>
-        ) : (
-          <p className={`${baseClass}__empty`}>No hay publicaciones programadas próximas.</p>
-        )}
-      </div>
+
+          <div className={`${baseClass}__links`}>
+            <Link className={`${baseClass}__link`} href="/dashboard/collections/products">
+              Gestionar productos
+            </Link>
+            {commerceProfileSlug ? (
+              <Link className={`${baseClass}__link`} href={`/${commerceProfileSlug}/shop`}>
+                Abrir shop publico
+              </Link>
+            ) : null}
+          </div>
+        </section>
+      ) : null}
     </section>
   )
 }

@@ -12,6 +12,9 @@ import {
 } from '../../home-components/getPublishedReleaseContext'
 import { buildProfilesByOwnerId, mapRelease } from '../../home-components/releaseData'
 import type { ReleaseItem } from '../../home-components/types'
+import { hasPublishedCommerceProducts } from '@/utilities/commerceProducts'
+
+export const dynamic = 'force-dynamic'
 
 type Args = {
   params: Promise<{
@@ -107,6 +110,10 @@ export default async function ArtistReleasesPage({ params: paramsPromise }: Args
     .filter((release): release is ReleaseItem => Boolean(release))
 
   const bandName = profile.displayName || 'Artista'
+  const hasShop = await hasPublishedCommerceProducts({
+    payload,
+    profile: profile.id,
+  })
 
   return (
     <div className="mx-auto max-w-4xl pb-24 pt-24 [&_p]:text-[13px]">
@@ -118,6 +125,22 @@ export default async function ArtistReleasesPage({ params: paramsPromise }: Args
           <p className="mt-4 text-sm text-[#777] dark:text-[#858c98]">
             Explora todos los lanzamientos publicados por {bandName}.
           </p>
+          <div className="mt-5 flex flex-wrap items-center justify-center gap-4 text-[13px]">
+            <Link
+              href={`/${profile.slug}/bio`}
+              className="inline-flex items-center font-medium text-[#777] underline underline-offset-4 dark:text-[#858c98]"
+            >
+              Bio
+            </Link>
+            {hasShop ? (
+              <Link
+                href={`/${profile.slug}/shop`}
+                className="inline-flex items-center font-medium text-[#777] underline underline-offset-4 dark:text-[#858c98]"
+              >
+                Shop
+              </Link>
+            ) : null}
+          </div>
         </header>
 
         <div className="mx-auto max-w-[50rem]">
@@ -125,7 +148,7 @@ export default async function ArtistReleasesPage({ params: paramsPromise }: Args
             <div className="grid grid-cols-2 gap-4 md:gap-6 xl:grid-cols-4">
               {releases.map((release) => (
                 <article className="w-full" key={release.id}>
-                  <Link href={`/${release.releaseSlug}`}>
+                  <Link href={release.releaseHref}>
                     <div>
                       <div className="relative aspect-square w-full overflow-hidden bg-slate-100 dark:bg-slate-900 rounded-lg">
                         {/* eslint-disable-next-line @next/next/no-img-element */}

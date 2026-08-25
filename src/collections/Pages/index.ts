@@ -4,6 +4,7 @@ import { hasFreshAdminAccess } from '@/access/hasFreshAdminAccess'
 import { assignOwnership } from '@/hooks/assignOwnership'
 import { generateCreatorContentSlug } from '@/hooks/generateCreatorContentSlug'
 import { isAdminUser } from '@/utilities/isAdminUser'
+import { isMusicalCreatorUser } from '@/utilities/isEditorialUser'
 import { isSuperAdminUser } from '@/utilities/isSuperAdminUser'
 import { editorialBlocks } from '../shared/editorialBlocks'
 import { authenticated } from '../../access/authenticated'
@@ -45,12 +46,17 @@ export const Pages: CollectionConfig<'pages'> = {
   },
   access: {
     admin: authenticated,
-    create: authenticated,
+    create: async ({ req }) => {
+      if (await hasFreshAdminAccess(req as any)) return true
+
+      return isMusicalCreatorUser(req.user)
+    },
     delete: async ({ req }) => {
       const user = req.user
 
       if (!user) return false
       if (await hasFreshAdminAccess(req as any)) return true
+      if (!isMusicalCreatorUser(user)) return false
 
       return {
         owner: {
@@ -69,6 +75,7 @@ export const Pages: CollectionConfig<'pages'> = {
         } as any
       }
       if (await hasFreshAdminAccess(req as any)) return true
+      if (!isMusicalCreatorUser(user)) return false
 
       return {
         owner: {
@@ -82,6 +89,7 @@ export const Pages: CollectionConfig<'pages'> = {
 
       if (!user) return false
       if (await hasFreshAdminAccess(req as any)) return true
+      if (!isMusicalCreatorUser(user)) return false
 
       return {
         owner: {
@@ -99,6 +107,7 @@ export const Pages: CollectionConfig<'pages'> = {
     slug: true,
   },
   admin: {
+    hidden: ({ user }) => !isAdminUser(user) && !isMusicalCreatorUser(user),
     components: {
       views: {
         edit: {
@@ -166,6 +175,21 @@ export const Pages: CollectionConfig<'pages'> = {
         hidden: true,
         position: 'sidebar',
       },
+    },
+    {
+      name: 'shopProducts',
+      type: 'join',
+      collection: 'products',
+      on: 'release',
+      access: {
+        read: ({ req: { user } }) => Boolean(user),
+      },
+      admin: {
+        defaultColumns: ['title', 'priceInUSD', '_status', 'updatedAt'],
+        description: 'Productos del commerce oficial vinculados a este lanzamiento.',
+        position: 'sidebar',
+      },
+      label: 'Productos vinculados',
     },
     {
       name: 'title',

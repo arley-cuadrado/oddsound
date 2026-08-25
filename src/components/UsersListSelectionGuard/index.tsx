@@ -20,6 +20,20 @@ export default function UsersListSelectionGuard() {
           container.style.display = 'none'
         }
       })
+
+      const isEditorsView = new URLSearchParams(window.location.search).get('editors') === '1'
+
+      if (!isEditorsView) return
+
+      document
+        .querySelectorAll<HTMLAnchorElement>('a[href="/dashboard/collections/users/create"]')
+        .forEach((link) => {
+          const container = link.closest('a') || link.parentElement
+
+          if (container instanceof HTMLElement) {
+            container.style.display = 'none'
+          }
+        })
     }
 
     hideSelectionUI()

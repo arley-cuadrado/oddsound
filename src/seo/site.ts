@@ -15,7 +15,15 @@ export const REGISTER_DESCRIPTION =
 export const INSTAGRAM_URL = 'https://www.instagram.com/arlo_cuadrado/'
 export const FOUNDER_NAME = 'Arlo Cuadrado'
 
-export const STATIC_SITEMAP_PATHS = ['/', '/about-us', '/search', '/posts', '/creator/login', '/creator/register']
+export const STATIC_SITEMAP_PATHS = [
+  '/',
+  '/about-us',
+  '/search',
+  '/posts',
+  '/creator/login',
+  '/creator/register',
+  '/fan/login',
+]
 
 export function getStaticSitemapEntries(lastmod: string) {
   const siteURL = getServerSideURL()

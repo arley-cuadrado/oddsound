@@ -1,10 +1,16 @@
 import type { Metadata } from 'next'
 
 import configPromise from '@payload-config'
+import type { Media } from '@/payload-types'
 import { getPayload } from 'payload'
+import Link from 'next/link'
 import { notFound, permanentRedirect } from 'next/navigation'
+
+import { Media as MediaComponent } from '@/components/Media'
 import { ShopBackButton } from './ShopBackButton'
 import { findPublicProfileBySlug } from '@/utilities/publicProfiles'
+import { listCommerceProducts } from '@/utilities/commerceProducts'
+import { isMercadoPagoReadyForProfile } from '@/utilities/mercadoPagoCheckout'
 import { normalizePublicSlugParam } from '@/utilities/publicSlugs'
 
 type Args = {
@@ -13,91 +19,63 @@ type Args = {
   }>
 }
 
-const PROFILE_SHOP_SELECT = {
-  displayName: true,
-  shopCurrency: true,
-  shopEnabled: true,
-  slug: true,
-} as const
-
-const PRODUCT_SHOP_SELECT = {
-  checkoutButtonLabel: true,
-  checkoutProvider: true,
-  currency: true,
-  externalCheckoutURL: true,
-  externalProductReference: true,
-  images: true,
-  price: true,
-  slug: true,
-  title: true,
-} as const
-
-function formatPrice(args: {
-  currency?: null | string
-  price?: null | number
-}) {
-  const currency = args.currency || 'COP'
-  const price = typeof args.price === 'number' ? args.price : 0
-
-  try {
-    return new Intl.NumberFormat('es-CO', {
-      currency,
-      maximumFractionDigits: 0,
-      style: 'currency',
-    }).format(price)
-  } catch {
-    return `${currency} ${price}`
+function getProductVisual(product: Awaited<ReturnType<typeof listCommerceProducts>>[number]) {
+  if (product.coverImage && typeof product.coverImage === 'object') {
+    return product.coverImage as Media
   }
+
+  const firstGalleryImage = product.images?.[0]?.image
+
+  if (firstGalleryImage && typeof firstGalleryImage === 'object') {
+    return firstGalleryImage as Media
+  }
+
+  return null
 }
 
-async function queryProfileBySlug(slug: string) {
+async function queryShopByProfileSlug(slug: string) {
   const payload = await getPayload({ config: configPromise })
-  return findPublicProfileBySlug({ payload, slug })
-}
+  const profile = await findPublicProfileBySlug({ payload, slug })
 
-export async function generateStaticParams() {
-  const payload = await getPayload({ config: configPromise })
-  const profiles = await payload.find({
-    collection: 'profiles',
-    depth: 0,
-    limit: 1000,
-    overrideAccess: true,
-    pagination: false,
-    select: {
-      shopEnabled: true,
-      slug: true,
-    },
-    where: {
-      shopEnabled: {
-        equals: true,
-      },
-    },
+  if (!profile?.id) {
+    return { products: [], profile: null }
+  }
+
+  const products = await listCommerceProducts({
+    includeDrafts: false,
+    payload,
+    profile: profile.id,
   })
 
-  return profiles.docs
-    .filter((profile) => typeof profile.slug === 'string' && profile.slug)
-    .map((profile) => ({
-      slug: profile.slug as string,
-    }))
+  return {
+    products,
+    profile,
+  }
 }
 
 export async function generateMetadata({ params: paramsPromise }: Args): Promise<Metadata> {
   const { slug = '' } = await paramsPromise
-  const profile = await queryProfileBySlug(normalizePublicSlugParam(slug))
-  const displayName = profile?.displayName || 'Artista'
+  const decodedSlug = normalizePublicSlugParam(slug)
+  const { products, profile } = await queryShopByProfileSlug(decodedSlug)
+
+  if (!profile || products.length === 0) {
+    return {
+      title: 'Shop',
+    }
+  }
 
   return {
-    description: `Explora los productos disponibles en la tienda de ${displayName}.`,
-    title: `Tienda de ${displayName}`,
+    description: `Explora los productos oficiales disponibles de ${profile.displayName || 'este artista'}.`,
+    title: `Shop de ${profile.displayName || 'artista'}`,
   }
 }
 
 export default async function ArtistShopPage({ params: paramsPromise }: Args) {
   const { slug = '' } = await paramsPromise
   const decodedSlug = normalizePublicSlugParam(slug)
-  const profile = await queryProfileBySlug(decodedSlug)
+  const { products, profile } = await queryShopByProfileSlug(decodedSlug)
 
-  if (!profile || !profile.shopEnabled) {
+  if (!profile) {
     notFound()
   }
 
@@ -105,133 +83,130 @@ export default async function ArtistShopPage({ params: paramsPromise }: Args) {
     permanentRedirect(`/${profile.slug}/shop`)
   }
 
-  const payload = await getPayload({ config: configPromise })
-  const productsResult = await payload.find({
-    collection: 'products',
-    depth: 1,
-    limit: 100,
-    overrideAccess: true,
-    pagination: false,
-    select: PRODUCT_SHOP_SELECT,
-    sort: '-publishedAt',
-    where: {
-      and: [
-        {
-          profile: {
-            equals: profile.id,
-          },
-        },
-        {
-          status: {
-            equals: 'active',
-          },
-        },
-      ],
-    },
-  })
+  if (products.length === 0) {
+    notFound()
+  }
 
-  const products = productsResult.docs
+  const shopGridClassName =
+    products.length === 1 ? 'grid gap-5' : 'grid grid-cols-2 gap-4 md:grid-cols-2 md:gap-5 xl:grid-cols-3'
+
   return (
-    <div className="mx-auto max-w-6xl pb-24 pt-16 md:pt-20">
-      <div className="container">
-        <header className="mb-12 overflow-hidden rounded-none text-white shadow-[0_30px_90px_rgba(0,0,0,0.24)]">
-          <div className="relative">
-            <div className="relative grid gap-8 lg:items-end">
-              <div className="grid gap-5">
-                <ShopBackButton fallbackHref={`/${profile.slug}/releases`} />
-                <h1 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white md:text-5xl">
-                  {profile.displayName || 'Artista'}
-                </h1>
-              </div>
-            </div>
+    <div className="mx-auto max-w-6xl px-6 pb-24 pt-12">
+      <div className="space-y-8">
+        <header className="space-y-5 rounded-[32px] border border-border/70 bg-white/80 p-6 shadow-[0_18px_60px_rgba(49,46,46,0.08)] backdrop-blur dark:bg-[#111111]/90 md:p-8">
+          <ShopBackButton fallbackHref={`/${profile.slug}/releases`} label="Shop" />
+
+          <div className="space-y-3">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-foreground/55">
+              Official Shop
+            </p>
+            <h1 className="text-3xl font-medium tracking-tight text-foreground md:text-5xl">
+              {profile.displayName || 'Artista'}
+            </h1>
+            <p className="max-w-[44rem] text-[13px] leading-6 text-foreground/75">
+              Productos oficiales conectados al ecommerce de Payload y visibles desde el perfil
+              publico del artista.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap gap-3 text-[12px] text-foreground/70 dark:text-white/80">
+            <span className="rounded-full bg-[#f4efe6] px-3 py-1.5 dark:bg-white/10 dark:text-white">
+              {products.length} producto{products.length === 1 ? '' : 's'}
+            </span>
+            {profile.genre ? (
+              <span className="rounded-full bg-[#f4efe6] px-3 py-1.5 dark:bg-white/10 dark:text-white">
+                {profile.genre}
+              </span>
+            ) : null}
+            {profile.location ? (
+              <span className="rounded-full bg-[#f4efe6] px-3 py-1.5 dark:bg-white/10 dark:text-white">
+                {profile.location}
+              </span>
+            ) : null}
           </div>
         </header>
 
-        {products.length > 0 ? (
-          <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
-            {products.map((product) => {
-              const firstImage =
-                Array.isArray(product.images) && product.images[0] && typeof product.images[0] === 'object'
-                  ? product.images[0].image
-                  : null
+        <div className={shopGridClassName}>
+          {products.map((product) => {
+            const visual = getProductVisual(product)
 
-              const imageURL =
-                firstImage && typeof firstImage === 'object' && 'url' in firstImage
-                  ? firstImage.url || null
-                  : null
-
-              return (
-                <article
-                  key={product.id}
-                  className="group overflow-hidden rounded-[0.625rem] border border-slate-200 bg-white shadow-[0_16px_50px_rgba(15,23,42,0.08)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_70px_rgba(15,23,42,0.14)] dark:border-slate-800 dark:bg-slate-950"
-                >
-                  <div className="relative aspect-square w-full overflow-hidden bg-slate-100 dark:bg-slate-900">
-                    {imageURL ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        alt={product.title}
-                        className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
-                        src={imageURL}
-                      />
-                    ) : (
-                      <div className="flex h-full items-center justify-center bg-[radial-gradient(circle_at_top,_rgba(236,72,153,0.16),_transparent_40%),linear-gradient(180deg,#111827_0%,#1f2937_100%)] px-8 text-center text-sm text-white/70">
-                        Imagen del producto próximamente
-                      </div>
-                    )}
-                    <div className="absolute inset-x-0 top-0 flex items-start justify-between p-4">
-                      <span className="inline-flex rounded-full bg-white/92 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-900">
-                        Producto
-                      </span>
+            return (
+              <article
+                key={product.id}
+                className="overflow-hidden rounded-[28px] border border-border/70 bg-white shadow-[0_18px_60px_rgba(49,46,46,0.08)] dark:bg-[#171717]"
+              >
+                <div className="relative aspect-[4/5] bg-[#efebe4]">
+                  {visual ? (
+                    <MediaComponent
+                      className="h-full w-full"
+                      imgClassName="h-full w-full object-cover"
+                      resource={visual}
+                    />
+                  ) : (
+                    <div className="flex h-full items-center justify-center px-6 text-center text-[12px] uppercase tracking-[0.18em] text-foreground/45">
+                      Sin imagen
                     </div>
-                  </div>
-                  <div className="grid gap-5 p-5">
-                    <div className="grid gap-3">
-                      <h2 className="text-xl font-semibold leading-tight text-slate-900 dark:text-white">
-                        {product.title}
-                      </h2>
-                      <p className="text-lg font-semibold text-slate-900 dark:text-white">
-                        {formatPrice({
-                          currency: product.currency || profile.shopCurrency || 'COP',
-                          price: product.price,
-                        })}
+                  )}
+                </div>
+
+                <div className="space-y-4 p-5">
+                  <div className="space-y-2">
+                    <h2 className="text-lg font-medium text-foreground">
+                      {product.title || 'Producto sin titulo'}
+                    </h2>
+                    {product.description ? (
+                      <p className="text-[13px] leading-6 text-foreground/72 dark:text-white/72">
+                        {product.description}
                       </p>
-                    </div>
+                    ) : null}
+                  </div>
 
-                    {typeof product.externalCheckoutURL === 'string' && product.externalCheckoutURL ? (
+                  <div className="flex flex-wrap gap-2 text-[12px] text-foreground/72 dark:text-white/80">
+                    {typeof product.priceInUSD === 'number' ? (
+                      <span className="rounded-full bg-[#f4efe6] px-3 py-1.5 dark:bg-white/10 dark:text-white">
+                        USD {product.priceInUSD}
+                      </span>
+                    ) : null}
+                    {typeof product.inventory === 'number' ? (
+                      <span className="rounded-full bg-[#f4efe6] px-3 py-1.5 dark:bg-white/10 dark:text-white">
+                        Inventario {product.inventory}
+                      </span>
+                    ) : null}
+                    {product.release?.title ? (
+                      <span className="rounded-full bg-[#f4efe6] px-3 py-1.5 dark:bg-white/10 dark:text-white">
+                        {product.release.title}
+                      </span>
+                    ) : null}
+                  </div>
+
+                  <div className="flex flex-wrap gap-3">
+                    {product.externalCheckoutURL ? (
                       <a
-                        className="inline-flex w-full items-center justify-center rounded-full bg-slate-950 px-4 py-3 text-sm font-medium text-white transition hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
+                        className="inline-flex h-11 items-center justify-center rounded-full bg-[#312e2e] px-5 text-[13px] font-medium text-white transition hover:opacity-90"
                         href={product.externalCheckoutURL}
                         rel="noreferrer"
                         target="_blank"
                       >
-                        {typeof product.checkoutButtonLabel === 'string' && product.checkoutButtonLabel.trim()
-                          ? product.checkoutButtonLabel
-                          : 'Comprar'}
+                        {product.checkoutButtonLabel || 'Comprar'}
                       </a>
-                    ) : (
-                      <div className="inline-flex w-full items-center justify-center rounded-full border border-dashed border-slate-300 px-4 py-3 text-sm text-[#777] dark:border-slate-700 dark:text-[#858c98]">
-                        Compra próximamente
-                      </div>
-                    )}
+                    ) : product.checkoutProvider === 'mercadopago' && isMercadoPagoReadyForProfile(profile) ? (
+                      <a
+                        className="inline-flex h-11 items-center justify-center rounded-full bg-[#312e2e] px-5 text-[13px] font-medium text-white transition hover:opacity-90"
+                        href={`/creator-api/payments/checkout/start?product=${product.id}&profile=${profile.slug}`}
+                      >
+                        Comprar con Mercado Pago
+                      </a>
+                    ) : product.checkoutProvider === 'mercadopago' ? (
+                      <span className="inline-flex h-11 items-center justify-center rounded-full border border-border px-5 text-[13px] font-medium text-foreground/60 dark:border-white/15 dark:text-white/60">
+                        Mercado Pago no disponible
+                      </span>
+                    ) : null}
                   </div>
-                </article>
-              )
-            })}
-          </div>
-        ) : (
-          <div className="rounded-[1.75rem] border border-dashed border-slate-300 bg-white/70 px-6 py-12 text-center dark:border-slate-700 dark:bg-slate-950/50">
-            <p className="text-[12px] uppercase tracking-[0.22em] text-[#777] dark:text-[#858c98]">
-              Shop
-            </p>
-            <h2 className="mt-3 text-2xl font-semibold text-slate-900 dark:text-white">
-              Aún no hay productos activos
-            </h2>
-            <p className="mx-auto mt-4 max-w-xl text-sm leading-7 text-[#777] dark:text-[#858c98]">
-              Esta tienda todavía está preparando su primer drop. Vuelve pronto para descubrir
-              nuevos productos, lanzamientos especiales o tickets.
-            </p>
-          </div>
-        )}
+                </div>
+              </article>
+            )
+          })}
+        </div>
       </div>
     </div>
   )
