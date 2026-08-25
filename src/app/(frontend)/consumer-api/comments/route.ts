@@ -28,6 +28,7 @@ export async function POST(request: Request) {
   )
 
   const consumerProfileID = resolveUserConsumerProfileID(user)
+  const commentStatus = user.authProvider === 'google' ? 'approved' : 'pending'
 
   if (!consumerProfileID) {
     payload.logger.warn({ userID: user.id }, 'Fan comment rejected: missing consumer profile.')
@@ -113,7 +114,7 @@ export async function POST(request: Request) {
       content,
       release: releaseID,
       source: 'release-public',
-      status: 'pending',
+      status: commentStatus,
     },
     depth: 0,
     overrideAccess: false,
