@@ -4,7 +4,9 @@ import { headers } from 'next/headers'
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 
+import { CommentDeleteButton } from '@/components/CommentDeleteButton'
 import type { Comment as CommentDoc, User } from '@/payload-types'
+import { formatCommentDate } from '@/utilities/formatCommentDate'
 import { isFanUser } from '@/utilities/isEditorialUser'
 import { resolveUserConsumerProfileID } from '@/utilities/userRelations'
 import { ReleaseCommentsForm } from './ReleaseCommentsForm'
@@ -98,12 +100,11 @@ export async function ReleaseCommentsSection({ artistProfileId, releaseId, share
   const user = await getAuthenticatedUser().catch(() => null)
   const consumerProfileId = resolveUserConsumerProfileID(user)
   const isFan = isFanUser(user)
-  const comments = isFan
-    ? await getVisibleComments({
-        consumerProfileId,
-        releaseId,
-      })
-    : []
+  const comments = await getVisibleComments({
+    consumerProfileId: isFan ? consumerProfileId : null,
+    releaseId,
+  })
+  const currentUserId = user?.id ? String(user.id) : null
 
   return (
     <section className="px-4 pb-16 pt-10 md:px-0">
@@ -131,38 +132,49 @@ export async function ReleaseCommentsSection({ artistProfileId, releaseId, share
           </p>
         )}
 
-        {isFan ? (
-          <div className="space-y-6">
-            {comments.length > 0 ? (
-              comments.map((comment) => {
-                const authorName =
-                  comment.authorUser &&
-                  typeof comment.authorUser === 'object' &&
-                  comment.authorUser.name
-                    ? comment.authorUser.name
-                    : 'Fan'
+        <div className="space-y-6">
+          {comments.length > 0 ? (
+            comments.map((comment) => {
+              const authorName =
+                comment.authorUser &&
+                typeof comment.authorUser === 'object' &&
+                comment.authorUser.name
+                  ? comment.authorUser.name
+                  : 'Fan'
+              const canDelete =
+                isFan &&
+                currentUserId &&
+                comment.authorUser &&
+                typeof comment.authorUser === 'object' &&
+                String(comment.authorUser.id) === currentUserId
 
-                return (
-                  <article
-                    id={`comment-${comment.id}`}
-                    key={comment.id}
-                    className="space-y-2 border-t border-border pt-4 first:border-t-0 first:pt-0"
-                  >
-                    <div className="flex flex-wrap gap-x-3 gap-y-1 text-[12px] text-foreground/60">
-                      <span>{authorName}</span>
-                      {comment.status === 'pending' ? <span>Pendiente de revisión</span> : null}
-                    </div>
-                    <p className="text-[13px] leading-6 text-foreground/80">{comment.content}</p>
-                  </article>
-                )
-              })
-            ) : (
-              <p className="text-[13px] leading-6 text-foreground/75">
-                Aún no hay comentarios publicados para este lanzamiento.
-              </p>
-            )}
-          </div>
-        ) : null}
+              return (
+                <article
+                  id={`comment-${comment.id}`}
+                  key={comment.id}
+                  className="space-y-2 border-t border-border pt-4 first:border-t-0 first:pt-0"
+                >
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] text-foreground/60">
+                    <span>{authorName}</span>
+                    <span>{formatCommentDate(comment.createdAt)}</span>
+                    {comment.status === 'pending' ? <span>Pendiente de revisión</span> : null}
+                    {canDelete ? (
+                      <CommentDeleteButton
+                        className="text-[12px] text-foreground/65 underline underline-offset-2"
+                        commentId={comment.id}
+                      />
+                    ) : null}
+                  </div>
+                  <p className="text-[13px] leading-6 text-foreground/80">{comment.content}</p>
+                </article>
+              )
+            })
+          ) : (
+            <p className="text-[13px] leading-6 text-foreground/75">
+              Aún no hay comentarios publicados para este lanzamiento.
+            </p>
+          )}
+        </div>
       </div>
     </section>
   )

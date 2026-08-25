@@ -4,8 +4,10 @@ import { getPayload } from 'payload'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 
+import { CommentDeleteButton } from '@/components/CommentDeleteButton'
 import type { Comment, Profile } from '@/payload-types'
 import { SITE_NAME } from '@/seo/site'
+import { formatCommentDate } from '@/utilities/formatCommentDate'
 import { getMeUser } from '@/utilities/getMeUser'
 import { isFanUser } from '@/utilities/isEditorialUser'
 import { resolveUserConsumerProfileID } from '@/utilities/userRelations'
@@ -25,15 +27,6 @@ export const metadata: Metadata = {
 type CommentWithRelations = Comment & {
   artistProfile?: null | Pick<Profile, 'displayName' | 'id' | 'slug'>
   release?: null | Pick<any, 'id' | 'slug' | 'title'>
-}
-
-function formatDate(value?: null | string) {
-  if (!value) return null
-
-  return new Intl.DateTimeFormat('es-CO', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(new Date(value))
 }
 
 async function getFanComments(consumerProfileID: string) {
@@ -149,11 +142,15 @@ export default async function FanAccountPage() {
                             ? 'Publicado'
                             : 'Pendiente de revisión'}
                         </span>
-                        <span>{formatDate(comment.createdAt)}</span>
+                        <span>{formatCommentDate(comment.createdAt)}</span>
                       </div>
                       <p className="text-[13px] leading-6 text-foreground/80">
                         {comment.content}
                       </p>
+                      <CommentDeleteButton
+                        className="text-[12px] text-foreground/65 underline underline-offset-2"
+                        commentId={comment.id}
+                      />
                     </article>
                   )
                 })}

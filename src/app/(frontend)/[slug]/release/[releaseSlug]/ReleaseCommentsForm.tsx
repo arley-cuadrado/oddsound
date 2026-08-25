@@ -34,14 +34,24 @@ export function ReleaseCommentsForm({ artistProfileId, releaseId }: Props) {
         method: 'POST',
       })
 
-      const result = (await response.json().catch(() => null)) as { message?: string; ok?: boolean } | null
+      const result = (await response.json().catch(() => null)) as {
+        comment?: {
+          status?: 'approved' | 'pending' | 'rejected'
+        }
+        message?: string
+        ok?: boolean
+      } | null
 
       if (!response.ok || !result?.ok) {
         throw new Error(result?.message || 'No fue posible enviar tu comentario.')
       }
 
       setContent('')
-      setMessage('Tu comentario quedó enviado y está pendiente de revisión.')
+      setMessage(
+        result?.comment?.status === 'approved'
+          ? 'Tu comentario quedó publicado.'
+          : 'Tu comentario quedó enviado y está pendiente de revisión.',
+      )
       router.refresh()
     } catch (caughtError) {
       setError(caughtError instanceof Error ? caughtError.message : 'Algo salió mal.')
