@@ -33,15 +33,15 @@ export default async function Page() {
   })
 
   return (
-    <div className="mx-auto max-w-4xl pt-24 pb-24">
+    <div className="mx-auto max-w-4xl pb-4 pt-4 md:pb-12 md:pt-16">
       <PageClient />
-      <div className="container mb-16">
+      <div className="container mb-4">
         <div className="prose dark:prose-invert max-w-none">
           <h1>Posts</h1>
         </div>
       </div>
 
-      <div className="container mb-8">
+      <div className="container mb-4">
         <PageRange
           collection="posts"
           currentPage={posts.page}

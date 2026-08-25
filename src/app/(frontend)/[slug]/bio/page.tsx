@@ -148,9 +148,9 @@ export default async function ArtistBioPage({ params: paramsPromise }: Args) {
       : null
 
   return (
-    <div className="mx-auto max-w-4xl pb-24 pt-12 md:pt-4">
+    <div className="mx-auto max-w-4xl pb-4 pt-4 md:pb-12">
       <div className="container">
-        <header className="mb-12 overflow-hidden rounded-none text-white">
+        <header className="mb-4 overflow-hidden rounded-none text-white">
           <div className="relative grid gap-5">
             {biographyHeroMedia ? (
               <div className="grid items-center gap-8 md:grid-cols-[minmax(0,1.05fr)_minmax(18rem,0.95fr)] md:gap-12">
@@ -202,7 +202,7 @@ export default async function ArtistBioPage({ params: paramsPromise }: Args) {
           </div>
         </header>
 
-        <div className="mb-10 flex flex-wrap gap-x-6 gap-y-3">
+        <div className="mb-4 flex flex-wrap gap-x-6 gap-y-3">
           <Link
             href={`/${profile.slug}/releases`}
             className="inline-flex items-center rounded-full px-4 py-2 text-[13px] font-medium text-white shadow-sm transition-transform hover:-translate-y-0.5"
@@ -241,7 +241,7 @@ export default async function ArtistBioPage({ params: paramsPromise }: Args) {
           </div>
         ) : null}
       </div>
-      <div className="pt-10">
+      <div className="pt-4 md:pt-6">
         <div className="container">
           {Array.isArray(socialLinksSource?.socialLinks) &&
           socialLinksSource.socialLinks.length > 0 ? (

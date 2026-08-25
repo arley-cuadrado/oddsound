@@ -23,7 +23,7 @@ export const PostHero: React.FC<{
   }, [setHeaderTheme])
 
   return (
-    <div className="relative mt-8 overflow-hidden text-white container" data-theme="dark">
+    <div className="relative mt-4 overflow-hidden text-white container" data-theme="dark">
       <div className="relative h-[400px] select-none">
         {heroImage && typeof heroImage !== 'string' && (
           <Media fill imgClassName="-z-10 object-cover rounded-lg" priority resource={heroImage} />

@@ -23,7 +23,7 @@ export const MediumImpactHero: React.FC<MediumImpactHeroProps> = ({
   const creatorMeta = [creatorGenre, creatorCountry].filter(Boolean).join(' · ')
 
   return (
-    <div className="container mt-12 px-4 py-0 md:mt-4 md:px-6">
+    <div className="container mt-4 px-4 py-0 md:px-6">
       <div className="grid items-center gap-8 md:grid-cols-[minmax(0,1.05fr)_minmax(18rem,0.95fr)] md:gap-12">
         <div className="h-[272px] overflow-hidden md:h-[320px]">
           {media && typeof media === 'object' && (

@@ -101,7 +101,7 @@ export default async function Page({ params: paramsPromise }: Args) {
         pageTitle={page.title}
       />
       {creatorProfile?.slug ? (
-        <div className="flex flex-wrap justify-center gap-x-6 gap-y-3 px-4 pb-6 pt-6 md:px-0">
+        <div className="flex flex-wrap justify-center gap-x-6 gap-y-3 px-4 py-4 md:px-0">
           <Link
             href={`/${creatorProfile.slug}/releases`}
             prefetch={false}
