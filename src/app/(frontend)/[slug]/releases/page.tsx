@@ -14,6 +14,8 @@ import { buildProfilesByOwnerId, mapRelease } from '../../home-components/releas
 import type { ReleaseItem } from '../../home-components/types'
 import { hasPublishedCommerceProducts } from '@/utilities/commerceProducts'
 
+export const dynamic = 'force-dynamic'
+
 type Args = {
   params: Promise<{
     slug?: string

@@ -15,6 +15,8 @@ import { mergeOpenGraph } from '@/utilities/mergeOpenGraph'
 const FALLBACK_SLIDER_IMAGE = '/home-images/hero.jpeg'
 const LEGACY_MEDIA_API_SEGMENT = '/api/media/file/'
 
+export const dynamic = 'force-dynamic'
+
 export const metadata: Metadata = {
   title: SITE_TITLE,
   description: HOME_DESCRIPTION,
