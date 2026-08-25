@@ -131,22 +131,27 @@ export async function ReleaseCommentsSection({ artistProfileId, releaseId }: Pro
                   ? comment.authorUser.name
                   : 'Fan'
 
-              return (
-                <article key={comment.id} className="space-y-2 border-t border-border pt-4 first:border-t-0 first:pt-0">
-                  <div className="flex flex-wrap gap-x-3 gap-y-1 text-[12px] text-foreground/60">
-                    <span>{authorName}</span>
-                    {comment.status === 'pending' ? <span>Pendiente de revisión</span> : null}
-                  </div>
-                  <p className="text-[13px] leading-6 text-foreground/80">{comment.content}</p>
-                </article>
-              )
-            })
-          ) : (
-            <p className="text-[13px] leading-6 text-foreground/75">
-              Aún no hay comentarios publicados para este lanzamiento.
-            </p>
-          )}
-        </div>
+                return (
+                  <article
+                    id={`comment-${comment.id}`}
+                    key={comment.id}
+                    className="space-y-2 border-t border-border pt-4 first:border-t-0 first:pt-0"
+                  >
+                    <div className="flex flex-wrap gap-x-3 gap-y-1 text-[12px] text-foreground/60">
+                      <span>{authorName}</span>
+                      {comment.status === 'pending' ? <span>Pendiente de revisión</span> : null}
+                    </div>
+                    <p className="text-[13px] leading-6 text-foreground/80">{comment.content}</p>
+                  </article>
+                )
+              })
+            ) : (
+              <p className="text-[13px] leading-6 text-foreground/75">
+                Aún no hay comentarios publicados para este lanzamiento.
+              </p>
+            )}
+          </div>
+        ) : null}
       </div>
     </section>
   )
