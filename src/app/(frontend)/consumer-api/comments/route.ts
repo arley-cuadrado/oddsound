@@ -52,28 +52,63 @@ export async function POST(request: Request) {
     body && typeof body === 'object' && 'release' in body && typeof body.release === 'string'
       ? body.release
       : ''
+  const postID =
+    body && typeof body === 'object' && 'post' in body && typeof body.post === 'string'
+      ? body.post
+      : ''
   const artistProfileID =
     body && typeof body === 'object' && 'artistProfile' in body && typeof body.artistProfile === 'string'
       ? body.artistProfile
       : ''
 
-  if (!content || !releaseID || !artistProfileID) {
-    payload.logger.warn({ artistProfileID, releaseID, userID: user.id }, 'Fan comment rejected: missing required fields.')
+  const hasSingleTarget = Boolean(releaseID) !== Boolean(postID)
+
+  if (!content || !artistProfileID || !hasSingleTarget) {
+    payload.logger.warn(
+      { artistProfileID, postID, releaseID, userID: user.id },
+      'Fan comment rejected: missing required fields.',
+    )
     return Response.json({ message: 'Faltan datos para crear el comentario.' }, { status: 400 })
   }
 
-  const release = await payload
-    .findByID({
-      collection: 'pages',
-      id: releaseID,
-      depth: 0,
-      overrideAccess: true,
-    })
-    .catch(() => null)
+  const targetType = releaseID ? 'release' : 'post'
+  const targetId = releaseID || postID
+  const targetLabel = targetType === 'release' ? 'lanzamiento' : 'artículo'
 
-  if (!release || release._status !== 'published') {
-    payload.logger.warn({ releaseID, userID: user.id }, 'Fan comment rejected: release not available.')
-    return Response.json({ message: 'Este lanzamiento no está disponible para comentarios.' }, { status: 400 })
+  if (targetType === 'release') {
+    const release = await payload
+      .findByID({
+        collection: 'pages',
+        id: releaseID,
+        depth: 0,
+        overrideAccess: true,
+      })
+      .catch(() => null)
+
+    if (!release || release._status !== 'published') {
+      payload.logger.warn({ releaseID, userID: user.id }, 'Fan comment rejected: release not available.')
+      return Response.json(
+        { message: 'Este lanzamiento no está disponible para comentarios.' },
+        { status: 400 },
+      )
+    }
+  } else {
+    const post = await payload
+      .findByID({
+        collection: 'posts',
+        id: postID,
+        depth: 0,
+        overrideAccess: true,
+      })
+      .catch(() => null)
+
+    if (!post || post._status !== 'published') {
+      payload.logger.warn({ postID, userID: user.id }, 'Fan comment rejected: post not available.')
+      return Response.json(
+        { message: 'Este artículo no está disponible para comentarios.' },
+        { status: 400 },
+      )
+    }
   }
 
   const artistProfile = await payload
@@ -86,7 +121,10 @@ export async function POST(request: Request) {
     .catch(() => null)
 
   if (!artistProfile) {
-    payload.logger.warn({ artistProfileID, releaseID, userID: user.id }, 'Fan comment rejected: artist profile not found.')
+    payload.logger.warn(
+      { artistProfileID, postID, releaseID, userID: user.id },
+      'Fan comment rejected: artist profile not found.',
+    )
     return Response.json({ message: 'No fue posible resolver el artista del comentario.' }, { status: 400 })
   }
 
@@ -94,12 +132,13 @@ export async function POST(request: Request) {
     consumerProfileID,
     content,
     payload,
-    releaseID,
+    targetId,
+    targetType,
   })
 
   if (!commentGuard.ok) {
     payload.logger.warn(
-      { consumerProfileID, reason: commentGuard.reason, releaseID, userID: user.id },
+      { consumerProfileID, postID, reason: commentGuard.reason, releaseID, userID: user.id },
       'Fan comment rejected by guard.',
     )
     return Response.json({ message: commentGuard.message }, { status: 429 })
@@ -112,10 +151,11 @@ export async function POST(request: Request) {
       authorUser: String(user.id),
       consumerProfile: consumerProfileID,
       content,
-      release: releaseID,
-      source: 'release-public',
+      post: postID || undefined,
+      release: releaseID || undefined,
+      source: targetType === 'release' ? 'release-public' : 'article-public',
       status: commentStatus,
-    },
+    } as any,
     depth: 0,
     overrideAccess: false,
     req: payloadReq,
@@ -136,7 +176,9 @@ export async function POST(request: Request) {
     {
       commentID: comment.id,
       durationMs: Date.now() - startedAt,
+      postID,
       releaseID,
+      targetType,
       userID: user.id,
     },
     'Fan comment created.',

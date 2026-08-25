@@ -11,9 +11,10 @@ export async function validateConsumerCommentSubmission(args: {
   consumerProfileID: string
   content: string
   payload: Payload
-  releaseID: string
+  targetId: string
+  targetType: 'post' | 'release'
 }) {
-  const { consumerProfileID, content, payload, releaseID } = args
+  const { consumerProfileID, content, payload, targetId, targetType } = args
   const result = await payload.find({
     collection: 'comments',
     depth: 0,
@@ -29,8 +30,8 @@ export async function validateConsumerCommentSubmission(args: {
           },
         },
         {
-          release: {
-            equals: releaseID,
+          [targetType]: {
+            equals: targetId,
           },
         },
       ],
@@ -46,7 +47,10 @@ export async function validateConsumerCommentSubmission(args: {
 
     if (!Number.isNaN(latestCommentAt) && now - latestCommentAt < COMMENT_COOLDOWN_MS) {
       return {
-        message: 'Espera un momento antes de enviar otro comentario sobre este lanzamiento.',
+        message:
+          targetType === 'post'
+            ? 'Espera un momento antes de enviar otro comentario sobre este artículo.'
+            : 'Espera un momento antes de enviar otro comentario sobre este lanzamiento.',
         ok: false as const,
         reason: 'cooldown',
       }
@@ -67,7 +71,10 @@ export async function validateConsumerCommentSubmission(args: {
 
   if (hasDuplicate) {
     return {
-      message: 'Ya enviaste un comentario igual recientemente para este lanzamiento.',
+      message:
+        targetType === 'post'
+          ? 'Ya enviaste un comentario igual recientemente para este artículo.'
+          : 'Ya enviaste un comentario igual recientemente para este lanzamiento.',
       ok: false as const,
       reason: 'duplicate',
     }

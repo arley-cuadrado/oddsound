@@ -1093,12 +1093,13 @@ export interface Comment {
   id: string;
   authorUser: string | User;
   consumerProfile: string | ConsumerProfile;
-  release: string | Page;
+  release?: (string | null) | Page;
+  post?: (string | null) | Post;
   artistProfile: string | Profile;
   content: string;
   status: 'pending' | 'approved' | 'rejected';
   purchaseVerified?: boolean | null;
-  source: 'release-public';
+  source: 'release-public' | 'article-public';
   moderatedAt?: string | null;
   moderatedBy?: (string | null) | User;
   updatedAt: string;
@@ -2067,6 +2068,7 @@ export interface CommentsSelect<T extends boolean = true> {
   authorUser?: T;
   consumerProfile?: T;
   release?: T;
+  post?: T;
   artistProfile?: T;
   content?: T;
   status?: T;

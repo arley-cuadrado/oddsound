@@ -12,11 +12,15 @@ import type { Post } from '@/payload-types'
 
 import { PostHero } from '@/heros/PostHero'
 import { generateMeta } from '@/utilities/generateMeta'
+import { getServerSideURL } from '@/utilities/getURL'
+import { getPostShareData } from '@/utilities/getPostShareData'
 import PageClient from './page.client'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
 import { RenderBlocks } from '@/blocks/RenderBlocks'
 import PostShareSection from '@/components/PostShareSection'
 import PostEditorialFooter from '@/components/PostEditorialFooter'
+import { mergeOpenGraph } from '@/utilities/mergeOpenGraph'
+import { ConsumerCommentsSection } from '@/components/ConsumerCommentsSection'
 
 export async function generateStaticParams() {
   const payload = await getPayload({ config: configPromise })
@@ -72,14 +76,16 @@ export default async function Post({ params: paramsPromise }: Args) {
             data={post.content}
             enableGutter={false}
           />
-          
-          <PostShareSection post={post} />
-          
+
           {Array.isArray(post.layout) && post.layout.length > 0 ? (
             <div className="mx-auto max-w-[48rem] px-4 md:px-0">
               <RenderBlocks blocks={post.layout} disableInnerContainer />
             </div>
           ) : null}
+
+          <div className="mx-auto max-w-[48rem] px-4 md:px-0">
+            <PostShareSection post={post} />
+          </div>
 
           <PostEditorialFooter profile={post.profile} />
 
@@ -89,6 +95,18 @@ export default async function Post({ params: paramsPromise }: Args) {
               docs={post.relatedPosts.filter((post) => typeof post === 'object')}
             />
           )}
+
+          {post.profile ? (
+            <div className="mx-auto max-w-[48rem] px-4 md:px-0">
+              <ConsumerCommentsSection
+                artistProfileId={
+                  typeof post.profile === 'object' ? String(post.profile.id) : String(post.profile)
+                }
+                targetId={post.id}
+                targetType="post"
+              />
+            </div>
+          ) : null}
         </div>
       </div>
     </article>
@@ -101,7 +119,36 @@ export async function generateMetadata({ params: paramsPromise }: Args): Promise
   const decodedSlug = decodeURIComponent(slug)
   const post = await queryPostBySlug({ slug: decodedSlug })
 
-  return generateMeta({ doc: post })
+  if (!post) {
+    return generateMeta({ doc: post })
+  }
+
+  const shareData = getPostShareData(post)
+  const description =
+    post.meta?.description?.trim() || shareData.summary || 'Oddsound - Be heard. Stay odd.'
+  const baseTitle = post.meta?.title?.trim() || post.title.trim()
+  const title = baseTitle ? `${baseTitle} | Oddsound` : 'Oddsound - Be heard. Stay odd.'
+  const imageUrl = shareData.bannerImageUrl
+    ? `${getServerSideURL()}${shareData.bannerImageUrl.startsWith('/') ? shareData.bannerImageUrl : `/${shareData.bannerImageUrl}`}`
+    : undefined
+
+  return {
+    description,
+    openGraph: mergeOpenGraph({
+      description,
+      images: imageUrl ? [{ url: imageUrl }] : undefined,
+      title,
+      type: 'article',
+      url: shareData.urlPath,
+    }),
+    title,
+    twitter: {
+      card: 'summary_large_image',
+      description,
+      images: imageUrl ? [imageUrl] : undefined,
+      title,
+    },
+  }
 }
 
 const queryPostBySlug = cache(async ({ slug }: { slug: string }) => {
