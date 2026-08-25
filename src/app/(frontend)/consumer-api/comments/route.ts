@@ -1,5 +1,5 @@
 import config from '@payload-config'
-import { getPayload } from 'payload'
+import { createLocalReq, getPayload } from 'payload'
 import { headers } from 'next/headers'
 
 import { validateConsumerCommentSubmission } from '@/utilities/consumerCommentGuards'
@@ -16,6 +16,16 @@ export async function POST(request: Request) {
     payload.logger.warn('Fan comment rejected: unauthenticated or invalid user type.')
     return Response.json({ message: 'Debes iniciar sesión como fan para comentar.' }, { status: 401 })
   }
+
+  const payloadReq = await createLocalReq(
+    {
+      req: {
+        headers: requestHeaders,
+      } as any,
+      user: user as any,
+    },
+    payload,
+  )
 
   const consumerProfileID = resolveUserConsumerProfileID(user)
 
@@ -107,6 +117,7 @@ export async function POST(request: Request) {
     },
     depth: 0,
     overrideAccess: false,
+    req: payloadReq,
   })
 
   await payload.update({
@@ -116,6 +127,7 @@ export async function POST(request: Request) {
       lastCommentAt: new Date().toISOString(),
     },
     depth: 0,
+    req: payloadReq,
     overrideAccess: true,
   })
 
