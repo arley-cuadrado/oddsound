@@ -2,6 +2,7 @@ import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 import { headers } from 'next/headers'
 import Link from 'next/link'
+import type { ReactNode } from 'react'
 
 import { CommentDeleteButton } from '@/components/CommentDeleteButton'
 import { ConsumerCommentForm } from '@/components/ConsumerCommentForm'
@@ -11,6 +12,7 @@ import { resolveUserConsumerProfileID } from '@/utilities/userRelations'
 
 type Props = {
   artistProfileId: string
+  shareControl?: ReactNode
   targetId: string
   targetType: 'post' | 'release'
 }
@@ -99,7 +101,12 @@ async function getVisibleComments(args: {
   return result.docs as CommentWithAuthor[]
 }
 
-export async function ConsumerCommentsSection({ artistProfileId, targetId, targetType }: Props) {
+export async function ConsumerCommentsSection({
+  artistProfileId,
+  shareControl,
+  targetId,
+  targetType,
+}: Props) {
   const user = await getAuthenticatedUser().catch(() => null)
   const consumerProfileId = resolveUserConsumerProfileID(user)
   const isFan = isFanUser(user)
@@ -114,7 +121,10 @@ export async function ConsumerCommentsSection({ artistProfileId, targetId, targe
   return (
     <section className="px-4 pb-16 pt-10 md:px-0">
       <div className="space-y-8 border-t border-border pt-8">
-        <h2 className="text-lg font-medium text-foreground">Comentarios</h2>
+        <div className="flex items-center justify-between gap-4">
+          <h2 className="text-lg font-medium text-foreground">Comentarios</h2>
+          {shareControl}
+        </div>
 
         {isFan ? (
           <ConsumerCommentForm

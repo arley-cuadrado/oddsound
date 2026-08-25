@@ -52,17 +52,15 @@ export default function PostShareSection({ post }: PostShareSectionProps) {
   const heroImageUrl = getHeroImageUrl()
 
   return (
-    <div className="flex justify-center pt-6 pb-2">
-      <SharePostButton
-        context="posts"
-        title={post.title}
-        slug={post.slug}
-        content={contentText}
-        urlPath={`/posts/${post.slug}`}
-        bannerImageUrl={heroImageUrl}
-        authorName={authorName}
-        authorAvatarUrl={avatarUrl}
-      />
-    </div>
+    <SharePostButton
+      context="posts"
+      title={post.title}
+      slug={post.slug}
+      content={contentText}
+      urlPath={`/posts/${post.slug}`}
+      bannerImageUrl={heroImageUrl}
+      authorName={authorName}
+      authorAvatarUrl={avatarUrl}
+    />
   )
 }

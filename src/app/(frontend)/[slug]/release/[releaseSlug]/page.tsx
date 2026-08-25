@@ -224,17 +224,6 @@ export default async function ReleaseDetailPage({ params: paramsPromise }: Args)
         </div>
       ) : null}
       <RenderBlocks blocks={artistLayout} hiddenBlockTypes={['socialMediaBlock']} />
-      <div className="flex justify-center px-4 pb-6 pt-6 md:px-0">
-        <SharePostButton
-          authorName={creatorProfile?.displayName || undefined}
-          bannerImageUrl={releaseShareImage}
-          content={releaseShareContent}
-          resourceLabel="lanzamiento"
-          slug={page.slug || decodedReleaseSlug}
-          title={page.title}
-          urlPath={releaseShareUrlPath}
-        />
-      </div>
       {Array.isArray(page.socialLinks) && page.socialLinks.length > 0 ? (
         <div className="px-4 pb-12 pt-6 md:px-0">
           <SocialMediaBlock socialLinks={page.socialLinks} />
@@ -243,6 +232,17 @@ export default async function ReleaseDetailPage({ params: paramsPromise }: Args)
       {typeof page.id === 'string' && creatorProfile?.id ? (
         <ConsumerCommentsSection
           artistProfileId={String(creatorProfile.id)}
+          shareControl={
+            <SharePostButton
+              authorName={creatorProfile?.displayName || undefined}
+              bannerImageUrl={releaseShareImage}
+              content={releaseShareContent}
+              resourceLabel="lanzamiento"
+              slug={page.slug || decodedReleaseSlug}
+              title={page.title}
+              urlPath={releaseShareUrlPath}
+            />
+          }
           targetId={page.id}
           targetType="release"
         />

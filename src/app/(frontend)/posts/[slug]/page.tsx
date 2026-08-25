@@ -83,10 +83,6 @@ export default async function Post({ params: paramsPromise }: Args) {
             </div>
           ) : null}
 
-          <div className="mx-auto max-w-[48rem] px-4 md:px-0">
-            <PostShareSection post={post} />
-          </div>
-
           <PostEditorialFooter profile={post.profile} />
 
           {post.relatedPosts && post.relatedPosts.length > 0 && (
@@ -102,6 +98,7 @@ export default async function Post({ params: paramsPromise }: Args) {
                 artistProfileId={
                   typeof post.profile === 'object' ? String(post.profile.id) : String(post.profile)
                 }
+                shareControl={<PostShareSection post={post} />}
                 targetId={post.id}
                 targetType="post"
               />
