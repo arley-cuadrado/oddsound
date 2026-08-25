@@ -144,6 +144,7 @@ export async function ReleaseCommentsSection({ artistProfileId, releaseId, share
 
                 return (
                   <article
+                    id={`comment-${comment.id}`}
                     key={comment.id}
                     className="space-y-2 border-t border-border pt-4 first:border-t-0 first:pt-0"
                   >
