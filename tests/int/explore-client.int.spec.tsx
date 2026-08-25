@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it } from 'vitest'
 
 import { ExploreClient } from '@/app/(frontend)/search/ExploreClient'
 import type { DiscoveryPool } from '@/app/(frontend)/search/discovery/types'
+import { SEARCH_PLACEHOLDER } from '@/search/Component'
 
 const pool: DiscoveryPool = {
   artists: [
@@ -98,7 +99,7 @@ describe('ExploreClient', () => {
   it('filters as the visitor types, ignoring diacritics', async () => {
     renderExplore()
 
-    fireEvent.change(screen.getByPlaceholderText('Comienza a descubrir ;)'), {
+    fireEvent.change(screen.getByPlaceholderText(SEARCH_PLACEHOLDER), {
       target: { value: 'mexico' },
     })
 
@@ -112,7 +113,7 @@ describe('ExploreClient', () => {
   it('keeps the query in the URL without a navigation', async () => {
     renderExplore()
 
-    fireEvent.change(screen.getByPlaceholderText('Comienza a descubrir ;)'), {
+    fireEvent.change(screen.getByPlaceholderText(SEARCH_PLACEHOLDER), {
       target: { value: 'cumbia' },
     })
 
@@ -156,7 +157,7 @@ describe('ExploreClient', () => {
   it('offers a way out when nothing matches', async () => {
     renderExplore()
 
-    fireEvent.change(screen.getByPlaceholderText('Comienza a descubrir ;)'), {
+    fireEvent.change(screen.getByPlaceholderText(SEARCH_PLACEHOLDER), {
       target: { value: 'reggaeton' },
     })
 

@@ -7,6 +7,8 @@ type SearchProps = {
   value: string
 }
 
+export const SEARCH_PLACEHOLDER = 'Champeta, Cartagena, Keke Minowa …'
+
 /**
  * Controlled discovery input. Filtering happens as the visitor types, so the
  * form only exists to keep Enter and assistive tech behaving; the owner of the
@@ -30,7 +32,7 @@ export const Search: React.FC<SearchProps> = ({ onValueChange, value }) => {
           onChange={(event) => {
             onValueChange(event.target.value)
           }}
-          placeholder="Champeta, Cartagena, Keke Minowa …"
+          placeholder={SEARCH_PLACEHOLDER}
           spellCheck={false}
           value={value}
         />

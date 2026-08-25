@@ -50,7 +50,6 @@ async function getFanComments(consumerProfileID: string) {
 }
 
 export default async function FanAccountPage() {
-  const startedAt = Date.now()
   const { user } = await getMeUser({
     nullUserRedirect: '/fan/login',
   })
@@ -71,7 +70,6 @@ export default async function FanAccountPage() {
   payload.logger.info(
     {
       commentsCount: comments.length,
-      durationMs: Date.now() - startedAt,
       userID: user.id,
     },
     'Fan account loaded.',

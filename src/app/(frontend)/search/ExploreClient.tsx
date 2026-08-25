@@ -53,10 +53,6 @@ export const ExploreClient: React.FC<ExploreClientProps> = ({
   const visibleTiles = feed.tiles.slice(0, visibleCount)
   const hasMore = visibleCount < feed.tiles.length
 
-  useEffect(() => {
-    setVisibleCount(TILES_PER_BATCH)
-  }, [country, filterQuery, genre, tab])
-
   // Sync the URL through the History API instead of the router: the state is
   // shareable and restorable without re-running the server component on every
   // keystroke, which would defeat the whole point of filtering in memory.
@@ -110,23 +106,36 @@ export const ExploreClient: React.FC<ExploreClientProps> = ({
   }, [hasMore])
 
   const toggleGenre = useCallback((value: string) => {
+    setVisibleCount(TILES_PER_BATCH)
     setGenre((previous) => (previous === value ? '' : value))
   }, [])
 
   const toggleCountry = useCallback((value: string) => {
+    setVisibleCount(TILES_PER_BATCH)
     setCountry((previous) => (previous === value ? '' : value))
   }, [])
 
   const clearFilters = useCallback(() => {
+    setVisibleCount(TILES_PER_BATCH)
     setQuery('')
     setGenre('')
     setCountry('')
     setTab('all')
   }, [])
 
+  const handleQueryChange = useCallback((value: string) => {
+    setVisibleCount(TILES_PER_BATCH)
+    setQuery(value)
+  }, [])
+
+  const handleTabChange = useCallback((value: DiscoveryTab) => {
+    setVisibleCount(TILES_PER_BATCH)
+    setTab(value)
+  }, [])
+
   return (
     <div className="space-y-6">
-      <Search onValueChange={setQuery} value={query} />
+      <Search onValueChange={handleQueryChange} value={query} />
 
       <TopicChips
         activeCountry={country}
@@ -137,7 +146,7 @@ export const ExploreClient: React.FC<ExploreClientProps> = ({
         onToggleGenre={toggleGenre}
       />
 
-      <ResultTabs activeTab={tab} counts={feed.counts} onChange={setTab} />
+      <ResultTabs activeTab={tab} counts={feed.counts} onChange={handleTabChange} />
 
       {visibleTiles.length > 0 ? (
         <div className="grid grid-cols-3 gap-1.5 [grid-auto-flow:dense] sm:gap-2">

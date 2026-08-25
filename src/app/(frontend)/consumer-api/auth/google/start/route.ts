@@ -10,8 +10,8 @@ import { getServerSideURL } from '@/utilities/getURL'
 
 const CONSUMER_POST_LOGIN_REDIRECT_COOKIE = 'consumer-post-login-redirect'
 
-export async function GET() {
-  const url = new URL(arguments[0]?.url || `${getServerSideURL()}/consumer-api/auth/google/start`)
+export async function GET(request: Request) {
+  const url = new URL(request.url || `${getServerSideURL()}/consumer-api/auth/google/start`)
   const next = url.searchParams.get('next')
 
   if (!isGoogleConsumerOAuthConfigured()) {

@@ -4,7 +4,7 @@ import { hasFreshAdminAccess } from '@/access/hasFreshAdminAccess'
 import { payloadDashboardAccess } from '@/access/payloadDashboardAccess'
 import { isFanUser } from '@/utilities/isEditorialUser'
 import { isAdminUser } from '@/utilities/isAdminUser'
-import { resolveUserConsumerProfileID, resolveUserProfileID } from '@/utilities/userRelations'
+import { resolveUserProfileID } from '@/utilities/userRelations'
 
 const canCreateComment: Access = ({ req }) => {
   const user = req.user

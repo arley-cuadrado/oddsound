@@ -2,9 +2,7 @@ import React from 'react'
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { Search } from '@/search/Component'
-
-const PLACEHOLDER = 'Comienza a descubrir ;)'
+import { Search, SEARCH_PLACEHOLDER } from '@/search/Component'
 
 describe('Search', () => {
   afterEach(() => {
@@ -16,7 +14,7 @@ describe('Search', () => {
 
     render(React.createElement(Search, { onValueChange, value: '' }))
 
-    fireEvent.change(screen.getByPlaceholderText(PLACEHOLDER), {
+    fireEvent.change(screen.getByPlaceholderText(SEARCH_PLACEHOLDER), {
       target: { value: 'indie rock' },
     })
 
@@ -28,7 +26,7 @@ describe('Search', () => {
 
     render(React.createElement(Search, { onValueChange, value: 'indie rock' }))
 
-    const form = screen.getByPlaceholderText(PLACEHOLDER).closest('form') as HTMLFormElement
+    const form = screen.getByPlaceholderText(SEARCH_PLACEHOLDER).closest('form') as HTMLFormElement
     const submitEvent = new Event('submit', { bubbles: true, cancelable: true })
 
     form.dispatchEvent(submitEvent)
