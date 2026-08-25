@@ -193,9 +193,6 @@ const BeforeDashboard = async () => {
           </ul>
 
           <div className={`${baseClass}__links`}>
-            <Link className={`${baseClass}__link`} href="/creator/dashboard">
-              Abrir vista remota de commerce
-            </Link>
             <Link className={`${baseClass}__link`} href="/dashboard/collections/products">
               Gestionar productos
             </Link>
