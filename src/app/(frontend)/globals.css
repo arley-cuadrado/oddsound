@@ -56,32 +56,6 @@
 }
 
 @layer utilities {
-  .od-page-shell {
-    width: 100%;
-    padding-top: 1.5rem;
-    padding-bottom: 6rem;
-  }
-
-  .od-page-stack {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-  }
-
-  .od-section-stack {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-  }
-
-  .od-section-gap {
-    margin-top: 1.5rem;
-  }
-
-  .od-top-gap {
-    margin-top: 1.5rem;
-  }
-
   .container {
     width: 100%;
     margin-inline: auto;
@@ -95,20 +69,6 @@
   }
 
   @variant md {
-    .od-page-shell {
-      padding-top: 1.5rem;
-    }
-
-    .od-page-stack,
-    .od-section-stack {
-      gap: 1.5rem;
-    }
-
-    .od-section-gap,
-    .od-top-gap {
-      margin-top: 1.5rem;
-    }
-
     .container {
       max-width: var(--breakpoint-md);
       padding-inline: 2rem;

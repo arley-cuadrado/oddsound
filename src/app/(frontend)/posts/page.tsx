@@ -33,15 +33,15 @@ export default async function Page() {
   })
 
   return (
-    <div className="od-page-shell mx-auto max-w-4xl">
+    <div className="mx-auto max-w-4xl pt-24 pb-24">
       <PageClient />
-      <div className="container">
+      <div className="container mb-16">
         <div className="prose dark:prose-invert max-w-none">
           <h1>Posts</h1>
         </div>
       </div>
 
-      <div className="container od-section-gap">
+      <div className="container mb-8">
         <PageRange
           collection="posts"
           currentPage={posts.page}
@@ -50,11 +50,9 @@ export default async function Page() {
         />
       </div>
 
-      <div className="od-section-gap">
-        <CollectionArchive posts={posts.docs} />
-      </div>
+      <CollectionArchive posts={posts.docs} />
 
-      <div className="container od-section-gap">
+      <div className="container">
         {posts.totalPages > 1 && posts.page && (
           <Pagination page={posts.page} totalPages={posts.totalPages} />
         )}
