@@ -86,7 +86,7 @@ export default async function Page({ params: paramsPromise }: Args) {
     : []
 
   return (
-    <article className="mx-auto max-w-4xl pb-0 [&_p]:text-[13px]">
+    <article className="od-page-shell mx-auto max-w-4xl [&_p]:text-[13px]">
       <PageClient />
       {/* Allows redirects for valid pages too */}
       <PayloadRedirects disableNotFound url={url} />
@@ -101,7 +101,7 @@ export default async function Page({ params: paramsPromise }: Args) {
         pageTitle={page.title}
       />
       {creatorProfile?.slug ? (
-        <div className="flex flex-wrap justify-center gap-x-6 gap-y-3 px-4 pb-6 pt-6 md:px-0">
+        <div className="od-section-gap flex flex-wrap justify-center gap-x-6 gap-y-3 px-4 md:px-0">
           <Link
             href={`/${creatorProfile.slug}/releases`}
             prefetch={false}

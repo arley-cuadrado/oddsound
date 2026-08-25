@@ -59,7 +59,7 @@ export default async function Post({ params: paramsPromise }: Args) {
   if (!post) return <PayloadRedirects url={url} />
 
   return (
-    <article className="mx-auto max-w-4xl pb-16">
+    <article className="od-page-shell mx-auto max-w-4xl">
       <PageClient />
 
       {/* Allows redirects for valid pages too */}
@@ -69,41 +69,43 @@ export default async function Post({ params: paramsPromise }: Args) {
 
       <PostHero post={post} />
 
-      <div className="flex flex-col items-center gap-4 pt-8">
+      <div className="od-page-stack items-center">
         <div className="container">
-          <RichText
-            className="post-editorial-prose mx-auto max-w-[48rem] px-4 md:px-0"
-            data={post.content}
-            enableGutter={false}
-          />
-
-          {Array.isArray(post.layout) && post.layout.length > 0 ? (
-            <div className="mx-auto max-w-[48rem] px-4 md:px-0">
-              <RenderBlocks blocks={post.layout} disableInnerContainer />
-            </div>
-          ) : null}
-
-          <PostEditorialFooter profile={post.profile} />
-
-          {post.relatedPosts && post.relatedPosts.length > 0 && (
-            <RelatedPosts
-              className="col-start-1 col-span-3 mt-12 max-w-[52rem] px-4 md:px-0 lg:grid lg:grid-cols-subgrid grid-rows-[2fr]"
-              docs={post.relatedPosts.filter((post) => typeof post === 'object')}
+          <div className="od-section-stack">
+            <RichText
+              className="post-editorial-prose mx-auto max-w-[48rem] px-4 md:px-0"
+              data={post.content}
+              enableGutter={false}
             />
-          )}
 
-          {post.profile ? (
-            <div className="mx-auto max-w-[48rem] px-4 md:px-0">
-              <ConsumerCommentsSection
-                artistProfileId={
-                  typeof post.profile === 'object' ? String(post.profile.id) : String(post.profile)
-                }
-                shareControl={<PostShareSection post={post} />}
-                targetId={post.id}
-                targetType="post"
+            {Array.isArray(post.layout) && post.layout.length > 0 ? (
+              <div className="mx-auto max-w-[48rem] px-4 md:px-0">
+                <RenderBlocks blocks={post.layout} disableInnerContainer />
+              </div>
+            ) : null}
+
+            <PostEditorialFooter profile={post.profile} />
+
+            {post.relatedPosts && post.relatedPosts.length > 0 ? (
+              <RelatedPosts
+                className="col-start-1 col-span-3 max-w-[52rem] px-4 md:px-0 lg:grid lg:grid-cols-subgrid grid-rows-[2fr]"
+                docs={post.relatedPosts.filter((post) => typeof post === 'object')}
               />
-            </div>
-          ) : null}
+            ) : null}
+
+            {post.profile ? (
+              <div className="mx-auto max-w-[48rem] px-4 md:px-0">
+                <ConsumerCommentsSection
+                  artistProfileId={
+                    typeof post.profile === 'object' ? String(post.profile.id) : String(post.profile)
+                  }
+                  shareControl={<PostShareSection post={post} />}
+                  targetId={post.id}
+                  targetType="post"
+                />
+              </div>
+            ) : null}
+          </div>
         </div>
       </div>
     </article>

@@ -17,7 +17,7 @@ export function CreatorAuthShell({
   maxWidthClassName = 'max-w-[30rem]',
 }: CreatorAuthShellProps) {
   return (
-    <main className="min-h-screen px-6 py-16">
+    <main className="min-h-screen px-6 py-10 md:py-12">
       <div
         className={cn(
           'mx-auto flex min-h-[calc(100vh-8rem)] flex-col justify-center',

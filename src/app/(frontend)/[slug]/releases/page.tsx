@@ -116,9 +116,9 @@ export default async function ArtistReleasesPage({ params: paramsPromise }: Args
   })
 
   return (
-    <div className="mx-auto max-w-4xl pb-24 pt-24 [&_p]:text-[13px]">
+    <div className="od-page-shell mx-auto max-w-4xl [&_p]:text-[13px]">
       <div className="container">
-        <header className="mb-12 text-center">
+        <header className="text-center">
           <h1 className="text-4xl font-semibold tracking-tight text-slate-900 dark:text-white">
             Lanzamientos de {bandName}
           </h1>
@@ -143,7 +143,7 @@ export default async function ArtistReleasesPage({ params: paramsPromise }: Args
           </div>
         </header>
 
-        <div className="mx-auto max-w-[50rem]">
+        <div className="od-section-gap mx-auto max-w-[50rem]">
           {releases.length > 0 ? (
             <div className="grid grid-cols-2 gap-4 md:gap-6 xl:grid-cols-4">
               {releases.map((release) => (
