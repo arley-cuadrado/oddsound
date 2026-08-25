@@ -4,6 +4,8 @@ import { headers } from 'next/headers'
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 
+import { CommentDeleteButton } from '@/components/CommentDeleteButton'
+import { formatCommentDate } from '@/utilities/formatCommentDate'
 import type { Comment as CommentDoc, User } from '@/payload-types'
 import { isFanUser } from '@/utilities/isEditorialUser'
 import { resolveUserConsumerProfileID } from '@/utilities/userRelations'
@@ -104,6 +106,7 @@ export async function ReleaseCommentsSection({ artistProfileId, releaseId, share
         releaseId,
       })
     : []
+  const currentUserId = user?.id ? String(user.id) : null
 
   return (
     <section className="px-4 pb-16 pt-10 md:px-0">
@@ -148,9 +151,19 @@ export async function ReleaseCommentsSection({ artistProfileId, releaseId, share
                     key={comment.id}
                     className="space-y-2 border-t border-border pt-4 first:border-t-0 first:pt-0"
                   >
-                    <div className="flex flex-wrap gap-x-3 gap-y-1 text-[12px] text-foreground/60">
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] text-foreground/60">
                       <span>{authorName}</span>
+                      <span>{formatCommentDate(comment.createdAt)}</span>
                       {comment.status === 'pending' ? <span>Pendiente de revisión</span> : null}
+                      {currentUserId &&
+                      comment.authorUser &&
+                      typeof comment.authorUser === 'object' &&
+                      String(comment.authorUser.id) === currentUserId ? (
+                        <CommentDeleteButton
+                          className="text-[12px] text-foreground/65 underline underline-offset-2"
+                          commentId={comment.id}
+                        />
+                      ) : null}
                     </div>
                     <p className="text-[13px] leading-6 text-foreground/80">{comment.content}</p>
                   </article>

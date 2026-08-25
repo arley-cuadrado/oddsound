@@ -9,6 +9,8 @@ import { ExploreClient } from './ExploreClient'
 
 import PageClient from './page.client'
 
+export const dynamic = 'force-dynamic'
+
 type Args = {
   searchParams: Promise<{
     country?: string

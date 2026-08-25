@@ -89,6 +89,15 @@ function revalidateHomeFeed(args: {
     payload,
     sitemapTag,
   })
+
+  payload.logger.info('Revalidating discovery pool tag: discovery-pool')
+
+  try {
+    revalidateTag('discovery-pool', 'max')
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown discovery tag revalidation error'
+    payload.logger.warn(`Skipping discovery pool revalidation: ${message}`)
+  }
 }
 
 async function revalidateProfileReleaseSurfaces(args: {

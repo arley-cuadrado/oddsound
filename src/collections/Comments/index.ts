@@ -104,7 +104,7 @@ export const Comments: CollectionConfig = {
   },
   admin: {
     defaultColumns: ['release', 'status', 'purchaseVerified', 'createdAt'],
-    hidden: ({ user }) => !isAdminUser(user as { role?: null | string } | null | undefined),
+    hidden: ({ user }) => !user || isFanUser(user),
     useAsTitle: 'content',
   },
   fields: [
