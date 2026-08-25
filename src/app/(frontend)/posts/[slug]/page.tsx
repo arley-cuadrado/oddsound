@@ -72,14 +72,16 @@ export default async function Post({ params: paramsPromise }: Args) {
             data={post.content}
             enableGutter={false}
           />
-          
-          <PostShareSection post={post} />
-          
+
           {Array.isArray(post.layout) && post.layout.length > 0 ? (
             <div className="mx-auto max-w-[48rem] px-4 md:px-0">
               <RenderBlocks blocks={post.layout} disableInnerContainer />
             </div>
           ) : null}
+
+          <div className="mx-auto max-w-[48rem] px-4 md:px-0">
+            <PostShareSection post={post} />
+          </div>
 
           <PostEditorialFooter profile={post.profile} />
 

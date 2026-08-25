@@ -37,6 +37,17 @@ export default function PostShareSection({ post }: PostShareSectionProps) {
     return undefined
   }
 
+  const getAuthorRole = (): string => {
+    const profile = post.profile
+
+    if (typeof profile === 'object' && profile !== null && 'editorGender' in profile) {
+      if (profile.editorGender === 'female') return 'Editora'
+      if (profile.editorGender === 'male') return 'Editor'
+    }
+
+    return 'Editor'
+  }
+
   // Get hero image URL
   const getHeroImageUrl = (): string | undefined => {
     const heroImage = post.heroImage
@@ -49,10 +60,11 @@ export default function PostShareSection({ post }: PostShareSectionProps) {
   const contentText = extractLexicalPlainText(post.content)
   const authorName = getAuthorName()
   const avatarUrl = getAvatarUrl()
+  const authorRole = getAuthorRole()
   const heroImageUrl = getHeroImageUrl()
 
   return (
-    <div className="flex justify-center pt-6 pb-2">
+    <div className="flex justify-center border-t border-border pt-8">
       <SharePostButton
         context="posts"
         title={post.title}
@@ -62,6 +74,7 @@ export default function PostShareSection({ post }: PostShareSectionProps) {
         bannerImageUrl={heroImageUrl}
         authorName={authorName}
         authorAvatarUrl={avatarUrl}
+        authorRole={authorRole}
       />
     </div>
   )
