@@ -1,7 +1,5 @@
 'use client'
-import React, { useEffect } from 'react'
-
-import { useHeaderTheme } from '@/providers/HeaderTheme'
+import React from 'react'
 
 import type { Post } from '@/payload-types'
 
@@ -13,17 +11,12 @@ export const PostHero: React.FC<{
   post: Post
 }> = ({ post }) => {
   const { categories, heroImage, populatedAuthors, publishedAt, title } = post
-  const { setHeaderTheme } = useHeaderTheme()
 
   const hasAuthors =
     populatedAuthors && populatedAuthors.length > 0 && formatAuthors(populatedAuthors) !== ''
 
-  useEffect(() => {
-    setHeaderTheme('dark')
-  }, [setHeaderTheme])
-
   return (
-    <div className="relative mt-8 overflow-hidden text-white container" data-theme="dark">
+    <div className="relative mt-4 overflow-hidden text-white container" data-theme="dark">
       <div className="relative h-[400px] select-none">
         {heroImage && typeof heroImage !== 'string' && (
           <Media fill imgClassName="-z-10 object-cover rounded-lg" priority resource={heroImage} />

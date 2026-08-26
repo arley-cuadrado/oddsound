@@ -15,7 +15,8 @@ describe('validateConsumerCommentSubmission', () => {
         consumerProfileID: 'consumer-profile-1',
         content: 'Nuevo comentario',
         payload: payload as never,
-        releaseID: 'release-1',
+        targetId: 'release-1',
+        targetType: 'release',
       }),
     ).resolves.toEqual({ ok: true })
   })
@@ -36,7 +37,8 @@ describe('validateConsumerCommentSubmission', () => {
       consumerProfileID: 'consumer-profile-1',
       content: 'Segundo comentario',
       payload: payload as never,
-      releaseID: 'release-1',
+      targetId: 'release-1',
+      targetType: 'release',
     })
 
     expect(result.ok).toBe(false)
@@ -61,7 +63,8 @@ describe('validateConsumerCommentSubmission', () => {
       consumerProfileID: 'consumer-profile-1',
       content: 'me gustó mucho este release',
       payload: payload as never,
-      releaseID: 'release-1',
+      targetId: 'release-1',
+      targetType: 'release',
     })
 
     expect(result.ok).toBe(false)

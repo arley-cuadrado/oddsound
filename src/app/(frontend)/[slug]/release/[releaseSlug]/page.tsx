@@ -23,6 +23,7 @@ import { LivePreviewListener } from '@/components/LivePreviewListener'
 import { RELEASE_PAGE_SELECT } from '../../../home-components/getPublishedReleaseContext'
 import { ReleaseCommentsSection } from './ReleaseCommentsSection'
 import SharePostButton from '@/components/SharePostButton'
+import { ConsumerCommentsSection } from '@/components/ConsumerCommentsSection'
 
 type Args = {
   params: Promise<{
@@ -198,7 +199,7 @@ export default async function ReleaseDetailPage({ params: paramsPromise }: Args)
         pageTitle={page.title}
       />
       {creatorProfile?.slug ? (
-        <div className="flex flex-wrap justify-center gap-x-6 gap-y-3 px-4 pb-6 pt-6 md:px-0">
+        <div className="flex flex-wrap justify-center gap-x-6 gap-y-3 px-4 py-4 md:px-0">
           <Link
             href={`/${creatorProfile.slug}/releases`}
             prefetch={false}
@@ -223,10 +224,14 @@ export default async function ReleaseDetailPage({ params: paramsPromise }: Args)
         </div>
       ) : null}
       <RenderBlocks blocks={artistLayout} hiddenBlockTypes={['socialMediaBlock']} />
+      {Array.isArray(page.socialLinks) && page.socialLinks.length > 0 ? (
+        <div className="px-4 pt-4 md:px-0 md:pb-8">
+          <SocialMediaBlock socialLinks={page.socialLinks} />
+        </div>
+      ) : null}
       {typeof page.id === 'string' && creatorProfile?.id ? (
-        <ReleaseCommentsSection
+        <ConsumerCommentsSection
           artistProfileId={String(creatorProfile.id)}
-          releaseId={page.id}
           shareControl={
             <SharePostButton
               authorName={creatorProfile?.displayName || undefined}
@@ -238,12 +243,9 @@ export default async function ReleaseDetailPage({ params: paramsPromise }: Args)
               urlPath={releaseShareUrlPath}
             />
           }
+          targetId={page.id}
+          targetType="release"
         />
-      ) : null}
-      {Array.isArray(page.socialLinks) && page.socialLinks.length > 0 ? (
-        <div className="px-4 pb-12 pt-6 md:px-0">
-          <SocialMediaBlock socialLinks={page.socialLinks} />
-        </div>
       ) : null}
     </article>
   )

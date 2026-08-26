@@ -31,13 +31,13 @@ export default async function Page({ searchParams: searchParamsPromise }: Args) 
   const pool = await getDiscoveryPool()
 
   return (
-    <div className="pb-24 pt-0 md:pt-24">
+    <div className="pb-4 pt-0 md:pb-12 md:pt-16">
       <PageClient />
       <div className="container mx-auto max-w-4xl">
-        <div className="mb-8">
+        <div className="mb-4">
           <div className="prose dark:prose-invert max-w-none text-center">
             <h1>Discover</h1>
-            <p className="mx-auto mb-8 w-full text-center text-[13px] lg:mb-8 lg:w-[50%]">
+            <p className="mx-auto mb-4 w-full text-center text-[13px] lg:w-[50%]">
               Explora música más allá de lo usual. Encuentra artistas, lanzamientos y escenas.
             </p>
           </div>

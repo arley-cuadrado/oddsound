@@ -86,6 +86,9 @@ export const Comments: CollectionConfig = {
       fields: ['release', 'status', 'createdAt'],
     },
     {
+      fields: ['post', 'status', 'createdAt'],
+    },
+    {
       fields: ['artistProfile', 'status', 'createdAt'],
     },
     {
@@ -103,7 +106,7 @@ export const Comments: CollectionConfig = {
     update: canModerateComment,
   },
   admin: {
-    defaultColumns: ['release', 'status', 'purchaseVerified', 'createdAt'],
+    defaultColumns: ['source', 'release', 'post', 'status', 'purchaseVerified', 'createdAt'],
     hidden: ({ user }) => !user || isFanUser(user),
     useAsTitle: 'content',
   },
@@ -140,7 +143,19 @@ export const Comments: CollectionConfig = {
       name: 'release',
       type: 'relationship',
       relationTo: 'pages',
-      required: true,
+      validate: (value: any, { siblingData }: { siblingData?: { post?: any } }) => {
+        if (value || siblingData?.post) return true
+        return 'Debes asociar el comentario a un lanzamiento o a un artículo.'
+      },
+    },
+    {
+      name: 'post',
+      type: 'relationship',
+      relationTo: 'posts',
+      validate: (value: any, { siblingData }: { siblingData?: { release?: any } }) => {
+        if (value || siblingData?.release) return true
+        return 'Debes asociar el comentario a un artículo o a un lanzamiento.'
+      },
     },
     {
       name: 'artistProfile',
@@ -199,6 +214,10 @@ export const Comments: CollectionConfig = {
         {
           label: 'Release público',
           value: 'release-public',
+        },
+        {
+          label: 'Artículo público',
+          value: 'article-public',
         },
       ],
       required: true,
