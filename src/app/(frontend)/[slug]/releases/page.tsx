@@ -126,7 +126,7 @@ export default async function ArtistReleasesPage({ params: paramsPromise }: Args
           <p className="mt-4 text-sm text-[#777] dark:text-[#858c98]">
             Explora los álbumes/singles de {bandName}.
           </p>
-          <div className="mt-5 flex flex-wrap items-center justify-center gap-4 py-4 text-[13px]">
+          <div className="mt-5 flex flex-wrap items-center justify-center gap-4 pb-4 pt-4 text-[13px]">
             <Link
               href={`/${profile.slug}/bio`}
               className="inline-flex items-center font-medium text-[#777] underline underline-offset-4 dark:text-[#858c98]"
@@ -144,7 +144,7 @@ export default async function ArtistReleasesPage({ params: paramsPromise }: Args
           </div>
         </header>
 
-        <div className="mx-auto max-w-[50rem]">
+        <div className="mx-auto mt-4 max-w-[50rem]">
           {releases.length > 0 ? (
             <div className="grid grid-cols-2 gap-4 md:gap-6 xl:grid-cols-4">
               {releases.map((release) => (
