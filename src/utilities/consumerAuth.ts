@@ -222,6 +222,7 @@ export async function loginOrRegisterConsumerWithGoogle(args: {
             username: buildConsumerUsernameSeed({ email, name }),
             _verified: true,
           } as never,
+          disableVerificationEmail: true,
           draft: false,
           overrideAccess: true,
           req: payloadReq,
