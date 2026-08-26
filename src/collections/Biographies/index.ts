@@ -4,6 +4,10 @@ import { authenticated } from '@/access/authenticated'
 import { hasFreshAdminAccess } from '@/access/hasFreshAdminAccess'
 import { assignOwnership } from '@/hooks/assignOwnership'
 import { BiographyContent } from '@/blocks/Content/config'
+import {
+  revalidateBiography,
+  revalidateBiographyDelete,
+} from '@/collections/Biographies/hooks/revalidateBiography'
 import { socialLinksField } from '@/fields/socialLinks'
 import { isAdminUser } from '@/utilities/isAdminUser'
 import { isMusicalCreatorUser } from '@/utilities/isEditorialUser'
@@ -210,5 +214,7 @@ export const Biographies: CollectionConfig = {
   ],
   hooks: {
     beforeChange: [assignOwnership],
+    afterChange: [revalidateBiography],
+    afterDelete: [revalidateBiographyDelete],
   },
 }

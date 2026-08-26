@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import configPromise from '@payload-config'
 import type { Page, Profile } from '@/payload-types'
 import { getPayload } from 'payload'
+import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 
@@ -65,8 +66,8 @@ export async function generateMetadata({ params: paramsPromise }: Args): Promise
   const bandName = profile?.displayName || 'Artista'
 
   return {
-    description: `Explora todos los lanzamientos publicados por ${bandName}.`,
-    title: `Lanzamientos de ${bandName}`,
+    description: `Explora los álbumes/singles de ${bandName}.`,
+    title: 'Lanzamientos',
   }
 }
 
@@ -118,14 +119,14 @@ export default async function ArtistReleasesPage({ params: paramsPromise }: Args
   return (
     <div className="mx-auto max-w-4xl pb-4 pt-4 md:pb-12 md:pt-16 [&_p]:text-[13px]">
       <div className="container">
-        <header className="mb-4 text-center">
+        <header className="text-center">
           <h1 className="text-4xl font-semibold tracking-tight text-slate-900 dark:text-white">
-            Lanzamientos de {bandName}
+            Lanzamientos
           </h1>
           <p className="mt-4 text-sm text-[#777] dark:text-[#858c98]">
-            Explora todos los lanzamientos publicados por {bandName}.
+            Explora los álbumes/singles de {bandName}.
           </p>
-          <div className="mt-5 flex flex-wrap items-center justify-center gap-4 text-[13px]">
+          <div className="mt-5 flex flex-wrap items-center justify-center gap-4 py-4 text-[13px]">
             <Link
               href={`/${profile.slug}/bio`}
               className="inline-flex items-center font-medium text-[#777] underline underline-offset-4 dark:text-[#858c98]"
@@ -151,11 +152,11 @@ export default async function ArtistReleasesPage({ params: paramsPromise }: Args
                   <Link href={release.releaseHref}>
                     <div>
                       <div className="relative aspect-square w-full overflow-hidden bg-slate-100 dark:bg-slate-900 rounded-lg">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
                         {release.imageUrl ? (
-                          <img
+                          <Image
                             alt={release.releaseTitle}
-                            className="h-full w-full object-cover"
+                            className="object-cover"
+                            fill
                             src={release.imageUrl}
                           />
                         ) : null}
