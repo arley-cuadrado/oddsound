@@ -55,10 +55,6 @@ function extractProfileID(payload: unknown) {
   return null
 }
 
-function hasAtLeastOneSocialLink(socials: EditorSocials) {
-  return Object.values(socials).some((value) => value.trim().length > 0)
-}
-
 export default function CreateRedactorButton() {
   const isEditorsView = useMemo(() => {
     if (typeof window === 'undefined') return false
@@ -113,24 +109,6 @@ export default function CreateRedactorButton() {
         setMessage({
           type: 'error',
           text: 'Email, nombre completo, username y contrasena son obligatorios.',
-        })
-        setLoading(false)
-        return
-      }
-
-      if (!formData.editorGender) {
-        setMessage({
-          type: 'error',
-          text: 'El genero del editor es obligatorio.',
-        })
-        setLoading(false)
-        return
-      }
-
-      if (!hasAtLeastOneSocialLink(formData.socials)) {
-        setMessage({
-          type: 'error',
-          text: 'Debes registrar al menos una red social del editor.',
         })
         setLoading(false)
         return
@@ -303,13 +281,12 @@ export default function CreateRedactorButton() {
             </div>
 
             <div className="create-redactor-section__field">
-              <label htmlFor="editor-gender">Genero del editor *</label>
+              <label htmlFor="editor-gender">Genero del editor</label>
               <select
                 id="editor-gender"
                 name="editorGender"
                 value={formData.editorGender}
                 onChange={handleChange}
-                required
               >
                 <option value="">Seleccionar genero</option>
                 <option value="male">Hombre</option>
@@ -319,9 +296,9 @@ export default function CreateRedactorButton() {
             </div>
 
             <fieldset className="create-redactor-section__group">
-              <legend>Redes sociales *</legend>
+              <legend>Redes sociales</legend>
               <p className="create-redactor-section__hint">
-                Registra al menos una para completar el perfil editorial.
+                Puedes agregarlas ahora o mas tarde.
               </p>
 
               <div className="create-redactor-section__social-grid">
