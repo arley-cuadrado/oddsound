@@ -154,6 +154,13 @@
     display: none;
   }
 
+  body.mobile-dashboard-nav-default {
+    .app-header__mobile-nav-toggler,
+    .drawer__close {
+      display: none;
+    }
+  }
+
   .create-redactor-section__social-grid {
     grid-template-columns: minmax(0, 1fr);
   }
