@@ -51,10 +51,11 @@ describe('AdminMobileNavDefault', () => {
     render(React.createElement(AdminMobileNavDefault))
 
     expect(setNavOpen).not.toHaveBeenCalled()
+    expect(document.body.classList.contains('mobile-dashboard-route')).toBe(false)
     expect(document.body.classList.contains('mobile-dashboard-nav-default')).toBe(false)
   })
 
-  it('opens the mobile nav across mobile dashboard routes after nav hydration', () => {
+  it('opens the mobile nav by default only on the mobile dashboard home after hydration', () => {
     const setNavOpen = vi.fn()
 
     mockUseNav.mockReturnValue({
@@ -70,6 +71,7 @@ describe('AdminMobileNavDefault', () => {
     const { rerender } = render(React.createElement(AdminMobileNavDefault))
 
     expect(setNavOpen).not.toHaveBeenCalled()
+    expect(document.body.classList.contains('mobile-dashboard-route')).toBe(true)
     expect(document.body.classList.contains('mobile-dashboard-nav-default')).toBe(true)
 
     mockUseNav.mockReturnValue({
@@ -80,16 +82,31 @@ describe('AdminMobileNavDefault', () => {
     rerender(React.createElement(AdminMobileNavDefault))
 
     expect(setNavOpen).toHaveBeenCalledWith(true)
+  })
+
+  it('closes the mobile nav after navigating from dashboard home into a dashboard module', () => {
+    const setNavOpen = vi.fn()
+
+    window.matchMedia = vi.fn().mockReturnValue({
+      matches: true,
+    }) as typeof window.matchMedia
+
+    const { rerender } = render(React.createElement(AdminMobileNavDefault))
+
+    expect(document.body.classList.contains('mobile-dashboard-route')).toBe(true)
+    expect(document.body.classList.contains('mobile-dashboard-nav-default')).toBe(true)
 
     mockUsePathname.mockReturnValue('/dashboard/collections/users')
     mockUseNav.mockReturnValue({
       hydrated: true,
-      navOpen: false,
+      navOpen: true,
       setNavOpen,
     })
     rerender(React.createElement(AdminMobileNavDefault))
 
-    expect(document.body.classList.contains('mobile-dashboard-nav-default')).toBe(true)
+    expect(setNavOpen).toHaveBeenCalledWith(false)
+    expect(document.body.classList.contains('mobile-dashboard-route')).toBe(true)
+    expect(document.body.classList.contains('mobile-dashboard-nav-default')).toBe(false)
   })
 
   it('does not force the mobile dashboard class outside dashboard routes', () => {
@@ -109,6 +126,7 @@ describe('AdminMobileNavDefault', () => {
     render(React.createElement(AdminMobileNavDefault))
 
     expect(setNavOpen).not.toHaveBeenCalled()
+    expect(document.body.classList.contains('mobile-dashboard-route')).toBe(false)
     expect(document.body.classList.contains('mobile-dashboard-nav-default')).toBe(false)
   })
 })
