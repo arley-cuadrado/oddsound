@@ -1,7 +1,8 @@
 'use client'
 
 import React, { useMemo, useState } from 'react'
-import { Button } from '@payloadcms/ui'
+import { Banner, Button, FieldLabel, SelectInput, TextInput } from '@payloadcms/ui'
+import type { OptionObject } from 'payload'
 
 type EditorGender = 'female' | 'indeterminate' | 'male'
 
@@ -37,6 +38,59 @@ const INITIAL_FORM_STATE: CreateEditorFormState = {
   username: '',
 }
 
+const EDITOR_GENDER_OPTIONS: OptionObject[] = [
+  {
+    label: 'Hombre',
+    value: 'male',
+  },
+  {
+    label: 'Mujer',
+    value: 'female',
+  },
+  {
+    label: 'Indeterminado',
+    value: 'indeterminate',
+  },
+]
+
+function DashboardInputField({
+  autoComplete,
+  label,
+  name,
+  onChange,
+  placeholder,
+  required,
+  type,
+  value,
+}: {
+  autoComplete?: string
+  label: string
+  name: string
+  onChange: React.ChangeEventHandler<HTMLInputElement>
+  placeholder?: string
+  required?: boolean
+  type: 'email' | 'password' | 'text'
+  value: string
+}) {
+  return (
+    <div className="field-type text">
+      <FieldLabel label={label} path={name} required={required} />
+      <div className="field-type__wrap">
+        <input
+          autoComplete={autoComplete}
+          id={`field-${name.replace(/\./g, '__')}`}
+          name={name}
+          onChange={onChange}
+          placeholder={placeholder}
+          required={required}
+          type={type}
+          value={value}
+        />
+      </div>
+    </div>
+  )
+}
+
 function extractProfileID(payload: unknown) {
   if (!payload || typeof payload !== 'object') return null
 
@@ -69,6 +123,12 @@ export default function CreateRedactorButton() {
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
   if (!isEditorsView) return null
+
+  const resetForm = () => {
+    setFormData(INITIAL_FORM_STATE)
+    setMessage(null)
+    setShowForm(false)
+  }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target
@@ -203,97 +263,81 @@ export default function CreateRedactorButton() {
           </div>
 
           {message ? (
-            <div
-              className={
-                message.type === 'success'
-                  ? 'create-redactor-section__message is-success'
-                  : 'create-redactor-section__message is-error'
-              }
-            >
-              {message.text}
-            </div>
+            <Banner type={message.type === 'success' ? 'success' : 'error'}>{message.text}</Banner>
           ) : null}
 
           <form className="create-redactor-section__form" onSubmit={handleSubmit}>
-            <div className="create-redactor-section__field">
-              <label htmlFor="editor-full-name">Nombre completo *</label>
-              <input
-                id="editor-full-name"
-                type="text"
-                name="fullName"
-                value={formData.fullName}
-                onChange={handleChange}
-                placeholder="Nombre completo del redactor"
-                required
-              />
-            </div>
+            <TextInput
+              label="Nombre completo"
+              onChange={handleChange}
+              path="fullName"
+              placeholder="Nombre completo del redactor"
+              required
+              value={formData.fullName}
+            />
 
-            <div className="create-redactor-section__field">
-              <label htmlFor="editor-username">Nombre de usuario *</label>
-              <input
-                id="editor-username"
-                type="text"
-                name="username"
-                value={formData.username}
-                onChange={handleChange}
-                placeholder="nombre.usuario"
-                required
-              />
-            </div>
+            <TextInput
+              label="Nombre de usuario"
+              onChange={handleChange}
+              path="username"
+              placeholder="nombre.usuario"
+              required
+              value={formData.username}
+            />
 
-            <div className="create-redactor-section__field">
-              <label htmlFor="editor-email">Email *</label>
-              <input
-                id="editor-email"
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="redactor@example.com"
-                required
-              />
-            </div>
+            <DashboardInputField
+              autoComplete="email"
+              label="Email"
+              name="email"
+              onChange={handleChange as React.ChangeEventHandler<HTMLInputElement>}
+              placeholder="redactor@example.com"
+              required
+              type="email"
+              value={formData.email}
+            />
 
-            <div className="create-redactor-section__field">
-              <label htmlFor="editor-password">Contrasena *</label>
-              <input
-                id="editor-password"
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                placeholder="Contrasena"
-                required
-              />
-            </div>
+            <DashboardInputField
+              autoComplete="new-password"
+              label="Contrasena"
+              name="password"
+              onChange={handleChange as React.ChangeEventHandler<HTMLInputElement>}
+              placeholder="Contrasena"
+              required
+              type="password"
+              value={formData.password}
+            />
 
-            <div className="create-redactor-section__field">
-              <label htmlFor="editor-password-confirm">Confirmar contrasena *</label>
-              <input
-                id="editor-password-confirm"
-                type="password"
-                name="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                placeholder="Confirmar contrasena"
-                required
-              />
-            </div>
+            <DashboardInputField
+              autoComplete="new-password"
+              label="Confirmar contrasena"
+              name="confirmPassword"
+              onChange={handleChange as React.ChangeEventHandler<HTMLInputElement>}
+              placeholder="Confirmar contrasena"
+              required
+              type="password"
+              value={formData.confirmPassword}
+            />
 
-            <div className="create-redactor-section__field">
-              <label htmlFor="editor-gender">Genero del editor</label>
-              <select
-                id="editor-gender"
-                name="editorGender"
-                value={formData.editorGender}
-                onChange={handleChange}
-              >
-                <option value="">Seleccionar genero</option>
-                <option value="male">Hombre</option>
-                <option value="female">Mujer</option>
-                <option value="indeterminate">Indeterminado</option>
-              </select>
-            </div>
+            <SelectInput
+              isClearable
+              label="Genero del editor"
+              name="editorGender"
+              onChange={(option) => {
+                const nextValue =
+                  option && !Array.isArray(option) && typeof option === 'object' && 'value' in option
+                    ? String(option.value || '')
+                    : ''
+
+                setFormData((prev) => ({
+                  ...prev,
+                  editorGender: nextValue as EditorGender | '',
+                }))
+              }}
+              options={EDITOR_GENDER_OPTIONS}
+              path="editorGender"
+              placeholder="Seleccionar genero"
+              value={formData.editorGender}
+            />
 
             <fieldset className="create-redactor-section__group">
               <legend>Redes sociales</legend>
@@ -302,53 +346,37 @@ export default function CreateRedactorButton() {
               </p>
 
               <div className="create-redactor-section__social-grid">
-                <div className="create-redactor-section__field">
-                  <label htmlFor="editor-instagram">Instagram</label>
-                  <input
-                    id="editor-instagram"
-                    type="text"
-                    name="socials.instagram"
-                    value={formData.socials.instagram}
-                    onChange={handleChange}
-                    placeholder="@usuario o URL"
-                  />
-                </div>
+                <TextInput
+                  label="Instagram"
+                  onChange={handleChange}
+                  path="socials.instagram"
+                  placeholder="@usuario o URL"
+                  value={formData.socials.instagram}
+                />
 
-                <div className="create-redactor-section__field">
-                  <label htmlFor="editor-x">X</label>
-                  <input
-                    id="editor-x"
-                    type="text"
-                    name="socials.x"
-                    value={formData.socials.x}
-                    onChange={handleChange}
-                    placeholder="@usuario o URL"
-                  />
-                </div>
+                <TextInput
+                  label="X"
+                  onChange={handleChange}
+                  path="socials.x"
+                  placeholder="@usuario o URL"
+                  value={formData.socials.x}
+                />
 
-                <div className="create-redactor-section__field">
-                  <label htmlFor="editor-threads">Threads</label>
-                  <input
-                    id="editor-threads"
-                    type="text"
-                    name="socials.threads"
-                    value={formData.socials.threads}
-                    onChange={handleChange}
-                    placeholder="@usuario o URL"
-                  />
-                </div>
+                <TextInput
+                  label="Threads"
+                  onChange={handleChange}
+                  path="socials.threads"
+                  placeholder="@usuario o URL"
+                  value={formData.socials.threads}
+                />
 
-                <div className="create-redactor-section__field">
-                  <label htmlFor="editor-facebook">Facebook</label>
-                  <input
-                    id="editor-facebook"
-                    type="text"
-                    name="socials.facebook"
-                    value={formData.socials.facebook}
-                    onChange={handleChange}
-                    placeholder="Perfil o URL"
-                  />
-                </div>
+                <TextInput
+                  label="Facebook"
+                  onChange={handleChange}
+                  path="socials.facebook"
+                  placeholder="Perfil o URL"
+                  value={formData.socials.facebook}
+                />
               </div>
             </fieldset>
 
@@ -357,10 +385,7 @@ export default function CreateRedactorButton() {
                 {loading ? 'Creando...' : 'Crear redactor'}
               </Button>
               <Button
-                onClick={() => {
-                  setShowForm(false)
-                  setMessage(null)
-                }}
+                onClick={resetForm}
                 buttonStyle="secondary"
                 el="button"
                 type="button"

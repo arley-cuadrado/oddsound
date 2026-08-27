@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import CreateRedactorButton from '@/components/CreateRedactorButton'
 
 vi.mock('@payloadcms/ui', () => ({
+  Banner: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
   Button: ({
     buttonStyle: _buttonStyle,
     children,
@@ -14,6 +15,71 @@ vi.mock('@payloadcms/ui', () => ({
     buttonStyle?: string
     el?: string
   }) => <button {...props}>{children}</button>,
+  FieldLabel: ({
+    label,
+    path,
+    required,
+  }: {
+    label: string
+    path: string
+    required?: boolean
+  }) => <label htmlFor={`field-${path.replace(/\./g, '__')}`}>{label}{required ? ' *' : ''}</label>,
+  SelectInput: ({
+    label,
+    name,
+    onChange,
+    options = [],
+    path,
+    value,
+  }: {
+    label: string
+    name: string
+    onChange?: (value: unknown) => void
+    options?: Array<{ label: string; value: string }>
+    path: string
+    value?: string
+  }) => (
+    <label htmlFor={`field-${path.replace(/\./g, '__')}`}>
+      {label}
+      <select
+        id={`field-${path.replace(/\./g, '__')}`}
+        name={name}
+        onChange={(event) => onChange?.({ value: event.target.value })}
+        value={value || ''}
+      >
+        <option value="">Seleccionar genero</option>
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+    </label>
+  ),
+  TextInput: ({
+    label,
+    onChange,
+    path,
+    required,
+    value,
+  }: {
+    label: string
+    onChange?: React.ChangeEventHandler<HTMLInputElement>
+    path: string
+    required?: boolean
+    value?: string
+  }) => (
+    <label htmlFor={`field-${path.replace(/\./g, '__')}`}>
+      {label}
+      {required ? ' *' : ''}
+      <input
+        id={`field-${path.replace(/\./g, '__')}`}
+        name={path}
+        onChange={onChange}
+        value={value || ''}
+      />
+    </label>
+  ),
 }))
 
 describe('CreateRedactorButton', () => {
