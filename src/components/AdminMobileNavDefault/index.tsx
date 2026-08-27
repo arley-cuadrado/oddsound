@@ -8,7 +8,7 @@ const MOBILE_DASHBOARD_NAV_CLASS = 'mobile-dashboard-nav-default'
 
 export default function AdminMobileNavDefault() {
   const pathname = usePathname()
-  const { setNavOpen } = useNav()
+  const { hydrated, navOpen, setNavOpen } = useNav()
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -19,14 +19,14 @@ export default function AdminMobileNavDefault() {
 
     document.body.classList.toggle(MOBILE_DASHBOARD_NAV_CLASS, shouldForceMobileNav)
 
-    if (shouldForceMobileNav) {
+    if (shouldForceMobileNav && hydrated && !navOpen) {
       setNavOpen(true)
     }
 
     return () => {
       document.body.classList.remove(MOBILE_DASHBOARD_NAV_CLASS)
     }
-  }, [pathname, setNavOpen])
+  }, [hydrated, navOpen, pathname, setNavOpen])
 
   return null
 }

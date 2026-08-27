@@ -24,6 +24,8 @@ describe('AdminMobileNavDefault', () => {
     document.body.className = ''
     mockUsePathname.mockReturnValue('/dashboard')
     mockUseNav.mockReturnValue({
+      hydrated: true,
+      navOpen: false,
       setNavOpen: vi.fn(),
     })
   })
@@ -37,6 +39,8 @@ describe('AdminMobileNavDefault', () => {
     const setNavOpen = vi.fn()
 
     mockUseNav.mockReturnValue({
+      hydrated: true,
+      navOpen: false,
       setNavOpen,
     })
 
@@ -50,10 +54,12 @@ describe('AdminMobileNavDefault', () => {
     expect(document.body.classList.contains('mobile-dashboard-nav-default')).toBe(false)
   })
 
-  it('opens the mobile nav only on the dashboard home', () => {
+  it('opens the mobile nav only on the dashboard home after nav hydration', () => {
     const setNavOpen = vi.fn()
 
     mockUseNav.mockReturnValue({
+      hydrated: false,
+      navOpen: false,
       setNavOpen,
     })
 
@@ -63,10 +69,24 @@ describe('AdminMobileNavDefault', () => {
 
     const { rerender } = render(React.createElement(AdminMobileNavDefault))
 
-    expect(setNavOpen).toHaveBeenCalledWith(true)
+    expect(setNavOpen).not.toHaveBeenCalled()
     expect(document.body.classList.contains('mobile-dashboard-nav-default')).toBe(true)
 
+    mockUseNav.mockReturnValue({
+      hydrated: true,
+      navOpen: false,
+      setNavOpen,
+    })
+    rerender(React.createElement(AdminMobileNavDefault))
+
+    expect(setNavOpen).toHaveBeenCalledWith(true)
+
     mockUsePathname.mockReturnValue('/dashboard/collections/users')
+    mockUseNav.mockReturnValue({
+      hydrated: true,
+      navOpen: false,
+      setNavOpen,
+    })
     rerender(React.createElement(AdminMobileNavDefault))
 
     expect(document.body.classList.contains('mobile-dashboard-nav-default')).toBe(false)
