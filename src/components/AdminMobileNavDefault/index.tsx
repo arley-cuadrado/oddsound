@@ -12,6 +12,15 @@ type MobileDashboardLink = {
   label: string
 }
 
+const resetNativeDashboardNavState = () => {
+  document.querySelector('.template-default')?.classList.remove('template-default--nav-open')
+  document.querySelector('.app-header')?.classList.remove('app-header--nav-open')
+
+  document.querySelectorAll('.nav-toggler--is-open').forEach((element) => {
+    element.classList.remove('nav-toggler--is-open')
+  })
+}
+
 export default function AdminMobileNavDefault() {
   const pathname = usePathname()
   const [mobileLinks, setMobileLinks] = useState<MobileDashboardLink[]>([])
@@ -63,8 +72,12 @@ export default function AdminMobileNavDefault() {
 
     document.body.classList.toggle(MOBILE_DASHBOARD_ROUTE_CLASS, shouldApplyDashboardRouteClass)
     document.body.classList.toggle(MOBILE_DASHBOARD_NAV_CLASS, shouldForceMobileNav)
+    resetNativeDashboardNavState()
     syncMobileLinks()
-    frameID = window.requestAnimationFrame(syncMobileLinks)
+    frameID = window.requestAnimationFrame(() => {
+      resetNativeDashboardNavState()
+      syncMobileLinks()
+    })
     setIsOverlayOpen(shouldForceMobileNav)
 
     return () => {
@@ -99,7 +112,10 @@ export default function AdminMobileNavDefault() {
                   key={link.key}
                   className="mobile-dashboard-nav-menu__link"
                   href={link.href}
-                  onClick={() => setIsOverlayOpen(false)}
+                  onClick={() => {
+                    resetNativeDashboardNavState()
+                    setIsOverlayOpen(false)
+                  }}
                 >
                   {link.label}
                 </a>

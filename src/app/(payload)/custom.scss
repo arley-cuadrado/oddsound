@@ -166,13 +166,32 @@
 
   body.mobile-dashboard-route {
     .template-default__nav-toggler-wrapper,
+    .template-default__nav-toggler,
+    .app-header__mobile-nav-toggler,
     .drawer__close,
     .drawer__header__close {
-      display: none;
+      display: none !important;
     }
 
     .nav {
-      display: none;
+      display: none !important;
+    }
+
+    .template-default,
+    &.template-default,
+    .template-default--nav-hydrated,
+    .template-default--nav-open,
+    .template-default--nav-hydrated.template-default--nav-open {
+      grid-template-columns: 0 minmax(0, 1fr) !important;
+    }
+
+    .template-default__wrap {
+      width: 100%;
+      min-width: 100%;
+    }
+
+    .app-header {
+      padding-left: 0;
     }
   }
 
