@@ -1,16 +1,11 @@
 import React from 'react'
-import { render } from '@testing-library/react'
+import { fireEvent, render } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import AdminMobileNavDefault from '@/components/AdminMobileNavDefault'
 
-const { mockUseNav, mockUsePathname } = vi.hoisted(() => ({
-  mockUseNav: vi.fn(),
+const { mockUsePathname } = vi.hoisted(() => ({
   mockUsePathname: vi.fn(),
-}))
-
-vi.mock('@payloadcms/ui', () => ({
-  useNav: mockUseNav,
 }))
 
 vi.mock('next/navigation', () => ({
@@ -19,105 +14,75 @@ vi.mock('next/navigation', () => ({
 
 describe('AdminMobileNavDefault', () => {
   const originalMatchMedia = window.matchMedia
+  let navShell: HTMLDivElement
 
   beforeEach(() => {
     document.body.className = ''
+    navShell = document.createElement('div')
+    const templateDefault = document.createElement('div')
+    templateDefault.className = 'template-default'
+    const aside = document.createElement('aside')
+    aside.className = 'nav'
+    const link = document.createElement('a')
+    link.className = 'nav__link'
+    link.href = '/dashboard/collections/pages'
+    link.textContent = 'Lanzamientos'
+    aside.appendChild(link)
+    navShell.appendChild(templateDefault)
+    navShell.appendChild(aside)
+    document.body.appendChild(navShell)
     mockUsePathname.mockReturnValue('/dashboard')
-    mockUseNav.mockReturnValue({
-      hydrated: true,
-      navOpen: false,
-      setNavOpen: vi.fn(),
-    })
   })
 
   afterEach(() => {
     window.matchMedia = originalMatchMedia
     document.body.className = ''
+    document.body.replaceChildren()
   })
 
   it('does not change desktop dashboard navigation', () => {
-    const setNavOpen = vi.fn()
-
-    mockUseNav.mockReturnValue({
-      hydrated: true,
-      navOpen: false,
-      setNavOpen,
-    })
-
     window.matchMedia = vi.fn().mockReturnValue({
       matches: false,
     }) as typeof window.matchMedia
 
     render(React.createElement(AdminMobileNavDefault))
 
-    expect(setNavOpen).not.toHaveBeenCalled()
     expect(document.body.classList.contains('mobile-dashboard-route')).toBe(false)
     expect(document.body.classList.contains('mobile-dashboard-nav-default')).toBe(false)
+    expect(document.querySelector('.mobile-dashboard-nav-menu')).toBeNull()
   })
 
-  it('opens the mobile nav by default only on the mobile dashboard home after hydration', () => {
-    const setNavOpen = vi.fn()
-
-    mockUseNav.mockReturnValue({
-      hydrated: false,
-      navOpen: false,
-      setNavOpen,
-    })
-
+  it('renders the mobile dashboard overlay only on the mobile dashboard home after hydration', () => {
     window.matchMedia = vi.fn().mockReturnValue({
       matches: true,
     }) as typeof window.matchMedia
 
-    const { rerender } = render(React.createElement(AdminMobileNavDefault))
-
-    expect(setNavOpen).not.toHaveBeenCalled()
+    render(React.createElement(AdminMobileNavDefault))
     expect(document.body.classList.contains('mobile-dashboard-route')).toBe(true)
     expect(document.body.classList.contains('mobile-dashboard-nav-default')).toBe(true)
-
-    mockUseNav.mockReturnValue({
-      hydrated: true,
-      navOpen: false,
-      setNavOpen,
-    })
-    rerender(React.createElement(AdminMobileNavDefault))
-
-    expect(setNavOpen).toHaveBeenCalledWith(true)
+    expect(document.querySelector('.mobile-dashboard-nav-menu__link')?.textContent).toBe('Lanzamientos')
   })
 
-  it('closes the mobile nav after navigating from dashboard home into a dashboard module', () => {
-    const setNavOpen = vi.fn()
-
+  it('shows a trigger on dashboard modules and opens the custom overlay when tapped', () => {
     window.matchMedia = vi.fn().mockReturnValue({
       matches: true,
     }) as typeof window.matchMedia
-
-    const { rerender } = render(React.createElement(AdminMobileNavDefault))
-
-    expect(document.body.classList.contains('mobile-dashboard-route')).toBe(true)
-    expect(document.body.classList.contains('mobile-dashboard-nav-default')).toBe(true)
 
     mockUsePathname.mockReturnValue('/dashboard/collections/users')
-    mockUseNav.mockReturnValue({
-      hydrated: true,
-      navOpen: true,
-      setNavOpen,
-    })
-    rerender(React.createElement(AdminMobileNavDefault))
+    render(React.createElement(AdminMobileNavDefault))
 
-    expect(setNavOpen).toHaveBeenCalledWith(false)
     expect(document.body.classList.contains('mobile-dashboard-route')).toBe(true)
     expect(document.body.classList.contains('mobile-dashboard-nav-default')).toBe(false)
+    expect(document.querySelector('.mobile-dashboard-nav-menu')).toBeNull()
+
+    const trigger = document.querySelector<HTMLButtonElement>('.mobile-dashboard-nav-trigger')
+    expect(trigger).not.toBeNull()
+    fireEvent.click(trigger!)
+    expect(document.querySelector('.mobile-dashboard-nav-menu')).not.toBeNull()
   })
 
   it('does not force the mobile dashboard class outside dashboard routes', () => {
-    const setNavOpen = vi.fn()
-
     mockUsePathname.mockReturnValue('/creator/login')
-    mockUseNav.mockReturnValue({
-      hydrated: true,
-      navOpen: false,
-      setNavOpen,
-    })
 
     window.matchMedia = vi.fn().mockReturnValue({
       matches: true,
@@ -125,8 +90,8 @@ describe('AdminMobileNavDefault', () => {
 
     render(React.createElement(AdminMobileNavDefault))
 
-    expect(setNavOpen).not.toHaveBeenCalled()
     expect(document.body.classList.contains('mobile-dashboard-route')).toBe(false)
     expect(document.body.classList.contains('mobile-dashboard-nav-default')).toBe(false)
+    expect(document.querySelector('.mobile-dashboard-nav-trigger')).toBeNull()
   })
 })

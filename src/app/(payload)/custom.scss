@@ -117,14 +117,78 @@
     display: none;
   }
 
+  .mobile-dashboard-nav-menu {
+    position: fixed;
+    inset: 0;
+    z-index: 1001;
+    padding: 4.5rem 1.5rem 2rem;
+    overflow-y: auto;
+    background: var(--theme-bg);
+  }
+
+  .mobile-dashboard-nav-menu__group {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .mobile-dashboard-nav-menu__label {
+    margin: 0;
+    color: var(--theme-elevation-400);
+    font-size: 0.875rem;
+    line-height: 1.2;
+  }
+
+  .mobile-dashboard-nav-menu__links {
+    display: grid;
+    gap: 0.9rem;
+  }
+
+  .mobile-dashboard-nav-menu__link {
+    color: var(--theme-text);
+    font-size: 1.125rem;
+    line-height: 1.4;
+    text-decoration: none;
+  }
+
+  .mobile-dashboard-nav-trigger {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 1002;
+    border: 1px solid var(--theme-elevation-150);
+    border-radius: 999px;
+    padding: 0.55rem 0.9rem;
+    background: var(--theme-bg);
+    color: var(--theme-text);
+    font: inherit;
+    line-height: 1;
+  }
+
   body.mobile-dashboard-route {
+    .template-default__nav-toggler-wrapper,
     .drawer__close,
     .drawer__header__close {
+      display: none;
+    }
+
+    .nav {
       display: none;
     }
   }
 
   body.mobile-dashboard-nav-default {
+    .template-default__wrap {
+      display: none;
+    }
+
+    .step-nav.app-header__step-nav {
+      display: none;
+    }
+
+    .nav {
+      display: none;
+    }
+
     .app-header__mobile-nav-toggler,
     .drawer__close,
     .drawer__header__close {
