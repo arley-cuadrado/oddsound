@@ -54,7 +54,7 @@ describe('AdminMobileNavDefault', () => {
     expect(document.body.classList.contains('mobile-dashboard-nav-default')).toBe(false)
   })
 
-  it('opens the mobile nav only on the dashboard home after nav hydration', () => {
+  it('opens the mobile nav across mobile dashboard routes after nav hydration', () => {
     const setNavOpen = vi.fn()
 
     mockUseNav.mockReturnValue({
@@ -89,6 +89,26 @@ describe('AdminMobileNavDefault', () => {
     })
     rerender(React.createElement(AdminMobileNavDefault))
 
+    expect(document.body.classList.contains('mobile-dashboard-nav-default')).toBe(true)
+  })
+
+  it('does not force the mobile dashboard class outside dashboard routes', () => {
+    const setNavOpen = vi.fn()
+
+    mockUsePathname.mockReturnValue('/creator/login')
+    mockUseNav.mockReturnValue({
+      hydrated: true,
+      navOpen: false,
+      setNavOpen,
+    })
+
+    window.matchMedia = vi.fn().mockReturnValue({
+      matches: true,
+    }) as typeof window.matchMedia
+
+    render(React.createElement(AdminMobileNavDefault))
+
+    expect(setNavOpen).not.toHaveBeenCalled()
     expect(document.body.classList.contains('mobile-dashboard-nav-default')).toBe(false)
   })
 })

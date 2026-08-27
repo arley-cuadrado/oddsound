@@ -10,6 +10,7 @@ export function extendEcommerceCartsCollection({ defaultCollection }: OverrideAr
     admin: {
       ...(defaultCollection.admin || {}),
       defaultColumns: ['customer', 'status', 'subtotal', 'updatedAt'],
+      hidden: ({ user }) => user?.role !== 'admin',
       useAsTitle: 'customer',
     },
   }
@@ -23,6 +24,7 @@ export function extendEcommerceOrdersCollection({ defaultCollection }: OverrideA
     admin: {
       ...(defaultCollection.admin || {}),
       defaultColumns: ['customerEmail', 'status', 'amount', 'updatedAt'],
+      hidden: ({ user }) => user?.role !== 'admin',
       useAsTitle: 'customerEmail',
     },
     fields: [
@@ -129,6 +131,7 @@ export function extendEcommerceTransactionsCollection({ defaultCollection }: Ove
     admin: {
       ...(defaultCollection.admin || {}),
       defaultColumns: ['customerEmail', 'status', 'amount', 'updatedAt'],
+      hidden: ({ user }) => user?.role !== 'admin',
       useAsTitle: 'customerEmail',
     },
     fields: [

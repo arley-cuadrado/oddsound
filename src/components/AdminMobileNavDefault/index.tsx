@@ -14,8 +14,9 @@ export default function AdminMobileNavDefault() {
     if (typeof window === 'undefined') return
 
     const isDashboardHome = pathname === '/dashboard'
+    const isDashboardRoute = pathname.startsWith('/dashboard')
     const isMobileViewport = window.matchMedia('(max-width: 768px)').matches
-    const shouldForceMobileNav = isDashboardHome && isMobileViewport
+    const shouldForceMobileNav = isDashboardRoute && isMobileViewport
 
     document.body.classList.toggle(MOBILE_DASHBOARD_NAV_CLASS, shouldForceMobileNav)
 
