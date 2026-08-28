@@ -83,9 +83,9 @@ describe('profile segmentation access', () => {
     expect(Biographies.access?.create?.({ req: { ...baseReq, user: editorUser } } as any)).toBe(false)
   })
 
-  it('keeps commerce products hidden in the dashboard for non-admin users', () => {
+  it('shows commerce products only to admins and musical creators', () => {
     expect(productsHidden({ user: editorUser })).toBe(true)
-    expect(productsHidden({ user: artistUser })).toBe(true)
+    expect(productsHidden({ user: artistUser })).toBe(false)
     expect(productsHidden({ user: fanUser })).toBe(true)
     expect(productsHidden({ user: adminUser })).toBe(false)
 

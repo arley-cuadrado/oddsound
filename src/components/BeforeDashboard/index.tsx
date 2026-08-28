@@ -35,12 +35,13 @@ const BeforeDashboard = async () => {
   const user = currentUser?.user || null
   if (!canAccessPayloadDashboard(user)) return null
   const userRole = user?.role || null
+  const isMusicalCreator = userRole === 'creator' && !Boolean(user?.editorAccess)
   const profileID = resolveUserProfileID(user)
   const commerceProducts =
-    userRole === 'admin'
+    userRole === 'admin' || isMusicalCreator
       ? await listCommerceProducts({
           includeDrafts: true,
-          ownerID: null,
+          ownerID: userRole === 'admin' ? null : user?.id ? String(user.id) : null,
           payload,
           profile: profileID,
         })
@@ -112,7 +113,7 @@ const BeforeDashboard = async () => {
 
   return (
     <section className={baseClass} id="scheduled-publishes">
-      {userRole === 'admin' ? (
+      {userRole === 'admin' || isMusicalCreator ? (
         <section className={`${baseClass}__section`} aria-labelledby="before-dashboard-scheduled">
           <div className={`${baseClass}__header`}>
             <div>
@@ -168,7 +169,7 @@ const BeforeDashboard = async () => {
         </section>
       ) : null}
 
-      {userRole === 'admin' ? (
+      {userRole === 'admin' || isMusicalCreator ? (
         <section className={`${baseClass}__section`} aria-labelledby="before-dashboard-commerce">
           <div className={`${baseClass}__header`}>
             <div>
