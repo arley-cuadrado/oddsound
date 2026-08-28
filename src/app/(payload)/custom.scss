@@ -117,21 +117,6 @@
     display: none;
   }
 
-  body.mobile-dashboard-route {
-    .drawer__close,
-    .drawer__header__close {
-      display: none;
-    }
-  }
-
-  body.mobile-dashboard-nav-default {
-    .app-header__mobile-nav-toggler,
-    .drawer__close,
-    .drawer__header__close {
-      display: none;
-    }
-  }
-
   .editors-nav-link,
   .email-preview-nav-link,
   .scheduled-publishes-nav-link {

@@ -6,7 +6,6 @@ import type { ServerFunctionClient } from 'payload'
 import { handleServerFunctions, RootLayout } from '@payloadcms/next/layouts'
 import React from 'react'
 
-import AdminMobileNavDefault from '@/components/AdminMobileNavDefault'
 import { importMap } from './dashboard/importMap.js'
 import './custom.scss'
 
@@ -25,7 +24,6 @@ const serverFunction: ServerFunctionClient = async function (args) {
 
 const Layout = ({ children }: Args) => (
   <RootLayout config={config} importMap={importMap} serverFunction={serverFunction}>
-    <AdminMobileNavDefault />
     {children}
   </RootLayout>
 )
