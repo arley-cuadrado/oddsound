@@ -24,51 +24,27 @@ export default function CreatorCollectionFilter() {
         ? ['posts', 'profiles', 'media']
         : ['pages', 'biographies', 'products', 'profiles', 'media']
 
-      // Find all collection links in the navigation
       const navLinks = Array.from(
-        document.querySelectorAll<HTMLElement>('a[href*="/dashboard/collections/"]'),
+        document.querySelectorAll<HTMLAnchorElement>('a[href*="/dashboard/collections/"]'),
       )
 
       navLinks.forEach((link) => {
         const href = link.getAttribute('href') || ''
+        const listItem = link.closest('li')
 
-        // Check if this link is for an allowed collection
-        const isAllowed = allowedCollections.some((collection) => href.includes(`/collections/${collection}`))
+        if (!listItem) return
 
-        if (!isAllowed) {
-          // Hide the entire parent list item
-          const listItem = link.closest('li')
-          if (listItem) {
-            listItem.style.display = 'none'
-          }
-        }
-      })
+        const collectionSlug = href.match(/\/dashboard\/collections\/([^/?#]+)/)?.[1] || ''
+        const isAllowed = allowedCollections.includes(collectionSlug)
 
-      // Also hide any non-collection admin sections
-      const adminLinks = Array.from(document.querySelectorAll<HTMLElement>('a[href*="/dashboard"]'))
-      adminLinks.forEach((link) => {
-        const href = link.getAttribute('href') || ''
-        const text = link.textContent?.toLowerCase() || ''
-
-        // Hide links to collections that aren't in allowedCollections
-        const isCollectionLink = href.includes('/dashboard/collections/')
-
-        if (isCollectionLink) {
-          const isAllowed = allowedCollections.some((collection) => href.includes(`/collections/${collection}`))
-          if (!isAllowed) {
-            const listItem = link.closest('li')
-            if (listItem) {
-              listItem.style.display = 'none'
-            }
-          }
-        }
+        listItem.hidden = !isAllowed
+        listItem.setAttribute('aria-hidden', String(!isAllowed))
+        listItem.style.removeProperty('display')
       })
     }
 
-    // Run on initial load
     hideCollectionsForCreators()
 
-    // Run on DOM changes
     const observer = new MutationObserver(() => {
       hideCollectionsForCreators()
     })

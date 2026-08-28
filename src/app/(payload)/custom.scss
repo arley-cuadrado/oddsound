@@ -113,6 +113,17 @@
 }
 
 @media (max-width: 768px) {
+  .drawer a[href*='/dashboard/collections/'],
+  .nav a[href*='/dashboard/collections/'] {
+    &[aria-current='page'],
+    &[data-active='true'],
+    &.active,
+    &.is-active {
+      color: var(--theme-elevation-800) !important;
+      font-weight: 400 !important;
+    }
+  }
+
   .editors-nav-link,
   .email-preview-nav-link,
   .scheduled-publishes-nav-link {
