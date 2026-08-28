@@ -4,6 +4,7 @@ import config from '@payload-config'
 import { getPayload } from 'payload'
 
 import { VerificationResendForm } from '@/app/(frontend)/creator/verification-resend-form'
+import { findUserByEmail } from '@/utilities/creatorAuth'
 import { CreatorAuthShell } from '../auth-shell'
 
 type Props = {
@@ -30,7 +31,20 @@ export default async function CreatorVerifyView({ searchParams }: Props) {
       isVerified = true
       message = 'Tu correo fue confirmado correctamente. Ya puedes iniciar sesión.'
     } catch (error) {
-      message = error instanceof Error ? error.message : message
+      const errorMessage = error instanceof Error ? error.message : message
+
+      if (email) {
+        const existingUser = await findUserByEmail(email, payload)
+
+        if (existingUser?._verified) {
+          isVerified = true
+          message = 'Tu correo ya había sido confirmado. Ya puedes iniciar sesión.'
+        } else {
+          message = errorMessage
+        }
+      } else {
+        message = errorMessage
+      }
     }
   }
 
