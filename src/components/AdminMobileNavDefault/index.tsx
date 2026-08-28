@@ -77,8 +77,8 @@ export default function AdminMobileNavDefault() {
     frameID = window.requestAnimationFrame(() => {
       resetNativeDashboardNavState()
       syncMobileLinks()
+      setIsOverlayOpen(shouldForceMobileNav)
     })
-    setIsOverlayOpen(shouldForceMobileNav)
 
     return () => {
       window.cancelAnimationFrame(frameID)

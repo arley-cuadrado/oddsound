@@ -22,7 +22,23 @@ export default function CreatorCollectionFilter() {
         ? []
         : user?.editorAccess
         ? ['posts', 'profiles', 'media']
-        : ['pages', 'biographies', 'products', 'profiles', 'media']
+        : ['pages', 'biographies', 'profiles', 'media']
+      const hiddenCollectionSlugs = ['products', 'carts', 'orders', 'transactions']
+      const hiddenStandaloneLabels = ['publicaciones programadas']
+
+      const hideNavElement = (element: HTMLElement | null) => {
+        if (!element) return
+
+        const container =
+          element.closest<HTMLElement>('.nav-group') ||
+          element.closest<HTMLElement>('li') ||
+          element.closest<HTMLElement>('.scheduled-publishes-nav-link') ||
+          element.closest<HTMLElement>('div')
+
+        if (container) {
+          container.style.display = 'none'
+        }
+      }
 
       // Find all collection links in the navigation
       const navLinks = Array.from(
@@ -31,20 +47,19 @@ export default function CreatorCollectionFilter() {
 
       navLinks.forEach((link) => {
         const href = link.getAttribute('href') || ''
+        const isHiddenCollection = hiddenCollectionSlugs.some((collection) =>
+          href.includes(`/collections/${collection}`),
+        )
 
         // Check if this link is for an allowed collection
         const isAllowed = allowedCollections.some((collection) => href.includes(`/collections/${collection}`))
 
-        if (!isAllowed) {
-          // Hide the entire parent list item
-          const listItem = link.closest('li')
-          if (listItem) {
-            listItem.style.display = 'none'
-          }
+        if (isHiddenCollection || !isAllowed) {
+          hideNavElement(link)
         }
       })
 
-      // Also hide any non-collection admin sections
+      // Also hide any non-collection admin sections or unfinished custom links.
       const adminLinks = Array.from(document.querySelectorAll<HTMLElement>('a[href*="/dashboard"]'))
       adminLinks.forEach((link) => {
         const href = link.getAttribute('href') || ''
@@ -54,13 +69,31 @@ export default function CreatorCollectionFilter() {
         const isCollectionLink = href.includes('/dashboard/collections/')
 
         if (isCollectionLink) {
+          const isHiddenCollection = hiddenCollectionSlugs.some((collection) =>
+            href.includes(`/collections/${collection}`),
+          )
           const isAllowed = allowedCollections.some((collection) => href.includes(`/collections/${collection}`))
-          if (!isAllowed) {
-            const listItem = link.closest('li')
-            if (listItem) {
-              listItem.style.display = 'none'
-            }
+          if (isHiddenCollection || !isAllowed) {
+            hideNavElement(link)
           }
+        }
+
+        const isHiddenStandaloneLink = hiddenStandaloneLabels.some((label) => text.includes(label))
+        if (isHiddenStandaloneLink) {
+          hideNavElement(link)
+        }
+      })
+
+      const navGroups = Array.from(document.querySelectorAll<HTMLElement>('.nav-group'))
+      navGroups.forEach((group) => {
+        const label = group.querySelector<HTMLElement>('.nav-group__label')?.textContent?.trim().toLowerCase() || ''
+        const visibleLinks = Array.from(group.querySelectorAll<HTMLElement>('a')).filter((link) => {
+          const styles = window.getComputedStyle(link)
+          return styles.display !== 'none' && styles.visibility !== 'hidden'
+        })
+
+        if (label === 'ecommerce' || visibleLinks.length === 0) {
+          group.style.display = 'none'
         }
       })
     }
