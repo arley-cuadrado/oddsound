@@ -7,7 +7,13 @@ type AuthUser = {
   role?: null | string
 }
 
-const FORCE_RESET_COLLECTIONS = new Set(['pages', 'media'])
+const CREATOR_COLLECTION_LABELS: Record<string, string> = {
+  biographies: 'Biografía',
+  comments: 'Comentarios',
+  media: 'Imágenes',
+  pages: 'Lanzamientos',
+  profiles: 'Perfil',
+}
 
 export function normalizeCollectionPath(path: string) {
   const pathname = path.split('?')[0]?.split('#')[0] || '/'
@@ -22,10 +28,9 @@ export function normalizeCollectionPath(path: string) {
 export function shouldForceCollectionNavigation(currentPath: string, linkPath: string) {
   const normalizedCurrentPath = normalizeCollectionPath(currentPath)
   const normalizedLinkPath = normalizeCollectionPath(linkPath)
-  const collectionSlug =
-    normalizedLinkPath.match(/\/dashboard\/collections\/([^/?#]+)/)?.[1] || null
+  const isCollectionLink = /\/dashboard\/collections\/[^/?#]+/.test(normalizedLinkPath)
 
-  if (!collectionSlug || !FORCE_RESET_COLLECTIONS.has(collectionSlug)) {
+  if (!isCollectionLink) {
     return false
   }
 
@@ -37,6 +42,55 @@ export function shouldForceCollectionNavigation(currentPath: string, linkPath: s
 
 export function forceCollectionNavigation(href: string) {
   window.location.assign(href)
+}
+
+export function getActiveCollectionInfo(currentPath: string) {
+  const normalizedCurrentPath = normalizeCollectionPath(currentPath)
+  const match = normalizedCurrentPath.match(/^\/dashboard\/collections\/([^/?#]+)/)
+  const slug = match?.[1]
+
+  if (!slug) return null
+
+  const label = CREATOR_COLLECTION_LABELS[slug]
+  if (!label) return null
+
+  return {
+    href: `/dashboard/collections/${slug}`,
+    label,
+    slug,
+  }
+}
+
+export function ensureActiveCollectionNavItemLink(root: Document, currentPath: string) {
+  const activeCollection = getActiveCollectionInfo(currentPath)
+  if (!activeCollection) return false
+
+  const navContent = root.querySelector('.nav-group__content')
+  if (!navContent) return false
+
+  const existingLink = navContent.querySelector<HTMLAnchorElement>(
+    `a[href="${activeCollection.href}"]`,
+  )
+
+  if (existingLink) return false
+
+  const activeTextElement = Array.from(navContent.querySelectorAll<HTMLElement>('*')).find(
+    (element) =>
+      element.textContent?.trim() === activeCollection.label &&
+      !element.closest('a') &&
+      !element.closest('button'),
+  )
+
+  if (!activeTextElement) return false
+
+  const link = root.createElement('a')
+  link.href = activeCollection.href
+  link.textContent = activeCollection.label
+  link.className = activeTextElement.className
+  link.setAttribute('data-creator-mobile-collection-reset', activeCollection.slug)
+
+  activeTextElement.replaceWith(link)
+  return true
 }
 
 type HandleCollectionLinkResetClickArgs = {
@@ -73,6 +127,11 @@ export default function CreatorMobileCollectionLinkReset() {
     if (user?.role !== 'creator') return
     if (typeof window === 'undefined') return
 
+    const syncActiveCollectionLink = () => {
+      if (!window.matchMedia('(max-width: 768px)').matches) return
+      ensureActiveCollectionNavItemLink(document, window.location.pathname)
+    }
+
     const handleClick = (event: MouseEvent) => {
       const handled = handleCollectionLinkResetClick({
         currentPath: window.location.pathname,
@@ -86,9 +145,21 @@ export default function CreatorMobileCollectionLinkReset() {
       event.stopPropagation()
     }
 
+    syncActiveCollectionLink()
+
+    const observer = new MutationObserver(() => {
+      syncActiveCollectionLink()
+    })
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+    })
+
     document.addEventListener('click', handleClick, true)
 
     return () => {
+      observer.disconnect()
       document.removeEventListener('click', handleClick, true)
     }
   }, [user?.role])
