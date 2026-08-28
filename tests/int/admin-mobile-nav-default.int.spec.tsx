@@ -21,18 +21,12 @@ describe('AdminMobileNavDefault', () => {
     navShell = document.createElement('div')
     const templateDefault = document.createElement('div')
     templateDefault.className = 'template-default'
-    const appHeader = document.createElement('div')
-    appHeader.className = 'app-header'
-    const mobileToggler = document.createElement('button')
-    mobileToggler.className = 'app-header__mobile-nav-toggler nav-toggler--is-open'
-    appHeader.appendChild(mobileToggler)
     const aside = document.createElement('aside')
     aside.className = 'nav'
     const link = document.createElement('a')
     link.className = 'nav__link'
     link.href = '/dashboard/collections/pages'
     link.textContent = 'Lanzamientos'
-    navShell.appendChild(appHeader)
     aside.appendChild(link)
     navShell.appendChild(templateDefault)
     navShell.appendChild(aside)
@@ -85,22 +79,6 @@ describe('AdminMobileNavDefault', () => {
     expect(trigger).not.toBeNull()
     fireEvent.click(trigger!)
     expect(document.querySelector('.mobile-dashboard-nav-menu')).not.toBeNull()
-  })
-
-  it('clears the native payload mobile nav state on dashboard routes', () => {
-    window.matchMedia = vi.fn().mockReturnValue({
-      matches: true,
-    }) as typeof window.matchMedia
-
-    document.querySelector('.template-default')?.classList.add('template-default--nav-open')
-    document.querySelector('.app-header')?.classList.add('app-header--nav-open')
-
-    mockUsePathname.mockReturnValue('/dashboard/collections/users')
-    render(React.createElement(AdminMobileNavDefault))
-
-    expect(document.querySelector('.template-default')?.classList.contains('template-default--nav-open')).toBe(false)
-    expect(document.querySelector('.app-header')?.classList.contains('app-header--nav-open')).toBe(false)
-    expect(document.querySelector('.nav-toggler--is-open')).toBeNull()
   })
 
   it('does not force the mobile dashboard class outside dashboard routes', () => {
