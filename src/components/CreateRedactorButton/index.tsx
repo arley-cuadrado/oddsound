@@ -53,6 +53,33 @@ const EDITOR_GENDER_OPTIONS: OptionObject[] = [
   },
 ]
 
+function normalizeEditorCreationErrorMessage(message?: string) {
+  const fallbackMessage =
+    'No pudimos completar la creacion desde este formulario. Revisa si el editor ya recibio el correo de confirmacion.'
+
+  const normalizedMessage = message?.trim()
+
+  if (!normalizedMessage) return fallbackMessage
+
+  const lowercaseMessage = normalizedMessage.toLowerCase()
+
+  if (
+    lowercaseMessage.includes('already exists') ||
+    lowercaseMessage.includes('already registered') ||
+    lowercaseMessage.includes('duplicate') ||
+    lowercaseMessage.includes('email') ||
+    lowercaseMessage.includes('username') ||
+    lowercaseMessage.includes('ya existe') ||
+    lowercaseMessage.includes('ya esta registrado') ||
+    lowercaseMessage.includes('ya está registrado') ||
+    lowercaseMessage.includes('ya fue registrado')
+  ) {
+    return 'Este editor ya existe o ya recibió el correo. Pídele que revise su bandeja y confirme la cuenta antes de intentar crearlo de nuevo.'
+  }
+
+  return normalizedMessage
+}
+
 function DashboardInputField({
   autoComplete,
   label,
@@ -190,8 +217,8 @@ export default function CreateRedactorButton() {
       })
 
       if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.message || 'No fue posible crear el redactor.')
+        const error = await response.json().catch(() => null)
+        throw new Error(normalizeEditorCreationErrorMessage(error?.message))
       }
 
       const createdUser = await response.json()
@@ -234,7 +261,10 @@ export default function CreateRedactorButton() {
     } catch (error) {
       setMessage({
         type: 'error',
-        text: error instanceof Error ? error.message : 'No fue posible crear el redactor.',
+        text:
+          error instanceof Error
+            ? normalizeEditorCreationErrorMessage(error.message)
+            : 'No pudimos completar la creacion desde este formulario. Revisa si el editor ya recibio el correo de confirmacion.',
       })
     } finally {
       setLoading(false)

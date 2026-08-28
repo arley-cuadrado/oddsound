@@ -1,6 +1,6 @@
 import React from 'react'
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import CreateRedactorButton from '@/components/CreateRedactorButton'
 
@@ -89,6 +89,10 @@ describe('CreateRedactorButton', () => {
     window.history.replaceState({}, '', '/dashboard/collections/users?editors=1')
   })
 
+  afterEach(() => {
+    cleanup()
+  })
+
   it('allows creating an editor without gender or social links', async () => {
     const fetchMock = vi.mocked(fetch)
 
@@ -160,5 +164,48 @@ describe('CreateRedactorButton', () => {
         method: 'PATCH',
       }),
     )
+  })
+
+  it('shows a confirmation-focused message when the editor already exists', async () => {
+    const fetchMock = vi.mocked(fetch)
+
+    fetchMock.mockResolvedValueOnce({
+      json: async () => ({
+        message: 'Account with this email already exists.',
+      }),
+      ok: false,
+    } as Response)
+
+    render(React.createElement(CreateRedactorButton))
+
+    fireEvent.click(screen.getByRole('button', { name: 'Crear editor' }))
+
+    fireEvent.change(screen.getByLabelText('Nombre completo *'), {
+      target: { value: 'Arlo Cuadrado' },
+    })
+    fireEvent.change(screen.getByLabelText('Nombre de usuario *'), {
+      target: { value: 'arlo_cuadrado' },
+    })
+    fireEvent.change(screen.getByLabelText('Email *'), {
+      target: { value: 'arley.cuadrado@icloud.com' },
+    })
+    fireEvent.change(screen.getByLabelText('Contrasena *'), {
+      target: { value: 'super-secret-password' },
+    })
+    fireEvent.change(screen.getByLabelText('Confirmar contrasena *'), {
+      target: { value: 'super-secret-password' },
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Crear redactor' }))
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(
+          'Este editor ya existe o ya recibió el correo. Pídele que revise su bandeja y confirme la cuenta antes de intentar crearlo de nuevo.',
+        ),
+      ).toBeTruthy()
+    })
+
+    expect(fetchMock).toHaveBeenCalledTimes(1)
   })
 })
