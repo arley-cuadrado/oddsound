@@ -1,32 +1,32 @@
 import { describe, expect, it } from 'vitest'
 
-import { shouldHideCommentsEmptyState } from '@/components/CommentsListEmptyStateGuard'
+import { getCommentsListEmptyStateMode } from '@/components/CommentsListEmptyStateGuard'
 
 describe('comments list empty state guard', () => {
-  it('hides the empty state on the comments list when there is no search term', () => {
+  it('uses the default empty state on the comments list when there is no search term', () => {
     expect(
-      shouldHideCommentsEmptyState(
+      getCommentsListEmptyStateMode(
         '/dashboard/collections/comments',
         new URLSearchParams(),
       ),
-    ).toBe(true)
+    ).toBe('default-empty')
   })
 
-  it('shows the empty state on the comments list when a search term exists', () => {
+  it('uses the search empty state on the comments list when a search term exists', () => {
     expect(
-      shouldHideCommentsEmptyState(
+      getCommentsListEmptyStateMode(
         '/dashboard/collections/comments',
         new URLSearchParams('search=rock'),
       ),
-    ).toBe(false)
+    ).toBe('search-empty')
   })
 
   it('does not affect other collection lists', () => {
     expect(
-      shouldHideCommentsEmptyState(
+      getCommentsListEmptyStateMode(
         '/dashboard/collections/posts',
         new URLSearchParams(),
       ),
-    ).toBe(false)
+    ).toBe('ignore')
   })
 })
