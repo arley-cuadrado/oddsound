@@ -379,3 +379,10 @@
     margin: 0;
   }
 }
+
+html[data-comments-collection-view='true'] {
+  .search-bar__actions,
+  .collection-list .list-controls {
+    display: none;
+  }
+}

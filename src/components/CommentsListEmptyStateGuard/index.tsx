@@ -6,24 +6,16 @@ import { useEffect } from 'react'
 const COMMENTS_COLLECTION_PATH = '/dashboard/collections/comments'
 const DEFAULT_EMPTY_MESSAGE = 'Aún no tienes comentarios por leer, invita a tus fans a comentar tus lanzamientos.'
 
+export function isCommentsCollectionPath(pathname: string) {
+  return pathname === COMMENTS_COLLECTION_PATH
+}
+
 export function getCommentsListEmptyStateMode(pathname: string, searchParams: URLSearchParams) {
-  if (pathname !== COMMENTS_COLLECTION_PATH) return 'ignore'
+  if (!isCommentsCollectionPath(pathname)) return 'ignore'
 
   const searchValue = searchParams.get('search')?.trim() || ''
 
   return searchValue.length === 0 ? 'default-empty' : 'search-empty'
-}
-
-function hideCommentsListControls(root: Document) {
-  const controls = Array.from(root.querySelectorAll<HTMLElement>('button, [role="button"]')).filter((element) => {
-    const label = element.textContent?.trim()
-    return label === 'Columnas' || label === 'Filtros'
-  })
-
-  controls.forEach((element) => {
-    const container = element.closest<HTMLElement>('.btn--withPopup') || element.closest<HTMLElement>('.popup')
-    ;(container || element).style.display = 'none'
-  })
 }
 
 function syncCommentsEmptyState(root: Document, pathname: string, searchParams: URLSearchParams) {
@@ -54,20 +46,37 @@ function syncCommentsEmptyState(root: Document, pathname: string, searchParams: 
 export default function CommentsListEmptyStateGuard() {
   const pathname = usePathname()
   const searchParams = useSearchParams()
+  const isCommentsView = isCommentsCollectionPath(pathname)
 
   useEffect(() => {
+    if (isCommentsView) {
+      document.documentElement.dataset.commentsCollectionView = 'true'
+    } else {
+      delete document.documentElement.dataset.commentsCollectionView
+    }
+
+    return () => {
+      delete document.documentElement.dataset.commentsCollectionView
+    }
+  }, [isCommentsView])
+
+  useEffect(() => {
+    if (!isCommentsView) return
+
     const syncCommentsListPresentation = () => {
-      hideCommentsListControls(document)
       syncCommentsEmptyState(document, pathname, searchParams)
     }
 
     syncCommentsListPresentation()
 
+    const target = document.querySelector('.collection-list')
+    if (!target) return
+
     const observer = new MutationObserver(() => {
       syncCommentsListPresentation()
     })
 
-    observer.observe(document.body, {
+    observer.observe(target, {
       childList: true,
       subtree: true,
     })
@@ -75,7 +84,7 @@ export default function CommentsListEmptyStateGuard() {
     return () => {
       observer.disconnect()
     }
-  }, [pathname, searchParams])
+  }, [isCommentsView, pathname, searchParams])
 
   return null
 }
