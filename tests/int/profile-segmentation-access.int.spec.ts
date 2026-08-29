@@ -93,9 +93,9 @@ describe('profile segmentation access', () => {
     ).resolves.toBe(false)
   })
 
-  it('shows commerce products only to admins and musical creators', () => {
+  it('shows commerce products only to admins in the dashboard', () => {
     expect(productsHidden({ user: editorUser })).toBe(true)
-    expect(productsHidden({ user: artistUser })).toBe(false)
+    expect(productsHidden({ user: artistUser })).toBe(true)
     expect(productsHidden({ user: fanUser })).toBe(true)
     expect(productsHidden({ user: adminUser })).toBe(false)
 

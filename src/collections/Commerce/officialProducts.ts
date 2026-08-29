@@ -94,7 +94,7 @@ export function extendEcommerceProductsCollection({ defaultCollection }: Overrid
     admin: {
       ...(defaultCollection.admin || {}),
       defaultColumns: ['title', 'priceInUSD', 'inventory', 'updatedAt'],
-      hidden: ({ user }) => !isAdminUser(user) && !isMusicalCreatorUser(user),
+      hidden: ({ user }) => !isAdminUser(user),
       useAsTitle: 'title',
     },
     fields: [
