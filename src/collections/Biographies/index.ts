@@ -1,4 +1,4 @@
-import type { CollectionConfig, Field } from 'payload'
+import type { CollectionConfig, Field, PayloadRequest } from 'payload'
 
 import { authenticated } from '@/access/authenticated'
 import { hasFreshAdminAccess } from '@/access/hasFreshAdminAccess'
@@ -12,7 +12,7 @@ import { socialLinksField } from '@/fields/socialLinks'
 import { isAdminUser } from '@/utilities/isAdminUser'
 import { isMusicalCreatorUser } from '@/utilities/isEditorialUser'
 
-async function canCreateBiographyForRequest(req: Parameters<NonNullable<CollectionConfig['access']>['create']>[0]['req']) {
+async function canCreateBiographyForRequest(req: PayloadRequest) {
   const user = req.user
 
   if (!user) return false
