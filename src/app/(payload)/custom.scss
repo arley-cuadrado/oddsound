@@ -381,8 +381,18 @@
 }
 
 html[data-comments-collection-view='true'] {
-  .search-bar__actions,
-  .collection-list .list-controls {
+  .list-controls__toggle-columns,
+  .list-controls__toggle-where,
+  .list-controls__columns,
+  .list-controls__where {
+    display: none;
+  }
+
+  .search-bar {
+    grid-template-columns: auto 1fr;
+  }
+
+  .search-bar__actions {
     display: none;
   }
 }
