@@ -44,8 +44,12 @@ describe('creator comments list view helpers', () => {
   })
 
   it('returns the creator empty-state copy based on whether a search exists', () => {
-    expect(getCreatorCommentsEmptyMessage(false).title).toBe('Sin comentarios todavía.')
-    expect(getCreatorCommentsEmptyMessage(true).title).toBe('No hay resultados.')
+    expect(getCreatorCommentsEmptyMessage(false)).toBe(
+      'Aún no tienes comentarios por leer, invita a tus fans a comentar tus lanzamientos.',
+    )
+    expect(getCreatorCommentsEmptyMessage(true)).toBe(
+      'No hay resultados. La búsqueda no generó coincidencias.',
+    )
   })
 
   it('uses the consumer profile display name when available', () => {

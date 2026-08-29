@@ -41,16 +41,10 @@ export function getCreatorCommentsPage(searchParams?: null | SearchParamsLike) {
 
 export function getCreatorCommentsEmptyMessage(hasSearch: boolean) {
   if (hasSearch) {
-    return {
-      description: 'La búsqueda no generó coincidencias.',
-      title: 'No hay resultados.',
-    }
+    return 'No hay resultados. La búsqueda no generó coincidencias.'
   }
 
-  return {
-    description: 'Aún no tienes comentarios por leer, invita a tus fans a comentar tus lanzamientos.',
-    title: 'Sin comentarios todavía.',
-  }
+  return 'Aún no tienes comentarios por leer, invita a tus fans a comentar tus lanzamientos.'
 }
 
 export function getCreatorCommentsListHref(args: {

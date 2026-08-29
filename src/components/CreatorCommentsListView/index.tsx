@@ -36,8 +36,7 @@ function CreatorCommentsEmptyState({ hasSearch }: { hasSearch: boolean }) {
 
   return (
     <div className="creator-comments-list__empty no-results">
-      <h3>{message.title}</h3>
-      <p>{message.description}</p>
+      <p>{message}</p>
     </div>
   )
 }
@@ -158,10 +157,6 @@ export default async function CreatorCommentsListView(props: ListViewServerProps
       </header>
 
       <form action="/dashboard/collections/comments" className="creator-comments-list__search" method="GET">
-        <label className="creator-comments-list__search-label" htmlFor="creator-comments-search">
-          Buscar comentarios
-        </label>
-
         <div className="creator-comments-list__search-controls">
           <div className="search-bar">
             <SearchIcon />

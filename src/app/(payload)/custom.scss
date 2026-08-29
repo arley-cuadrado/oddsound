@@ -406,11 +406,6 @@
     gap: 0.5rem;
   }
 
-  &__search-label {
-    font-size: 0.9rem;
-    font-weight: 600;
-  }
-
   &__search-controls {
     display: grid;
     gap: 0.75rem;
@@ -446,7 +441,6 @@
 
   &__card-title,
   &__card-content,
-  &__empty h3,
   &__empty p {
     margin: 0;
   }
@@ -471,13 +465,18 @@
 
   &__empty {
     display: grid;
-    gap: 0.5rem;
-    padding: 1rem 0;
+    gap: 0;
+    padding: 1rem 0 0;
+    align-items: flex-start;
+    justify-content: flex-start;
+    text-align: left;
 
     p {
       color: var(--theme-elevation-700);
       line-height: 1.6;
       max-width: 38rem;
+      padding-left: 0;
+      text-indent: 0;
     }
   }
 
