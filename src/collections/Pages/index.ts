@@ -187,6 +187,7 @@ export const Pages: CollectionConfig<'pages'> = {
       admin: {
         defaultColumns: ['title', 'priceInUSD', '_status', 'updatedAt'],
         description: 'Productos del commerce oficial vinculados a este lanzamiento.',
+        hidden: true,
         position: 'sidebar',
       },
       label: 'Productos vinculados',

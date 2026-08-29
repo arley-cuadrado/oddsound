@@ -128,6 +128,55 @@
   .create-redactor-section__social-grid {
     grid-template-columns: minmax(0, 1fr);
   }
+
+  .doc-tabs {
+    margin-bottom: 0.5rem;
+  }
+
+  .doc-tabs__tabs-container,
+  .doc-tabs__tabs {
+    width: 100%;
+  }
+
+  .doc-tabs__tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 0.9rem;
+  }
+
+  .doc-tab,
+  .doc-tab.btn,
+  .doc-tab.btn--style-tab,
+  .doc-tab.btn--disabled {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+    color: var(--theme-elevation-500);
+    font-size: 0.95rem;
+    font-weight: 500;
+    line-height: 1.25;
+  }
+
+  .doc-tab:hover,
+  .doc-tab:focus-visible,
+  .doc-tab:focus,
+  .doc-tab:active,
+  .doc-tab.btn--style-tab:hover,
+  .doc-tab.btn--style-tab:focus-visible,
+  .doc-tab.btn--style-tab:focus,
+  .doc-tab.btn--style-tab:active,
+  .doc-tab.btn--disabled,
+  .doc-tab--active {
+    border: 0;
+    background: transparent;
+    color: var(--theme-elevation-500);
+  }
+
+  .doc-tab .btn__content {
+    justify-content: flex-start;
+  }
 }
 
 .before-dashboard__section {

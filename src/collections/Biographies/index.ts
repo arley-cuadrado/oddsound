@@ -29,6 +29,7 @@ const biographyHero: Field = {
         },
       ],
       admin: {
+        hidden: true,
         readOnly: true,
       },
       required: true,
