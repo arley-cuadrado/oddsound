@@ -265,6 +265,7 @@ export const Profiles: CollectionConfig = {
     {
       name: 'displayName',
       type: 'text',
+      label: 'Nombre artístico',
       required: true,
     },
     {
@@ -310,6 +311,7 @@ export const Profiles: CollectionConfig = {
     {
       name: 'accountType',
       type: 'select',
+      label: 'Tipo de cuenta',
       defaultValue: 'artist',
       admin: {
         condition: (_data, siblingData) => !isEditorialProfileType(siblingData?.profileType),
@@ -340,19 +342,22 @@ export const Profiles: CollectionConfig = {
     {
       name: 'avatar',
       type: 'upload',
+      label: 'Avatar',
       relationTo: 'media',
     },
     {
       name: 'coverImage',
       type: 'upload',
+      label: 'Imagen de portada',
       relationTo: 'media',
       admin: {
-        condition: (_data, siblingData) => !isEditorialProfileType(siblingData?.profileType),
+        hidden: true,
       },
     },
     {
       name: 'location',
       type: 'text',
+      label: 'Ubicación',
       validate: ((value, options) => {
         const siblingData = (options as { siblingData?: { profileType?: ProfileType | null } })
           .siblingData
@@ -372,6 +377,7 @@ export const Profiles: CollectionConfig = {
     {
       name: 'genre',
       type: 'text',
+      label: 'Género',
       admin: {
         condition: (_data, siblingData) => !isEditorialProfileType(siblingData?.profileType),
       },
@@ -401,6 +407,7 @@ export const Profiles: CollectionConfig = {
     {
       name: 'contactEmail',
       type: 'email',
+      label: 'Correo electrónico',
     },
     {
       name: 'editorSocials',
