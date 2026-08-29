@@ -177,16 +177,7 @@ export const Media: CollectionConfig = {
       }
     },
     read: async ({ req }) => {
-      const user = req.user
-
-      if (!user) return true
-      if (await hasFreshAdminAccess(req as any)) return true
-
-      return {
-        owner: {
-          equals: user.id,
-        },
-      }
+      return true
     },
     update: async ({ req }) => {
       const user = req.user

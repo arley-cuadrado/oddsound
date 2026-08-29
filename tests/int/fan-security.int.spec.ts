@@ -21,6 +21,10 @@ describe('fan security restrictions', () => {
     expect(Media.access?.create?.({ req: { user: fanUser } } as never)).toBe(false)
   })
 
+  it('keeps media assets readable so public frontend images do not break for logged-in fans', async () => {
+    await expect(Media.access?.read?.({ req: { user: fanUser } } as never)).resolves.toBe(true)
+  })
+
   it('hides media collection from fan users in admin navigation', () => {
     const hidden = Media.admin?.hidden as (args: { user: unknown }) => boolean
 
