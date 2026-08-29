@@ -31,7 +31,11 @@ const adminUser = {
 }
 
 const baseReq = {
-  payload: {},
+  payload: {
+    find: async () => ({
+      docs: [],
+    }),
+  },
 } as any
 
 describe('profile segmentation access', () => {
@@ -78,9 +82,15 @@ describe('profile segmentation access', () => {
     expect(biographiesHidden({ user: fanUser })).toBe(true)
     expect(biographiesHidden({ user: adminUser })).toBe(false)
 
-    expect(Biographies.access?.create?.({ req: { ...baseReq, user: artistUser } } as any)).toBe(true)
-    expect(Biographies.access?.create?.({ req: { ...baseReq, user: fanUser } } as any)).toBe(false)
-    expect(Biographies.access?.create?.({ req: { ...baseReq, user: editorUser } } as any)).toBe(false)
+    await expect(
+      Biographies.access?.create?.({ req: { ...baseReq, user: artistUser } } as any),
+    ).resolves.toBe(true)
+    await expect(Biographies.access?.create?.({ req: { ...baseReq, user: fanUser } } as any)).resolves.toBe(
+      false,
+    )
+    await expect(
+      Biographies.access?.create?.({ req: { ...baseReq, user: editorUser } } as any),
+    ).resolves.toBe(false)
   })
 
   it('shows commerce products only to admins and musical creators', () => {

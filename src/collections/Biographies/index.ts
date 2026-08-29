@@ -128,7 +128,6 @@ export const Biographies: CollectionConfig = {
     },
   },
   admin: {
-    disableDuplicate: true,
     hidden: ({ user }) => !isAdminUser(user) && !isMusicalCreatorUser(user),
     components: {
       beforeList: ['@/components/CreatorBiographyListRedirect'],

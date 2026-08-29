@@ -1,5 +1,6 @@
 'use client'
-import React from 'react'
+import { useHeaderTheme } from '@/providers/HeaderTheme'
+import React, { useEffect } from 'react'
 
 import type { Post } from '@/payload-types'
 
@@ -10,10 +11,15 @@ import { formatRelativePublishedAt } from '@/utilities/formatRelativePublishedAt
 export const PostHero: React.FC<{
   post: Post
 }> = ({ post }) => {
+  const { setHeaderTheme } = useHeaderTheme()
   const { categories, heroImage, populatedAuthors, publishedAt, title } = post
 
   const hasAuthors =
     populatedAuthors && populatedAuthors.length > 0 && formatAuthors(populatedAuthors) !== ''
+
+  useEffect(() => {
+    setHeaderTheme('dark')
+  })
 
   return (
     <div className="relative mt-4 overflow-hidden text-white container" data-theme="dark">
