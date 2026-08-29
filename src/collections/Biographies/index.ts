@@ -12,6 +12,29 @@ import { socialLinksField } from '@/fields/socialLinks'
 import { isAdminUser } from '@/utilities/isAdminUser'
 import { isMusicalCreatorUser } from '@/utilities/isEditorialUser'
 
+async function canCreateBiographyForRequest(req: Parameters<NonNullable<CollectionConfig['access']>['create']>[0]['req']) {
+  const user = req.user
+
+  if (!user) return false
+  if (await hasFreshAdminAccess(req as any)) return true
+  if (!isMusicalCreatorUser(user)) return false
+
+  const existingBiography = await req.payload.find({
+    collection: 'biographies',
+    depth: 0,
+    limit: 1,
+    overrideAccess: true,
+    pagination: false,
+    where: {
+      owner: {
+        equals: user.id,
+      },
+    },
+  })
+
+  return existingBiography.docs.length === 0
+}
+
 const biographyHero: Field = {
   name: 'hero',
   type: 'group',
@@ -63,7 +86,7 @@ export const Biographies: CollectionConfig = {
   ],
   access: {
     admin: authenticated,
-    create: ({ req }) => isAdminUser(req.user) || isMusicalCreatorUser(req.user),
+    create: async ({ req }) => canCreateBiographyForRequest(req),
     delete: async ({ req }) => {
       const user = req.user
 
@@ -105,6 +128,7 @@ export const Biographies: CollectionConfig = {
     },
   },
   admin: {
+    disableDuplicate: true,
     hidden: ({ user }) => !isAdminUser(user) && !isMusicalCreatorUser(user),
     components: {
       beforeList: ['@/components/CreatorBiographyListRedirect'],
