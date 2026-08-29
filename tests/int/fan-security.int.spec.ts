@@ -11,6 +11,13 @@ const fanUser = {
   userType: 'fan' as const,
 }
 
+const artistUser = {
+  editorAccess: false,
+  id: 'artist-1',
+  role: 'creator' as const,
+  userType: 'creator' as const,
+}
+
 describe('fan security restrictions', () => {
   it('blocks fan users from Payload dashboard access', () => {
     expect(payloadDashboardAccess({ req: { user: fanUser } } as never)).toBe(false)
@@ -21,8 +28,18 @@ describe('fan security restrictions', () => {
     expect(Media.access?.create?.({ req: { user: fanUser } } as never)).toBe(false)
   })
 
-  it('keeps media assets readable so public frontend images do not break for logged-in fans', async () => {
-    await expect(Media.access?.read?.({ req: { user: fanUser } } as never)).resolves.toBe(true)
+  it('keeps static media files readable so public frontend images do not break for logged-in fans', async () => {
+    await expect(
+      Media.access?.read?.({ isReadingStaticFile: true, req: { user: fanUser } } as never),
+    ).resolves.toBe(true)
+  })
+
+  it('keeps dashboard media documents scoped to the owner for artist accounts', async () => {
+    await expect(Media.access?.read?.({ req: { user: artistUser } } as never)).resolves.toEqual({
+      owner: {
+        equals: artistUser.id,
+      },
+    })
   })
 
   it('hides media collection from fan users in admin navigation', () => {
