@@ -106,6 +106,9 @@ export const Comments: CollectionConfig = {
     update: canModerateComment,
   },
   admin: {
+    components: {
+      beforeList: ['@/components/CommentsListEmptyStateGuard'],
+    },
     defaultColumns: ['source', 'release', 'post', 'status', 'purchaseVerified', 'createdAt'],
     hidden: ({ user }) => !user || isFanUser(user),
     useAsTitle: 'content',
