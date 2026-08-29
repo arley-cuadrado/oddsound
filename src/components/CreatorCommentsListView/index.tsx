@@ -1,4 +1,4 @@
-import { DefaultListView } from '@payloadcms/ui'
+import { DefaultListView, SearchIcon } from '@payloadcms/ui'
 import Link from 'next/link'
 import type { ListViewServerProps } from 'payload'
 
@@ -35,7 +35,7 @@ function CreatorCommentsEmptyState({ hasSearch }: { hasSearch: boolean }) {
   const message = getCreatorCommentsEmptyMessage(hasSearch)
 
   return (
-    <div className="creator-comments-list__empty">
+    <div className="creator-comments-list__empty no-results">
       <h3>{message.title}</h3>
       <p>{message.description}</p>
     </div>
@@ -57,16 +57,26 @@ function CreatorCommentsPagination(args: {
 
       <div className="creator-comments-list__pagination-links">
         {args.currentPage > 1 ? (
-          <Link href={getCreatorCommentsListHref({ page: args.currentPage - 1, search: args.search })}>
-            Anterior
+          <Link
+            className="btn btn--style-secondary btn--size-medium btn--withoutPopup btn--no-margin"
+            href={getCreatorCommentsListHref({ page: args.currentPage - 1, search: args.search })}
+          >
+            <span className="btn__content">
+              <span className="btn__label">Anterior</span>
+            </span>
           </Link>
         ) : (
           <span aria-disabled="true">Anterior</span>
         )}
 
         {args.currentPage < args.totalPages ? (
-          <Link href={getCreatorCommentsListHref({ page: args.currentPage + 1, search: args.search })}>
-            Siguiente
+          <Link
+            className="btn btn--style-secondary btn--size-medium btn--withoutPopup btn--no-margin"
+            href={getCreatorCommentsListHref({ page: args.currentPage + 1, search: args.search })}
+          >
+            <span className="btn__content">
+              <span className="btn__label">Siguiente</span>
+            </span>
           </Link>
         ) : (
           <span aria-disabled="true">Siguiente</span>
@@ -153,15 +163,42 @@ export default async function CreatorCommentsListView(props: ListViewServerProps
         </label>
 
         <div className="creator-comments-list__search-controls">
-          <input
-            defaultValue={search}
-            id="creator-comments-search"
-            name="search"
-            placeholder="Buscar por comentario"
-            type="search"
-          />
-          <button type="submit">Buscar</button>
-          {search ? <Link href="/dashboard/collections/comments">Limpiar</Link> : null}
+          <div className="search-bar">
+            <SearchIcon />
+            <div className="search-filter">
+              <input
+                aria-label="Buscar por comentario"
+                className="search-filter__input"
+                defaultValue={search}
+                id="creator-comments-search"
+                name="search"
+                placeholder="Buscar por comentario"
+                type="search"
+              />
+            </div>
+          </div>
+
+          <div className="creator-comments-list__search-actions">
+            <button
+              className="btn btn--style-primary btn--size-medium btn--withoutPopup btn--no-margin"
+              type="submit"
+            >
+              <span className="btn__content">
+                <span className="btn__label">Buscar</span>
+              </span>
+            </button>
+
+            {search ? (
+              <Link
+                className="btn btn--style-secondary btn--size-medium btn--withoutPopup btn--no-margin"
+                href="/dashboard/collections/comments"
+              >
+                <span className="btn__content">
+                  <span className="btn__label">Limpiar</span>
+                </span>
+              </Link>
+            ) : null}
+          </div>
         </div>
       </form>
 
@@ -186,8 +223,24 @@ export default async function CreatorCommentsListView(props: ListViewServerProps
                   <p className="creator-comments-list__card-content">{comment.content}</p>
 
                   <div className="creator-comments-list__card-links">
-                    <Link href={`/dashboard/collections/comments/${comment.id}`}>Abrir comentario</Link>
-                    {releaseHref ? <Link href={releaseHref}>Ver en lanzamiento</Link> : null}
+                    <Link
+                      className="btn btn--style-icon-label btn--size-medium btn--withoutPopup btn--no-margin"
+                      href={`/dashboard/collections/comments/${comment.id}`}
+                    >
+                      <span className="btn__content">
+                        <span className="btn__label">Abrir comentario</span>
+                      </span>
+                    </Link>
+                    {releaseHref ? (
+                      <Link
+                        className="btn btn--style-icon-label btn--size-medium btn--withoutPopup btn--no-margin"
+                        href={releaseHref}
+                      >
+                        <span className="btn__content">
+                          <span className="btn__label">Ver en lanzamiento</span>
+                        </span>
+                      </Link>
+                    ) : null}
                   </div>
                 </article>
               )
