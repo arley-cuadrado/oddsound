@@ -91,6 +91,15 @@ describe('profile segmentation access', () => {
     await expect(
       Biographies.access?.create?.({ req: { ...baseReq, user: editorUser } } as any),
     ).resolves.toBe(false)
+    await expect(
+      Biographies.access?.delete?.({ req: { ...baseReq, user: artistUser } } as any),
+    ).resolves.toBe(false)
+    await expect(
+      Biographies.access?.delete?.({ req: { ...baseReq, user: editorUser } } as any),
+    ).resolves.toBe(false)
+    await expect(Biographies.access?.delete?.({ req: { ...baseReq, user: adminUser } } as any)).resolves.toBe(
+      true,
+    )
   })
 
   it('shows commerce products only to admins in the dashboard', () => {

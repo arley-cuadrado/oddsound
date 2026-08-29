@@ -92,13 +92,7 @@ export const Biographies: CollectionConfig = {
 
       if (!user) return false
       if (await hasFreshAdminAccess(req as any)) return true
-      if (!isMusicalCreatorUser(user)) return false
-
-      return {
-        owner: {
-          equals: user.id,
-        },
-      }
+      return false
     },
     read: async ({ req }) => {
       const user = req.user

@@ -231,14 +231,9 @@ export default async function ArtistBioPage({ params: paramsPromise }: Args) {
             linkClassName="inline-flex items-center text-[13px] font-medium text-[#777] underline underline-offset-4 dark:text-[#858c98]"
           />
         ) : biography ? (
-          <div className="rounded-[1.75rem] border border-dashed border-slate-300 bg-white/70 px-6 py-12 text-center dark:border-slate-700 dark:bg-slate-950/50">
-            <p className="text-[12px] uppercase tracking-[0.22em] text-[#777] dark:text-[#858c98]">
-              Bio
-            </p>
-            <h2 className="mt-3 text-2xl font-semibold text-slate-900 dark:text-white">
-              Esta biografía aún está en construcción
-            </h2>
-          </div>
+          <p className="mt-4 text-sm text-[#777] dark:text-[#858c98]">
+            Esta biografía aún está en construcción.
+          </p>
         ) : null}
       </div>
       <div className="pt-4 md:pt-6">
