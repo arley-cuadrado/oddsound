@@ -107,7 +107,11 @@ export const Comments: CollectionConfig = {
   },
   admin: {
     components: {
-      beforeList: ['@/components/CommentsListEmptyStateGuard'],
+      views: {
+        list: {
+          Component: '@/components/CreatorCommentsListView',
+        },
+      },
     },
     defaultColumns: ['source', 'release', 'post', 'status', 'purchaseVerified', 'createdAt'],
     hidden: ({ user }) => !user || isFanUser(user),

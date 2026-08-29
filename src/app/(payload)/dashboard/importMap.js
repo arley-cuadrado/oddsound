@@ -19,6 +19,7 @@ import { HorizontalRuleFeatureClient as HorizontalRuleFeatureClient_e70f5e05f09f
 import { BlocksFeatureClient as BlocksFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { default as default_f174aef4af8512ed7932ed197fd68c20 } from '@/components/CreatorBiographyListRedirect'
 import { default as default_3809c25a6e74ecc91d7c9aee35c403e2 } from '@/components/CreatorProfileListRedirect'
+import { default as default_a6b0e02b54801669c5096ccad59f9952 } from '@/components/CreatorCommentsListView'
 import { default as default_5a1b1f13e85b8d73ce4959149203fa8a } from '@/components/UsersEditorAccessField'
 import { default as default_204b6f4e4c5b58e4efd2fcb913ae77b8 } from '@/components/UsersAccountTypeField'
 import { default as default_797b25f28c6227edff8335d9f2f9f569 } from '@/components/UsersListSelectionGuard'
@@ -29,7 +30,6 @@ import { PriceCell as PriceCell_e27bf7b8cc50640dcdd584767b8eac3c } from '@payloa
 import { PriceInput as PriceInput_b91672ccd6e8b071c11142ab941fedfb } from '@payloadcms/plugin-ecommerce/rsc'
 import { default as default_c1363893506d7ed29a71d1a4da01ddb5 } from '@/components/AdminIcon'
 import { default as default_aa0a2d19d38a4839dbd373417e210b89 } from '@/components/AdminLogo'
-import { default as default_1a7510af427896d367a49dbf838d2de6 } from '@/components/BeforeDashboard'
 import { default as default_7b7a6a06e1a175e83c8563e02e5ba6a3 } from '@/components/CreatorRegisterLink'
 import { default as default_8723cecdd7713b01fe53fa7b7ecdc194 } from '@/components/CreatorCollectionFilter'
 import { default as default_2f5cca6fa9964ae988e12553dd3f3260 } from '@/components/CreatorNavLabelOverrides'
@@ -62,6 +62,7 @@ export const importMap = {
   "@payloadcms/richtext-lexical/client#BlocksFeatureClient": BlocksFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@/components/CreatorBiographyListRedirect#default": default_f174aef4af8512ed7932ed197fd68c20,
   "@/components/CreatorProfileListRedirect#default": default_3809c25a6e74ecc91d7c9aee35c403e2,
+  "@/components/CreatorCommentsListView#default": default_a6b0e02b54801669c5096ccad59f9952,
   "@/components/UsersEditorAccessField#default": default_5a1b1f13e85b8d73ce4959149203fa8a,
   "@/components/UsersAccountTypeField#default": default_204b6f4e4c5b58e4efd2fcb913ae77b8,
   "@/components/UsersListSelectionGuard#default": default_797b25f28c6227edff8335d9f2f9f569,
@@ -72,7 +73,6 @@ export const importMap = {
   "@payloadcms/plugin-ecommerce/rsc#PriceInput": PriceInput_b91672ccd6e8b071c11142ab941fedfb,
   "@/components/AdminIcon#default": default_c1363893506d7ed29a71d1a4da01ddb5,
   "@/components/AdminLogo#default": default_aa0a2d19d38a4839dbd373417e210b89,
-  "@/components/BeforeDashboard#default": default_1a7510af427896d367a49dbf838d2de6,
   "@/components/CreatorRegisterLink#default": default_7b7a6a06e1a175e83c8563e02e5ba6a3,
   "@/components/CreatorCollectionFilter#default": default_8723cecdd7713b01fe53fa7b7ecdc194,
   "@/components/CreatorNavLabelOverrides#default": default_2f5cca6fa9964ae988e12553dd3f3260,
