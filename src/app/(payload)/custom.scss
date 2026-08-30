@@ -519,6 +519,14 @@
     gap: 0.75rem;
   }
 
+  &__card-links {
+    align-items: center;
+
+    form {
+      margin: 0;
+    }
+  }
+
   &__empty {
     display: grid;
     gap: 0;

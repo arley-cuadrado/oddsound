@@ -5,6 +5,7 @@ import type { ListViewServerProps } from 'payload'
 import type { Comment, ConsumerProfile, Page, Profile } from '@/payload-types'
 import { formatCommentDate } from '@/utilities/formatCommentDate'
 import { findCreatorProfileByOwner } from '@/utilities/creatorProfiles'
+import { resolveUserProfileID } from '@/utilities/userRelations'
 
 import {
   CREATOR_COMMENTS_PAGE_SIZE,
@@ -12,22 +13,26 @@ import {
   getCreatorCommentReleaseHref,
   getCreatorCommentReleaseTitle,
   getCreatorCommentStatusLabel,
+  getCreatorCommentTargetLabel,
   getCreatorCommentsEmptyMessage,
   getCreatorCommentsListHref,
   getCreatorCommentsPage,
   getCreatorCommentsSearchValue,
   isCreatorCommentsViewer,
 } from './shared'
+import { deleteDashboardComment } from './actions'
 
 type CreatorUser = {
   editorAccess?: boolean | null
   id?: null | string
+  profile?: null | string | { id?: null | string }
   role?: null | string
 }
 
 type CreatorComment = Comment & {
   artistProfile?: (string | null) | Pick<Profile, 'id' | 'slug'>
   consumerProfile?: (string | null) | Pick<ConsumerProfile, 'displayName' | 'id'>
+  post?: (string | null) | Pick<Page, 'slug' | 'title'>
   release?: (string | null) | Pick<Page, 'id' | 'profile' | 'slug' | 'title'>
 }
 
@@ -87,6 +92,7 @@ function CreatorCommentsPagination(args: {
 
 export default async function CreatorCommentsListView(props: ListViewServerProps) {
   const creatorUser = props.user as CreatorUser | null
+  const isAdminViewer = creatorUser?.role === 'admin'
 
   if (!isCreatorCommentsViewer(creatorUser)) {
     return <DefaultListView {...props} />
@@ -96,12 +102,15 @@ export default async function CreatorCommentsListView(props: ListViewServerProps
     return <DefaultListView {...props} />
   }
 
-  const creatorProfileID = await findCreatorProfileByOwner({
-    ownerID: String(creatorUser.id),
-    payload: props.payload,
-  })
+  const creatorProfileID = isAdminViewer
+    ? null
+    : resolveUserProfileID(creatorUser) ||
+      (await findCreatorProfileByOwner({
+        ownerID: String(creatorUser.id),
+        payload: props.payload,
+      }))
 
-  if (!creatorProfileID) {
+  if (!isAdminViewer && !creatorProfileID) {
     return (
       <section className="creator-comments-list">
         <header className="creator-comments-list__header">
@@ -124,15 +133,28 @@ export default async function CreatorCommentsListView(props: ListViewServerProps
     sort: '-createdAt',
     where: {
       and: [
+        ...(creatorProfileID
+          ? [
+              {
+                artistProfile: {
+                  equals: creatorProfileID,
+                },
+              },
+            ]
+          : []),
         {
-          artistProfile: {
-            equals: creatorProfileID,
-          },
-        },
-        {
-          release: {
-            exists: true,
-          },
+          or: [
+            {
+              release: {
+                exists: true,
+              },
+            },
+            {
+              post: {
+                exists: true,
+              },
+            },
+          ],
         },
         ...(search
           ? [
@@ -153,7 +175,9 @@ export default async function CreatorCommentsListView(props: ListViewServerProps
     <section className="creator-comments-list">
       <header className="creator-comments-list__header">
         <h1>Comentarios</h1>
-        <p>Lee los comentarios que tus fans han dejado en tus lanzamientos y entra al detalle de cada uno.</p>
+        <p>
+          Lee los comentarios que tus fans han dejado en tus {isAdminViewer ? 'contenidos' : 'lanzamientos y artículos'} y entra al detalle de cada uno.
+        </p>
       </header>
 
       <form action="/dashboard/collections/comments" className="creator-comments-list__search" method="GET">
@@ -202,10 +226,12 @@ export default async function CreatorCommentsListView(props: ListViewServerProps
           <div className="creator-comments-list__results">
             {comments.map((comment) => {
               const releaseHref = getCreatorCommentReleaseHref(comment)
+              const returnTo = getCreatorCommentsListHref({ page: result.page || currentPage, search })
 
               return (
                 <article className="creator-comments-list__card" key={comment.id}>
                   <div className="creator-comments-list__card-meta">
+                    <span>{getCreatorCommentTargetLabel(comment)}</span>
                     <span>{getCreatorCommentAuthorName(comment.consumerProfile)}</span>
                     <span>{formatCommentDate(comment.createdAt)}</span>
                     <span>{getCreatorCommentStatusLabel(comment.status)}</span>
@@ -236,6 +262,18 @@ export default async function CreatorCommentsListView(props: ListViewServerProps
                         </span>
                       </Link>
                     ) : null}
+                    <form action={deleteDashboardComment}>
+                      <input name="commentId" type="hidden" value={comment.id} />
+                      <input name="returnTo" type="hidden" value={returnTo} />
+                      <button
+                        className="btn btn--style-secondary btn--size-medium btn--withoutPopup btn--no-margin"
+                        type="submit"
+                      >
+                        <span className="btn__content">
+                          <span className="btn__label">Eliminar</span>
+                        </span>
+                      </button>
+                    </form>
                   </div>
                 </article>
               )

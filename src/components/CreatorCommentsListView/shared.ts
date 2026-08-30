@@ -7,6 +7,12 @@ type SearchParamsValue = string | string[] | undefined
 type SearchParamsLike = Record<string, SearchParamsValue>
 
 type CommentWithReleaseContext = Pick<Comment, 'id'> & {
+  post?:
+    | (string | null)
+    | {
+        slug: string
+        title: string
+      }
   release?:
     | (string | null)
     | {
@@ -72,16 +78,24 @@ export function getCreatorCommentsListHref(args: {
 export function getCreatorCommentReleaseHref(comment: CommentWithReleaseContext) {
   const release = comment.release
 
-  if (!release || typeof release === 'string') return null
+  if (release && typeof release !== 'string') {
+    const releaseSlug = release.slug
+    const profile = release.profile
+    const profileSlug =
+      profile && typeof profile === 'object' && 'slug' in profile ? profile.slug : null
 
-  const releaseSlug = release.slug
-  const profile = release.profile
-  const profileSlug =
-    profile && typeof profile === 'object' && 'slug' in profile ? profile.slug : null
+    if (!releaseSlug || !profileSlug) return null
 
-  if (!releaseSlug || !profileSlug) return null
+    return `/${profileSlug}/release/${releaseSlug}#comment-${comment.id}`
+  }
 
-  return `/${profileSlug}/release/${releaseSlug}#comment-${comment.id}`
+  const post = comment.post
+
+  if (post && typeof post !== 'string' && post.slug) {
+    return `/posts/${post.slug}#comment-${comment.id}`
+  }
+
+  return null
 }
 
 export function getCreatorCommentAuthorName(consumerProfile?: (string | null) | ConsumerProfile) {
@@ -93,13 +107,22 @@ export function getCreatorCommentAuthorName(consumerProfile?: (string | null) | 
 }
 
 export function getCreatorCommentReleaseTitle(comment: {
+  post?: (string | null) | Pick<Page, 'title'>
   release?: (string | null) | Pick<Page, 'title'>
 }) {
   if (comment.release && typeof comment.release === 'object' && comment.release.title) {
     return comment.release.title
   }
 
-  return 'Lanzamiento sin título'
+  if (comment.post && typeof comment.post === 'object' && comment.post.title) {
+    return comment.post.title
+  }
+
+  return 'Contenido sin título'
+}
+
+export function getCreatorCommentTargetLabel(comment: Pick<Comment, 'source'>) {
+  return comment.source === 'article-public' ? 'Artículo' : 'Lanzamiento'
 }
 
 export function getCreatorCommentStatusLabel(status: Comment['status']) {
@@ -119,7 +142,7 @@ export function isCreatorCommentsViewer(user: {
   editorAccess?: boolean | null
   role?: null | string
 } | null | undefined) {
-  return user?.role === 'creator' && !user?.editorAccess
+  return user?.role === 'admin' || user?.role === 'creator'
 }
 
 export function getCreatorCommentArtistProfileSlug(
