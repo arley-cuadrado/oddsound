@@ -98,7 +98,19 @@ export default function EditorialPostsList({
 
               {showAuthor && authorProfile ? (
                 <div className="flex items-center gap-3 pt-1">
-                  {authorProfile.avatar && typeof authorProfile.avatar === 'object' ? (
+                  {authorHref ? (
+                    <Link href={authorHref} className="shrink-0 transition-opacity hover:opacity-80">
+                      {authorProfile.avatar && typeof authorProfile.avatar === 'object' ? (
+                        <Media
+                          resource={authorProfile.avatar}
+                          className="h-10 w-10 overflow-hidden rounded-full bg-[#d9d9d9]"
+                          imgClassName="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <div className="h-10 w-10 rounded-full bg-[#d9d9d9]" />
+                      )}
+                    </Link>
+                  ) : authorProfile.avatar && typeof authorProfile.avatar === 'object' ? (
                     <Media
                       resource={authorProfile.avatar}
                       className="h-10 w-10 shrink-0 overflow-hidden rounded-full bg-[#d9d9d9]"

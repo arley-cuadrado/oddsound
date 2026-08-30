@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 
-import EditorialPageShareButton from '@/components/EditorialPageShareButton'
 import EditorialPostsList from '@/components/EditorialPostsList'
 import { Media } from '@/components/Media'
 import configPromise from '@payload-config'
@@ -112,7 +111,7 @@ export async function generateMetadata({ params: paramsPromise }: Args): Promise
 
   return {
     description: `Lee los artículos y conoce el perfil editorial de ${displayName}.`,
-    title: `${displayName} | Editor`,
+    title: `${displayName} | Artículos`,
   }
 }
 
@@ -184,10 +183,6 @@ export default async function EditorialProfilePage({ params: paramsPromise }: Ar
             en colaboración.
           </p>
 
-          <EditorialPageShareButton
-            title={profile.displayName}
-            urlPath={`/editor/${profile.slug}`}
-          />
         </header>
 
         <div className="border-t border-border" />

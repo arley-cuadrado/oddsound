@@ -1,6 +1,5 @@
 import type { Metadata } from 'next/types'
 
-import EditorialPageShareButton from '@/components/EditorialPageShareButton'
 import EditorialPostsList from '@/components/EditorialPostsList'
 import { Pagination } from '@/components/Pagination'
 import configPromise from '@payload-config'
@@ -63,7 +62,7 @@ export default async function Page({ params: paramsPromise }: Args) {
 
               <div className="min-w-0 space-y-2">
                 <h1 className="text-[2.75rem] font-black leading-none tracking-tight text-slate-900 dark:text-white md:text-[4.6rem]">
-                  Posts
+                  Artículos
                 </h1>
               </div>
             </div>
@@ -73,7 +72,6 @@ export default async function Page({ params: paramsPromise }: Args) {
             Aquí encontrarás todas las entradas de editores que colaboran con la plataforma.
           </p>
 
-          <EditorialPageShareButton title="Posts" urlPath={`/posts/page/${sanitizedPageNumber}`} />
         </header>
 
         <div className="border-t border-border" />
@@ -87,7 +85,7 @@ export default async function Page({ params: paramsPromise }: Args) {
               href="/"
               className="inline-flex items-center text-[13px] font-medium text-[#777] underline underline-offset-4 dark:text-[#858c98]"
             >
-              Ir a inicio (Home releases)
+              Ir a inicio
             </Link>
           </div>
 
@@ -105,7 +103,7 @@ export default async function Page({ params: paramsPromise }: Args) {
 export async function generateMetadata({ params: paramsPromise }: Args): Promise<Metadata> {
   const { pageNumber } = await paramsPromise
   return {
-    title: `Posts | Página ${pageNumber || ''} | Oddsound Editorial`,
+    title: `Artículos | Página ${pageNumber || ''} | Oddsound Editorial`,
   }
 }
 

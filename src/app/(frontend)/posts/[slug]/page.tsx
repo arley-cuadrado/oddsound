@@ -18,7 +18,6 @@ import PageClient from './page.client'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
 import { RenderBlocks } from '@/blocks/RenderBlocks'
 import PostShareSection from '@/components/PostShareSection'
-import PostEditorialFooter from '@/components/PostEditorialFooter'
 import { mergeOpenGraph } from '@/utilities/mergeOpenGraph'
 import { ConsumerCommentsSection } from '@/components/ConsumerCommentsSection'
 
@@ -82,9 +81,6 @@ export default async function Post({ params: paramsPromise }: Args) {
               <RenderBlocks blocks={post.layout} disableInnerContainer />
             </div>
           ) : null}
-
-          <PostEditorialFooter profile={post.profile} />
-
           {post.relatedPosts && post.relatedPosts.length > 0 && (
             <RelatedPosts
               className="col-start-1 col-span-3 mt-4 max-w-[52rem] px-4 md:px-0 lg:grid lg:grid-cols-subgrid grid-rows-[2fr]"
