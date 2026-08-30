@@ -365,7 +365,7 @@ export const Profiles: CollectionConfig = {
     {
       name: 'editorialIdentity',
       type: 'ui',
-      label: false,
+      label: '',
       admin: {
         components: {
           Field: '@/components/EditorialProfileIdentityField',

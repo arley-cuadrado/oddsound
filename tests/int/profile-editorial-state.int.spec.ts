@@ -42,13 +42,13 @@ describe('profile editorial state', () => {
     )
   })
 
-  it('declares the editorial identity ui field without a label requirement', () => {
+  it('declares the editorial identity ui field with an empty label placeholder', () => {
     const editorialIdentityField = Profiles.fields.find(
       (field: any) => field?.name === 'editorialIdentity',
     ) as any
 
     expect(editorialIdentityField).toBeTruthy()
     expect(editorialIdentityField.type).toBe('ui')
-    expect(editorialIdentityField.label).toBe(false)
+    expect(editorialIdentityField.label).toBe('')
   })
 })
