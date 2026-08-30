@@ -112,6 +112,12 @@ export default buildConfig({
   editor: defaultLexical,
   db: mongooseAdapter({
     url: process.env.DATABASE_URL || '',
+    connectOptions: {
+      maxPoolSize: Number(process.env.MONGODB_MAX_POOL_SIZE || 5),
+      minPoolSize: 0,
+      maxIdleTimeMS: 10000,
+      serverSelectionTimeoutMS: 5000,
+    },
   }),
   upload: payloadUploadOptions,
   email: nodemailerAdapter({
