@@ -133,10 +133,12 @@ export interface Config {
   globals: {
     header: Header;
     footer: Footer;
+    'payload-jobs-stats': PayloadJobsStat;
   };
   globalsSelect: {
     header: HeaderSelect<false> | HeaderSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
+    'payload-jobs-stats': PayloadJobsStatsSelect<false> | PayloadJobsStatsSelect<true>;
   };
   locale: null;
   widgets: {
@@ -145,6 +147,7 @@ export interface Config {
   user: User;
   jobs: {
     tasks: {
+      'refresh-mercadopago-tokens': TaskRefreshMercadopagoTokens;
       schedulePublish: TaskSchedulePublish;
       inline: {
         input: unknown;
@@ -389,9 +392,24 @@ export interface Profile {
     oauthState?: string | null;
     encryptedAccessToken?: string | null;
     encryptedRefreshToken?: string | null;
+    previousEncryptedRefreshToken?: string | null;
     accessTokenExpiresAt?: string | null;
     lastConnectedAt?: string | null;
+    lastRefreshedAt?: string | null;
+    lastRefreshAttemptAt?: string | null;
+    refreshFailureCount?: number | null;
+    refreshLockedAt?: string | null;
     lastError?: string | null;
+  };
+  commerce?: {
+    /**
+     * Una por pedido, no por producto. 0 = envío gratis.
+     */
+    shippingFlatRateCOP?: number | null;
+    /**
+     * Ej: "Toda Colombia, 3 a 5 días hábiles."
+     */
+    shippingNotes?: string | null;
   };
   /**
    * When enabled, the slug will auto-generate from the title field on save and autosave.
@@ -549,8 +567,8 @@ export interface Product {
   externalProductReference?: string | null;
   checkoutButtonLabel?: string | null;
   inventory?: number | null;
-  priceInUSDEnabled?: boolean | null;
-  priceInUSD?: number | null;
+  priceInCOPEnabled?: boolean | null;
+  priceInCOP?: number | null;
   /**
    * When enabled, the slug will auto-generate from the title field on save and autosave.
    */
@@ -1258,7 +1276,7 @@ export interface Cart {
   purchasedAt?: string | null;
   status?: ('active' | 'purchased' | 'abandoned') | null;
   subtotal?: number | null;
-  currency?: 'USD' | null;
+  currency?: 'COP' | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1293,10 +1311,11 @@ export interface Order {
   transactions?: (string | Transaction)[] | null;
   status?: OrderStatus;
   amount?: number | null;
-  currency?: 'USD' | null;
+  currency?: 'COP' | null;
   consumerProfile?: (string | null) | ConsumerProfile;
   artistProfile?: (string | null) | Profile;
   release?: (string | null) | Page;
+  cart?: (string | null) | Cart;
   paymentProvider?: 'mercadopago' | null;
   settlementCurrencyCode?: 'COP' | null;
   subtotalCOP?: number | null;
@@ -1312,6 +1331,7 @@ export interface Order {
     | null;
   carrierName?: string | null;
   trackingNumber?: string | null;
+  inventoryAdjustedAt?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1347,7 +1367,7 @@ export interface Transaction {
   order?: (string | null) | Order;
   cart?: (string | null) | Cart;
   amount?: number | null;
-  currency?: 'USD' | null;
+  currency?: 'COP' | null;
   consumerProfile?: (string | null) | ConsumerProfile;
   artistProfile?: (string | null) | Profile;
   release?: (string | null) | Page;
@@ -1433,7 +1453,7 @@ export interface PayloadJob {
     | {
         executedAt: string;
         completedAt: string;
-        taskSlug: 'inline' | 'schedulePublish';
+        taskSlug: 'inline' | 'refresh-mercadopago-tokens' | 'schedulePublish';
         taskID: string;
         input?:
           | {
@@ -1466,10 +1486,19 @@ export interface PayloadJob {
         id?: string | null;
       }[]
     | null;
-  taskSlug?: ('inline' | 'schedulePublish') | null;
+  taskSlug?: ('inline' | 'refresh-mercadopago-tokens' | 'schedulePublish') | null;
   queue?: string | null;
   waitUntil?: string | null;
   processing?: boolean | null;
+  meta?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -2036,9 +2065,20 @@ export interface ProfilesSelect<T extends boolean = true> {
         oauthState?: T;
         encryptedAccessToken?: T;
         encryptedRefreshToken?: T;
+        previousEncryptedRefreshToken?: T;
         accessTokenExpiresAt?: T;
         lastConnectedAt?: T;
+        lastRefreshedAt?: T;
+        lastRefreshAttemptAt?: T;
+        refreshFailureCount?: T;
+        refreshLockedAt?: T;
         lastError?: T;
+      };
+  commerce?:
+    | T
+    | {
+        shippingFlatRateCOP?: T;
+        shippingNotes?: T;
       };
   generateSlug?: T;
   slug?: T;
@@ -2357,8 +2397,8 @@ export interface ProductsSelect<T extends boolean = true> {
   externalProductReference?: T;
   checkoutButtonLabel?: T;
   inventory?: T;
-  priceInUSDEnabled?: T;
-  priceInUSD?: T;
+  priceInCOPEnabled?: T;
+  priceInCOP?: T;
   generateSlug?: T;
   slug?: T;
   updatedAt?: T;
@@ -2423,6 +2463,7 @@ export interface OrdersSelect<T extends boolean = true> {
   consumerProfile?: T;
   artistProfile?: T;
   release?: T;
+  cart?: T;
   paymentProvider?: T;
   settlementCurrencyCode?: T;
   subtotalCOP?: T;
@@ -2436,6 +2477,7 @@ export interface OrdersSelect<T extends boolean = true> {
   fulfillmentStatus?: T;
   carrierName?: T;
   trackingNumber?: T;
+  inventoryAdjustedAt?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -2525,6 +2567,7 @@ export interface PayloadJobsSelect<T extends boolean = true> {
   queue?: T;
   waitUntil?: T;
   processing?: T;
+  meta?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -2620,6 +2663,24 @@ export interface Footer {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-jobs-stats".
+ */
+export interface PayloadJobsStat {
+  id: string;
+  stats?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "header_select".
  */
 export interface HeaderSelect<T extends boolean = true> {
@@ -2666,6 +2727,16 @@ export interface FooterSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-jobs-stats_select".
+ */
+export interface PayloadJobsStatsSelect<T extends boolean = true> {
+  stats?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "collections_widget".
  */
 export interface CollectionsWidget {
@@ -2673,6 +2744,19 @@ export interface CollectionsWidget {
     [k: string]: unknown;
   };
   width: 'full';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskRefresh-mercadopago-tokens".
+ */
+export interface TaskRefreshMercadopagoTokens {
+  input?: unknown;
+  output: {
+    checked?: number | null;
+    refreshed?: number | null;
+    needsReconnect?: number | null;
+    failed?: number | null;
+  };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

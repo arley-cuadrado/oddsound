@@ -420,12 +420,15 @@ export async function seed({
       continue
     }
 
+    // Matched on the base name, like `upsertMedia` does: when `public/media`
+    // already holds a file, Payload stores the next one as `name-1.webp`, and an
+    // exact match then silently leaves every product without a cover.
     const releaseCover = await findOne({
       collection: 'media',
       payload,
       where: {
         filename: {
-          equals: `seed-release-${product.releaseSlug}.webp`,
+          like: `seed-release-${product.releaseSlug}`,
         },
       },
     })
@@ -434,15 +437,14 @@ export async function seed({
       collection: 'products',
       data: {
         _status: 'published',
-        checkoutButtonLabel: 'Comprar',
-        checkoutProvider: 'other',
+        checkoutButtonLabel: 'Agregar al carrito',
+        checkoutProvider: 'mercadopago',
         ...(releaseCover ? { coverImage: String(releaseCover.id) } : {}),
         description: product.description,
-        externalCheckoutURL: `https://oddsound.co/demo-checkout/${product.slug}`,
         inventory: 25,
         owner: artistRef.userID,
-        priceInUSD: product.priceInUSD,
-        priceInUSDEnabled: true,
+        priceInCOP: product.priceInCOP,
+        priceInCOPEnabled: true,
         productType: product.productType,
         profile: artistRef.profileID,
         release: releasePageID,

@@ -5,6 +5,10 @@ import { redirect } from 'next/navigation'
 
 import { CommerceOverview } from './CommerceOverview'
 import { MercadoPagoConnectionCard } from './MercadoPagoConnectionCard'
+import { OrdersTable } from './OrdersTable'
+import { ShippingSettingsCard } from './ShippingSettingsCard'
+import { listArtistOrders } from '@/utilities/commerceOrders'
+import { getMerchOnboarding } from '@/utilities/merchOnboarding'
 import { listCommerceProducts, resolveUserProfileID } from '@/utilities/commerceProducts'
 import { getMeUser } from '@/utilities/getMeUser'
 import { isFanUser } from '@/utilities/isEditorialUser'
@@ -36,6 +40,13 @@ export default async function CreatorDashboardPage() {
     payload,
     profile: profileID,
   })
+  const orders = profileID
+    ? await listArtistOrders({ payload, profileID: String(profileID) })
+    : []
+  const merch = getMerchOnboarding({
+    hasPublishedProduct: products.some((product) => product.status === 'published'),
+    profile,
+  })
   const publicProfileSlug =
     (typeof user.profile === 'object' && user.profile && 'slug' in user.profile
       ? user.profile.slug
@@ -44,49 +55,53 @@ export default async function CreatorDashboardPage() {
     null
 
   return (
-    <main className="bg-[radial-gradient(circle_at_top,#f5efe7_0%,#fbfaf7_50%,#f2eee8_100%)] px-6 py-16">
-      <div className="mx-auto max-w-[72rem] space-y-8">
-        <div className="space-y-2">
-          <p className="text-[13px] text-foreground/80">Sesion iniciada</p>
-          <h1 className="text-3xl font-medium text-foreground">
-            Hola{user.name ? `, ${user.name}` : ''}.
-          </h1>
-          <p className="max-w-[48rem] text-[13px] leading-6 text-foreground/80">
-            Tu cuenta de creador está activa. Este panel ya te deja inspeccionar el catalogo oculto
-            del ecommerce oficial y consumir su capa de lectura desde remoto.
-          </p>
-        </div>
-
-        <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_22rem]">
-          <div className="space-y-3 rounded-[28px] border border-border/70 bg-white/75 p-6 text-[13px] text-foreground/80 shadow-[0_18px_60px_rgba(49,46,46,0.08)] backdrop-blur">
-            <p>Correo: {user.email}</p>
-            <p>Rol: {user.role || 'creator'}</p>
-            <p>Profile ID: {profileID || 'Sin perfil vinculado'}</p>
+    <main className="min-h-dvh bg-background px-6 py-16">
+      <div className="mx-auto max-w-[72rem] space-y-6">
+        <header className="flex flex-wrap items-end justify-between gap-4 border-b border-border pb-6">
+          <div className="space-y-1">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+              Panel de artista
+            </p>
+            <h1 className="text-3xl font-medium tracking-tight text-foreground">
+              {profile?.displayName || user.name || 'Tu perfil'}
+            </h1>
+            <p className="text-[13px] text-muted-foreground">{user.email}</p>
           </div>
 
-          <div className="flex flex-col gap-3">
+          {/* Both of these lead away from this page, so neither competes with the
+              actions inside the cards below. */}
+          <div className="flex flex-wrap gap-2">
             <Link
-              className="inline-flex h-12 items-center justify-center rounded-[18px] bg-[#312e2e] px-4 text-[13px] font-medium text-white"
+              className="inline-flex h-10 items-center justify-center rounded-xl border border-border bg-background px-4 text-[13px] font-medium text-foreground transition hover:bg-muted"
               href="/dashboard"
             >
-              Ir al dashboard del artista
+              Editar mi contenido
             </Link>
-            <Link
-              className="inline-flex h-12 items-center justify-center rounded-[18px] border border-border bg-background px-4 text-[13px] font-medium text-foreground"
-              href="/search"
-            >
-              Explorar lanzamientos
-            </Link>
+            {publicProfileSlug ? (
+              <Link
+                className="inline-flex h-10 items-center justify-center rounded-xl border border-border bg-background px-4 text-[13px] font-medium text-foreground transition hover:bg-muted"
+                href={`/${publicProfileSlug}/shop`}
+              >
+                Ver mi shop
+              </Link>
+            ) : null}
           </div>
-        </div>
+        </header>
 
-        <CommerceOverview
-          apiPath="/creator-api/commerce/products"
-          products={products}
+        <MercadoPagoConnectionCard
+          connection={sanitizeMercadoPagoConnection(profile)}
+          merch={merch}
           profileSlug={publicProfileSlug}
         />
 
-        <MercadoPagoConnectionCard connection={sanitizeMercadoPagoConnection(profile)} />
+        <ShippingSettingsCard
+          initialNotes={profile?.commerce?.shippingNotes || ''}
+          initialRate={profile?.commerce?.shippingFlatRateCOP || 0}
+        />
+
+        <OrdersTable orders={orders} />
+
+        <CommerceOverview products={products} />
       </div>
     </main>
   )

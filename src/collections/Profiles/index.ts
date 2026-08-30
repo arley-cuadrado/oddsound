@@ -11,6 +11,18 @@ import { hasFreshAdminAccess } from '@/access/hasFreshAdminAccess'
 import { isAdminUser } from '@/utilities/isAdminUser'
 import { slugField } from 'payload'
 
+/**
+ * Credentials that must never leave the server. `admin.hidden` only removes the
+ * field from the admin UI — the REST and GraphQL APIs still return it to any
+ * authenticated reader, and these values decrypt to a seller's Mercado Pago
+ * access token.
+ */
+const serverOnlyFieldAccess = {
+  create: () => false,
+  read: () => false,
+  update: () => false,
+}
+
 type ProfileData = {
   accountType?: 'artist' | 'band' | null
   contactEmail?: null | string
@@ -504,14 +516,25 @@ export const Profiles: CollectionConfig = {
         {
           name: 'oauthState',
           type: 'text',
+          access: serverOnlyFieldAccess,
         },
         {
           name: 'encryptedAccessToken',
           type: 'textarea',
+          access: serverOnlyFieldAccess,
         },
         {
           name: 'encryptedRefreshToken',
           type: 'textarea',
+          access: serverOnlyFieldAccess,
+        },
+        {
+          // Kept for exactly one rotation. Mercado Pago hands back a new refresh
+          // token every time we renew, so if the API call lands but the write
+          // does not, the previous one is the only way back in.
+          name: 'previousEncryptedRefreshToken',
+          type: 'textarea',
+          access: serverOnlyFieldAccess,
         },
         {
           name: 'accessTokenExpiresAt',
@@ -532,8 +555,69 @@ export const Profiles: CollectionConfig = {
           },
         },
         {
+          name: 'lastRefreshedAt',
+          type: 'date',
+          admin: {
+            date: {
+              pickerAppearance: 'dayAndTime',
+            },
+          },
+        },
+        {
+          name: 'lastRefreshAttemptAt',
+          type: 'date',
+          admin: {
+            date: {
+              pickerAppearance: 'dayAndTime',
+            },
+          },
+        },
+        {
+          name: 'refreshFailureCount',
+          type: 'number',
+          defaultValue: 0,
+          min: 0,
+        },
+        {
+          // Held while one process renews, so two simultaneous checkouts cannot
+          // both spend the same single-use refresh token.
+          name: 'refreshLockedAt',
+          type: 'date',
+          admin: {
+            date: {
+              pickerAppearance: 'dayAndTime',
+            },
+          },
+        },
+        {
           name: 'lastError',
           type: 'textarea',
+        },
+      ],
+    },
+    {
+      name: 'commerce',
+      type: 'group',
+      label: 'Tienda',
+      fields: [
+        {
+          name: 'shippingFlatRateCOP',
+          type: 'number',
+          label: 'Costo de envío (COP)',
+          defaultValue: 0,
+          min: 0,
+          admin: {
+            description: 'Una por pedido, no por producto. 0 = envío gratis.',
+            step: 1000,
+          },
+        },
+        {
+          name: 'shippingNotes',
+          type: 'textarea',
+          label: 'Cobertura y tiempos de entrega',
+          admin: {
+            description: 'Ej: "Toda Colombia, 3 a 5 días hábiles."',
+          },
         },
       ],
     },
