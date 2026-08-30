@@ -53,6 +53,16 @@ function isEditorialProfile(data?: null | Pick<ProfileData, 'editorialProfile' |
   return Boolean(data?.editorialProfile) || isEditorialProfileType(data?.profileType)
 }
 
+function hasEditorialProfileIdentity(
+  user?: null | {
+    editorAccess?: boolean | null
+    role?: null | string
+    userType?: null | string
+  },
+) {
+  return isAdminUser(user) || hasEditorialIdentity(user)
+}
+
 function isEditorialProfileForAdminCondition(args: {
   siblingData?: null | Pick<ProfileData, 'editorialProfile' | 'profileType'>
   user?: null | {
@@ -61,7 +71,7 @@ function isEditorialProfileForAdminCondition(args: {
     userType?: null | string
   }
 }) {
-  return hasEditorialIdentity(args.user) || isEditorialProfile(args.siblingData)
+  return hasEditorialProfileIdentity(args.user) || isEditorialProfile(args.siblingData)
 }
 
 function getOwnerID(owner: ProfileData['owner']) {
@@ -155,7 +165,7 @@ async function resolveEditorialProfileData(args: {
         args.originalDoc?.displayName ??
         owner?.name ??
         null,
-      editorialProfile: hasEditorialIdentity(owner),
+      editorialProfile: hasEditorialProfileIdentity(owner),
     }
   } catch {
     return {
@@ -355,6 +365,7 @@ export const Profiles: CollectionConfig = {
     {
       name: 'editorialIdentity',
       type: 'ui',
+      label: false,
       admin: {
         components: {
           Field: '@/components/EditorialProfileIdentityField',
