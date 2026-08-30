@@ -7,13 +7,6 @@ import {
 import { ensureCreatorProfile } from '@/utilities/creatorProfiles'
 import { isAdminUser } from '@/utilities/isAdminUser'
 
-export type EditorSocialPlatform = 'facebook' | 'instagram' | 'threads' | 'x'
-
-export type EditorSocialRow = {
-  platform: EditorSocialPlatform
-  value: string
-}
-
 export type EditorInviteStatus =
   | 'created_and_sent'
   | 'existing_pending_verification'
@@ -47,25 +40,6 @@ type EditorLikeUser = Pick<
 
 function isConsumerIdentity(user?: null | Pick<EditorLikeUser, 'authProvider' | 'userType'>) {
   return user?.userType === 'consumer' || user?.userType === 'fan' || user?.authProvider === 'google'
-}
-
-function normalizeSocialRows(rows: EditorSocialRow[]) {
-  return rows.reduce(
-    (acc, row) => {
-      const value = row.value.trim()
-
-      if (!value) return acc
-
-      acc[row.platform] = value
-      return acc
-    },
-    {
-      facebook: '',
-      instagram: '',
-      threads: '',
-      x: '',
-    },
-  )
 }
 
 function getExistingEditorState(user: EditorLikeUser) {
@@ -122,13 +96,11 @@ export async function createEditorInvitation(args: {
   password: string
   payload: Payload
   req: PayloadRequest
-  socialRows?: EditorSocialRow[]
 }): Promise<EditorInviteResult> {
   const { adminUser, payload, req } = args
   const email = args.email.trim().toLowerCase()
   const fullName = args.fullName.trim()
   const password = args.password
-  const socialRows = Array.isArray(args.socialRows) ? args.socialRows : []
 
   if (!adminUser?.id || !isAdminUser(adminUser)) {
     return {
@@ -186,21 +158,6 @@ export async function createEditorInvitation(args: {
       },
     })
     const profileID = getProfileID(ensuredProfile) || getProfileID(createdUser.profile)
-
-    const editorSocials = normalizeSocialRows(socialRows)
-
-    if (profileID && Object.values(editorSocials).some(Boolean)) {
-      await payload.update({
-        id: profileID,
-        collection: 'profiles',
-        data: {
-          editorSocials,
-        },
-        depth: 0,
-        overrideAccess: true,
-        req,
-      })
-    }
 
     return {
       email,

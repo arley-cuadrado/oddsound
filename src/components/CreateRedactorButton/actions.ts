@@ -9,7 +9,6 @@ import { getMeUser } from '@/utilities/getMeUser'
 import {
   createEditorInvitation,
   type EditorInviteResult,
-  type EditorSocialRow,
 } from '@/utilities/editorInvites'
 
 async function assertAdminSession() {
@@ -29,7 +28,6 @@ export async function submitEditorInvitation(input: {
   email: string
   fullName: string
   password: string
-  socialRows: EditorSocialRow[]
 }): Promise<EditorInviteResult> {
   const { payload, req, user } = await assertAdminSession()
 
@@ -40,7 +38,6 @@ export async function submitEditorInvitation(input: {
     password: input.password,
     payload,
     req,
-    socialRows: input.socialRows,
   })
 }
 

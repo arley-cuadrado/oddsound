@@ -71,7 +71,7 @@ describe('createEditorInvitation', () => {
     expect(result.showResend).toBe(false)
   })
 
-  it('creates the editor and stores optional social links when provided', async () => {
+  it('creates the editor without writing social links during admin setup', async () => {
     const payload = {
       create: vi.fn().mockResolvedValue({
         editorAccess: true,
@@ -82,7 +82,6 @@ describe('createEditorInvitation', () => {
         role: 'creator',
         userType: 'creator',
       }),
-      update: vi.fn().mockResolvedValue({}),
     }
 
     inviteMocks.findUserByEmail.mockResolvedValueOnce(null).mockResolvedValueOnce(null)
@@ -95,16 +94,6 @@ describe('createEditorInvitation', () => {
       password: 'super-secret-password',
       payload: payload as never,
       req: {} as never,
-      socialRows: [
-        {
-          platform: 'instagram',
-          value: '@editor-test',
-        },
-        {
-          platform: 'x',
-          value: 'https://x.com/editor-test',
-        },
-      ],
     })
 
     expect(payload.create).toHaveBeenCalledWith(
@@ -117,20 +106,6 @@ describe('createEditorInvitation', () => {
           password: 'super-secret-password',
           role: 'creator',
         }),
-      }),
-    )
-    expect(payload.update).toHaveBeenCalledWith(
-      expect.objectContaining({
-        collection: 'profiles',
-        data: {
-          editorSocials: {
-            facebook: '',
-            instagram: '@editor-test',
-            threads: '',
-            x: 'https://x.com/editor-test',
-          },
-        },
-        id: 'profile-1',
       }),
     )
     expect(result.status).toBe('created_and_sent')

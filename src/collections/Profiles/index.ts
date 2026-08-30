@@ -8,6 +8,7 @@ import type {
 
 import { authenticated } from '@/access/authenticated'
 import { hasFreshAdminAccess } from '@/access/hasFreshAdminAccess'
+import { socialLinksField } from '@/fields/socialLinks'
 import { isAdminUser } from '@/utilities/isAdminUser'
 import { slugField } from 'payload'
 
@@ -27,6 +28,8 @@ type ProfileData = {
   accountType?: 'artist' | 'band' | null
   contactEmail?: null | string
   displayName?: null | string
+  editorPassword?: null | string
+  editorPasswordConfirmation?: null | string
   editorialProfile?: boolean | null
   profileType?: 'artist' | 'band' | 'editorial' | null
   owner?: number | string | { id?: number | string | null } | null
@@ -42,11 +45,65 @@ function isMusicProfileType(profileType?: null | string): profileType is 'artist
   return profileType === 'artist' || profileType === 'band'
 }
 
+function isEditorialProfile(data?: null | Pick<ProfileData, 'editorialProfile' | 'profileType'>) {
+  return Boolean(data?.editorialProfile) || isEditorialProfileType(data?.profileType)
+}
+
 function getOwnerID(owner: ProfileData['owner']) {
   if (typeof owner === 'string' || typeof owner === 'number') return String(owner)
   if (owner && typeof owner === 'object' && owner.id) return String(owner.id)
 
   return null
+}
+
+async function syncEditorialPassword(args: {
+  nextData: ProfileData
+  originalDoc?: null | ProfileData
+  req: Parameters<CollectionBeforeChangeHook>[0]['req']
+}) {
+  const password =
+    typeof args.nextData.editorPassword === 'string' ? args.nextData.editorPassword.trim() : ''
+  const confirmation =
+    typeof args.nextData.editorPasswordConfirmation === 'string'
+      ? args.nextData.editorPasswordConfirmation.trim()
+      : ''
+
+  delete args.nextData.editorPassword
+  delete args.nextData.editorPasswordConfirmation
+
+  if (!password && !confirmation) {
+    return
+  }
+
+  if (!password || !confirmation) {
+    throw new Error('Completa ambos campos de contraseña para actualizar el acceso del editor.')
+  }
+
+  if (password.length < 8) {
+    throw new Error('La nueva contraseña debe tener al menos 8 caracteres.')
+  }
+
+  if (password !== confirmation) {
+    throw new Error('Las contraseñas no coinciden.')
+  }
+
+  const ownerID = getOwnerID(args.nextData.owner) || getOwnerID(args.originalDoc?.owner)
+
+  if (!ownerID) {
+    throw new Error('No fue posible identificar la cuenta del editor para actualizar la contraseña.')
+  }
+
+  await args.req.payload.update({
+    collection: 'users',
+    data: {
+      password,
+    },
+    depth: 0,
+    id: ownerID,
+    overrideAccess: true,
+    req: args.req,
+    showHiddenFields: true,
+  })
 }
 
 async function resolveEditorialProfileData(args: {
@@ -140,18 +197,23 @@ const syncEditorialProfileState: CollectionBeforeChangeHook = async ({
   // Group fields are cleared with an empty object, never null: Payload walks
   // their subfields during validation and a null sibling throws before any
   // profile can be written.
-  if (isEditorialProfileType(nextData.profileType)) {
+  if (isEditorialProfile(nextData)) {
     nextData.accountType = null
     nextData.coverImage = null
+    nextData.editorGender = null
     nextData.genre = null
     nextData.location = null
     nextData.mercadoPagoConnection = {}
-    nextData.socialLinks = []
   } else {
     nextData.accountType = nextData.profileType
-    nextData.editorGender = null
-    nextData.editorSocials = {}
+    nextData.socialLinks = []
   }
+
+  await syncEditorialPassword({
+    nextData,
+    originalDoc: (originalDoc || null) as ProfileData | null,
+    req,
+  })
 
   return nextData
 }
@@ -326,7 +388,7 @@ export const Profiles: CollectionConfig = {
       label: 'Tipo de cuenta',
       defaultValue: 'artist',
       admin: {
-        condition: (_data, siblingData) => !isEditorialProfileType(siblingData?.profileType),
+        condition: (_data, siblingData) => !isEditorialProfile(siblingData),
       },
       options: [
         {
@@ -348,7 +410,7 @@ export const Profiles: CollectionConfig = {
       name: 'bio',
       type: 'textarea',
       admin: {
-        condition: (_data, siblingData) => isEditorialProfileType(siblingData?.profileType),
+        condition: (_data, siblingData) => isEditorialProfile(siblingData),
       },
     },
     {
@@ -383,7 +445,7 @@ export const Profiles: CollectionConfig = {
           : 'El país es obligatorio para creadores.'
       }) as TextFieldSingleValidation,
       admin: {
-        condition: (_data, siblingData) => !isEditorialProfileType(siblingData?.profileType),
+        condition: (_data, siblingData) => !isEditorialProfile(siblingData),
       },
     },
     {
@@ -391,7 +453,7 @@ export const Profiles: CollectionConfig = {
       type: 'text',
       label: 'Género',
       admin: {
-        condition: (_data, siblingData) => !isEditorialProfileType(siblingData?.profileType),
+        condition: (_data, siblingData) => !isEditorialProfile(siblingData),
       },
     },
     {
@@ -399,7 +461,7 @@ export const Profiles: CollectionConfig = {
       type: 'select',
       label: 'Género',
       admin: {
-        condition: (_data, siblingData) => isEditorialProfileType(siblingData?.profileType),
+        hidden: true,
       },
       options: [
         {
@@ -422,54 +484,71 @@ export const Profiles: CollectionConfig = {
       label: 'Correo electrónico',
     },
     {
-      name: 'editorSocials',
-      type: 'group',
-      label: 'Redes sociales',
+      ...socialLinksField({
+        label: 'Redes sociales',
+        minRows: 0,
+        platformLabel: 'Nombre',
+      }),
       admin: {
-        condition: (_data, siblingData) => isEditorialProfileType(siblingData?.profileType),
-        description: 'Registra al menos una red social para el perfil editorial.',
+        condition: (_data, siblingData) => isEditorialProfile(siblingData),
+        description:
+          'Agrega el nombre visible y el enlace de cada red social que quieres asociar al perfil editorial.',
       },
-      fields: [
-        {
-          name: 'instagram',
-          type: 'text',
-          label: 'Instagram',
-        },
-        {
-          name: 'x',
-          type: 'text',
-          label: 'X',
-        },
-        {
-          name: 'threads',
-          type: 'text',
-          label: 'Threads',
-        },
-        {
-          name: 'facebook',
-          type: 'text',
-          label: 'Facebook',
-        },
-      ],
     },
     {
-      name: 'socialLinks',
-      type: 'array',
+      name: 'editorPassword',
+      type: 'text',
+      virtual: true,
+      label: 'Nueva contraseña',
       admin: {
-        hidden: true,
+        components: {
+          Field: '@/components/ProfilePasswordField',
+        },
+        condition: (_data, siblingData) => isEditorialProfile(siblingData),
+        description: 'Déjala vacía si no quieres cambiar la contraseña del editor.',
       },
-      fields: [
-        {
-          name: 'label',
-          type: 'text',
-          required: true,
+      validate: ((value, { siblingData }: any) => {
+        if (!isEditorialProfile(siblingData)) return true
+        const password = typeof value === 'string' ? value.trim() : ''
+        const confirmation =
+          typeof siblingData?.editorPasswordConfirmation === 'string'
+            ? siblingData.editorPasswordConfirmation.trim()
+            : ''
+
+        if (!password && !confirmation) return true
+        if (!password || !confirmation) {
+          return 'Completa ambos campos de contraseña.'
+        }
+
+        return password.length >= 8
+          ? true
+          : 'La nueva contraseña debe tener al menos 8 caracteres.'
+      }) as TextFieldSingleValidation,
+    },
+    {
+      name: 'editorPasswordConfirmation',
+      type: 'text',
+      virtual: true,
+      label: 'Confirmar nueva contraseña',
+      admin: {
+        components: {
+          Field: '@/components/ProfilePasswordField',
         },
-        {
-          name: 'url',
-          type: 'text',
-          required: true,
-        },
-      ],
+        condition: (_data, siblingData) => isEditorialProfile(siblingData),
+      },
+      validate: ((value, { siblingData }: any) => {
+        if (!isEditorialProfile(siblingData)) return true
+        const password =
+          typeof siblingData?.editorPassword === 'string' ? siblingData.editorPassword.trim() : ''
+        const confirmation = typeof value === 'string' ? value.trim() : ''
+
+        if (!password && !confirmation) return true
+        if (!password || !confirmation) {
+          return 'Completa ambos campos de contraseña.'
+        }
+
+        return password === confirmation ? true : 'Las contraseñas no coinciden.'
+      }) as TextFieldSingleValidation,
     },
     {
       name: 'mercadoPagoConnection',

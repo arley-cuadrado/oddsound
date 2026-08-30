@@ -99,28 +99,18 @@
   gap: calc(var(--base) * 0.35);
 }
 
-.create-redactor-section__social-row {
-  display: grid;
-  grid-template-columns: minmax(0, 14rem) minmax(0, 1fr) auto;
-  gap: calc(var(--base) * 0.75);
-  align-items: end;
-}
-
-.create-redactor-section__social-row-action {
-  display: flex;
-  align-items: flex-end;
-  min-height: 100%;
-}
-
-.create-redactor-section__password-field .field-type__wrap {
+.create-redactor-section__password-field .field-type__wrap,
+.payload-password-toggle-field .field-type__wrap {
   position: relative;
 }
 
-.create-redactor-section__password-field .field-type__wrap input {
+.create-redactor-section__password-field .field-type__wrap input,
+.payload-password-toggle-field .field-type__wrap input {
   padding-right: 4.5rem;
 }
 
-.create-redactor-section__password-field .field-type__toggle {
+.create-redactor-section__password-field .field-type__toggle,
+.payload-password-toggle-field .field-type__toggle {
   position: absolute;
   top: 50%;
   right: calc(var(--base) * 0.75);
@@ -155,14 +145,6 @@
   .email-preview-nav-link__link,
   .scheduled-publishes-nav-link__link {
     padding-bottom: 0;
-  }
-
-  .create-redactor-section__social-row {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .create-redactor-section__social-row-action {
-    min-height: auto;
   }
 
   .doc-tabs {

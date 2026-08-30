@@ -2,13 +2,12 @@
 
 import React, { useState } from 'react'
 import { usePathname, useSearchParams } from 'next/navigation'
-import { Banner, Button, FieldLabel, Gutter, SelectInput, TextInput } from '@payloadcms/ui'
+import { Banner, Button, FieldLabel, Gutter, TextInput } from '@payloadcms/ui'
 
 import {
   resendEditorInvitation,
   submitEditorInvitation,
 } from '@/components/CreateRedactorButton/actions'
-import type { EditorSocialPlatform, EditorSocialRow } from '@/utilities/editorInvites'
 
 type CreateEditorFormState = {
   confirmPassword: string
@@ -24,44 +23,11 @@ type EditorMessage = {
   type: 'error' | 'success'
 }
 
-type SocialRowState = EditorSocialRow & {
-  id: string
-}
-
 const INITIAL_FORM_STATE: CreateEditorFormState = {
   confirmPassword: '',
   email: '',
   fullName: '',
   password: '',
-}
-
-const SOCIAL_PLATFORM_OPTIONS = [
-  {
-    label: 'Instagram',
-    value: 'instagram',
-  },
-  {
-    label: 'X',
-    value: 'x',
-  },
-  {
-    label: 'Threads',
-    value: 'threads',
-  },
-  {
-    label: 'Facebook',
-    value: 'facebook',
-  },
-]
-
-function createSocialRow(): SocialRowState {
-  return {
-    id: typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
-      ? crypto.randomUUID()
-      : `social-${Date.now()}-${Math.random().toString(16).slice(2)}`,
-    platform: 'instagram',
-    value: '',
-  }
 }
 
 function PasswordInputField({
@@ -120,7 +86,6 @@ export default function CreateRedactorButton() {
 
   const [showForm, setShowForm] = useState(false)
   const [formData, setFormData] = useState<CreateEditorFormState>(INITIAL_FORM_STATE)
-  const [socialRows, setSocialRows] = useState<SocialRowState[]>([])
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<EditorMessage | null>(null)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
@@ -130,7 +95,6 @@ export default function CreateRedactorButton() {
 
   const resetForm = () => {
     setFormData(INITIAL_FORM_STATE)
-    setSocialRows([])
     setMessage(null)
     setShowConfirmPassword(false)
     setShowForm(false)
@@ -144,26 +108,6 @@ export default function CreateRedactorButton() {
       ...prev,
       [name]: value,
     }))
-  }
-
-  const handleSocialPlatformChange = (id: string, nextValue: string) => {
-    setSocialRows((prev) =>
-      prev.map((row) =>
-        row.id === id ? { ...row, platform: nextValue as EditorSocialPlatform } : row,
-      ),
-    )
-  }
-
-  const handleSocialValueChange = (id: string, nextValue: string) => {
-    setSocialRows((prev) => prev.map((row) => (row.id === id ? { ...row, value: nextValue } : row)))
-  }
-
-  const addSocialRow = () => {
-    setSocialRows((prev) => [...prev, createSocialRow()])
-  }
-
-  const removeSocialRow = (id: string) => {
-    setSocialRows((prev) => prev.filter((row) => row.id !== id))
   }
 
   const handleResend = async () => {
@@ -225,12 +169,6 @@ export default function CreateRedactorButton() {
         email: formData.email,
         fullName: formData.fullName,
         password: formData.password,
-        socialRows: socialRows
-          .map(({ platform, value }) => ({
-            platform,
-            value,
-          }))
-          .filter((row) => row.value.trim()),
       })
 
       setMessage({
@@ -244,7 +182,6 @@ export default function CreateRedactorButton() {
         setFormData(INITIAL_FORM_STATE)
         setShowConfirmPassword(false)
         setShowPassword(false)
-        setSocialRows([])
       }
     } catch (error) {
       setMessage({
@@ -376,68 +313,6 @@ export default function CreateRedactorButton() {
                 toggleLabel={showConfirmPassword ? 'Ocultar' : 'Ver'}
                 value={formData.confirmPassword}
               />
-
-              <div className="create-redactor-section__group">
-                <div className="create-redactor-section__group-header">
-                  <h3>Redes sociales</h3>
-                  <p>Puedes agregarlas ahora o más tarde.</p>
-                </div>
-
-                {socialRows.map((row, index) => (
-                  <div className="create-redactor-section__social-row" key={row.id}>
-                    <SelectInput
-                      label={`Red social ${index + 1}`}
-                      name={`social-platform-${row.id}`}
-                      onChange={(option) => {
-                        const nextValue =
-                          option &&
-                          !Array.isArray(option) &&
-                          typeof option === 'object' &&
-                          'value' in option
-                            ? String(option.value || '')
-                            : ''
-
-                        handleSocialPlatformChange(row.id, nextValue)
-                      }}
-                      options={SOCIAL_PLATFORM_OPTIONS}
-                      path={`social-platform-${row.id}`}
-                      value={row.platform}
-                    />
-
-                    <TextInput
-                      label="Usuario o URL"
-                      onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
-                        handleSocialValueChange(row.id, event.target.value)
-                      }
-                      path={`social-value-${row.id}`}
-                      placeholder="@usuario o URL"
-                      value={row.value}
-                    />
-
-                    <div className="create-redactor-section__social-row-action">
-                      <Button
-                        onClick={() => removeSocialRow(row.id)}
-                        buttonStyle="secondary"
-                        el="button"
-                        margin={false}
-                        type="button"
-                      >
-                        Eliminar
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-
-                <Button
-                  onClick={addSocialRow}
-                  buttonStyle="secondary"
-                  el="button"
-                  margin={false}
-                  type="button"
-                >
-                  Agregar red social
-                </Button>
-              </div>
 
               <div className="create-redactor-section__actions">
                 <Button type="submit" buttonStyle="primary" disabled={loading} el="button" margin={false}>

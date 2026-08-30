@@ -150,7 +150,6 @@ describe('CreateRedactorButton', () => {
         email: 'arley.cuadradosierra@gmail.com',
         fullName: 'Arlo Cuadrado',
         password: 'super-secret-password',
-        socialRows: [],
       })
     })
 
