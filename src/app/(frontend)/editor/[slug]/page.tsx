@@ -50,7 +50,7 @@ async function queryEditorialPosts(profileID: string) {
   const payload = await getPayload({ config: configPromise })
   const result = await payload.find({
     collection: 'posts',
-    depth: 1,
+    depth: 2,
     limit: 24,
     overrideAccess: true,
     pagination: false,

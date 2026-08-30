@@ -27,7 +27,7 @@ export default async function Page({ params: paramsPromise }: Args) {
 
   const posts = await payload.find({
     collection: 'posts',
-    depth: 1,
+    depth: 2,
     limit: 12,
     page: sanitizedPageNumber,
     overrideAccess: true,
@@ -57,14 +57,10 @@ export default async function Page({ params: paramsPromise }: Args) {
               Oddosund Editorial
             </p>
 
-            <div className="flex items-start gap-4 md:gap-6">
-              <div className="h-14 w-14 shrink-0 rounded-full bg-[#d9d9d9] md:h-16 md:w-16" />
-
-              <div className="min-w-0 space-y-2">
-                <h1 className="text-[2.75rem] font-black leading-none tracking-tight text-slate-900 dark:text-white md:text-[4.6rem]">
-                  Artículos
-                </h1>
-              </div>
+            <div className="min-w-0 space-y-2">
+              <h1 className="text-[2.75rem] font-black leading-none tracking-tight text-slate-900 dark:text-white md:text-[4.6rem]">
+                Artículos
+              </h1>
             </div>
           </div>
 
