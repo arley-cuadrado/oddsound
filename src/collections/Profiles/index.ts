@@ -729,8 +729,7 @@ export const Profiles: CollectionConfig = {
       type: 'group',
       label: 'Tienda',
       admin: {
-        condition: (_data, siblingData, { user }) =>
-          !isEditorialProfileForAdminCondition({ siblingData, user }),
+        condition: (_data, _siblingData, { user }) => isAdminUser(user),
       },
       fields: [
         {
