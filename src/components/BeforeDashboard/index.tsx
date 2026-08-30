@@ -3,8 +3,11 @@ import { getPayload } from 'payload'
 import Link from 'next/link'
 import React from 'react'
 
+import type { Profile } from '@/payload-types'
 import { getMeUser } from '@/utilities/getMeUser'
 import { listCommerceProducts, resolveUserProfileID } from '@/utilities/commerceProducts'
+import { getMerchOnboarding } from '@/utilities/merchOnboarding'
+import { getPlatformFeePercent } from '@/utilities/money'
 
 type ScheduledJobInput = {
   doc?: {
@@ -44,6 +47,20 @@ const BeforeDashboard = async () => {
           profile: profileID,
         })
       : []
+  // Read straight from the profile: the sanitized connection lives behind
+  // `overrideAccess`, and the admin panel is the one place an artist reliably
+  // lands after logging in.
+  const commerceProfile =
+    profileID && (userRole === 'admin' || isMusicalCreator)
+      ? ((await payload
+          .findByID({ collection: 'profiles', id: String(profileID), depth: 0, overrideAccess: true })
+          .catch(() => null)) as null | Profile)
+      : null
+  const platformFeePercent = getPlatformFeePercent()
+  const merch = getMerchOnboarding({
+    hasPublishedProduct: commerceProducts.some((product) => product.status === 'published'),
+    profile: commerceProfile,
+  })
   const commerceProfileSlug =
     (typeof user?.profile === 'object' && user?.profile && 'slug' in user.profile
       ? user.profile.slug
@@ -111,6 +128,66 @@ const BeforeDashboard = async () => {
 
   return (
     <section className={baseClass} id="scheduled-publishes">
+      {isMusicalCreator ? (
+        <section className={`${baseClass}__section`} aria-labelledby="before-dashboard-payments">
+          <div className={`${baseClass}__header`}>
+            <div>
+              <h4 id="before-dashboard-payments">
+                Cobros con Mercado Pago{' '}
+                <span
+                  className={`${baseClass}__badge ${baseClass}__badge--${
+                    merch.ready ? 'ready' : merch.needsReconnect ? 'alert' : 'pending'
+                  }`}
+                >
+                  {merch.ready
+                    ? 'Listo para vender'
+                    : merch.needsReconnect
+                      ? 'Requiere acción'
+                      : 'Pendiente'}
+                </span>
+              </h4>
+              <p>Cobras directo a tu cuenta. oddsound se queda el {platformFeePercent}%.</p>
+            </div>
+          </div>
+
+          <ul className={`${baseClass}__meta-list`}>
+            {merch.steps.map((step, index) => (
+              <li className={`${baseClass}__meta-item`} key={step.key}>
+                <span>
+                  {step.done ? '✓' : `${index + 1}.`} {step.title}
+                </span>
+                <strong>{step.detail}</strong>
+              </li>
+            ))}
+          </ul>
+
+          {merch.health.state === 'connected' || merch.health.state === 'expiring' ? (
+            <p className={`${baseClass}__empty`}>
+              Autorización vigente por {merch.health.daysRemaining} días más. Se renueva sola.
+            </p>
+          ) : null}
+
+          <div className={`${baseClass}__links`}>
+            {merch.nextStep?.action ? (
+              <Link
+                className={`${baseClass}__link ${baseClass}__link--primary`}
+                href={merch.nextStep.action}
+              >
+                {merch.nextStep.actionLabel}
+              </Link>
+            ) : null}
+            {merch.steps[0]?.done ? (
+              <Link className={`${baseClass}__link`} href="/creator-api/payments/connect/start">
+                Reconectar Mercado Pago
+              </Link>
+            ) : null}
+            <Link className={`${baseClass}__link`} href="/creator/dashboard">
+              Ver mis ventas y envíos
+            </Link>
+          </div>
+        </section>
+      ) : null}
+
       <section className={`${baseClass}__section`} aria-labelledby="before-dashboard-scheduled">
         <div className={`${baseClass}__header`}>
           <div>
@@ -190,7 +267,7 @@ const BeforeDashboard = async () => {
 
           <div className={`${baseClass}__links`}>
             <Link className={`${baseClass}__link`} href="/creator/dashboard">
-              Abrir vista remota de commerce
+              Abrir mi panel de artista
             </Link>
             <Link className={`${baseClass}__link`} href="/dashboard/collections/products">
               Gestionar productos

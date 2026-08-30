@@ -300,6 +300,44 @@
   text-underline-offset: 0.18em;
 }
 
+/* The one action the artist is meant to take next reads as a button, not as
+   another link in a list of links. */
+.before-dashboard__link--primary {
+  justify-self: start;
+  padding: 0.6rem 1.1rem;
+  border-radius: 0.5rem;
+  background: var(--theme-text);
+  color: var(--theme-bg);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.before-dashboard__badge {
+  display: inline-block;
+  margin-left: 0.5rem;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  vertical-align: middle;
+}
+
+.before-dashboard__badge--ready {
+  background: var(--theme-success-100, #e6f0ea);
+  color: var(--theme-success-600, #1f6f4a);
+}
+
+.before-dashboard__badge--pending {
+  background: var(--theme-elevation-100);
+  color: var(--theme-elevation-700);
+}
+
+.before-dashboard__badge--alert {
+  background: var(--theme-error-100, #f4e6e6);
+  color: var(--theme-error-600, #7b3d3d);
+}
+
 @media (max-width: 768px) {
   .create-redactor-section__social-grid {
     grid-template-columns: 1fr;

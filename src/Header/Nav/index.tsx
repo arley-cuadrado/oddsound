@@ -5,6 +5,7 @@ import { ThemeSelector } from '@/providers/Theme/ThemeSelector'
 
 import type { Header as HeaderType } from '@/payload-types'
 
+import { CartBadge } from '@/components/Cart/CartBadge'
 import { CMSLink } from '@/components/Link'
 import Link from 'next/link'
 
@@ -110,6 +111,7 @@ export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
           <Link href="/search" className="flex text-[13px] hover:underline">
             <span className="block">Discover</span>
           </Link>
+          <CartBadge className="self-start max-[975px]:self-auto" />
           {/* dynamic routes, registered artists */}
           {navItems.map(({ link }, i) => {
             return (

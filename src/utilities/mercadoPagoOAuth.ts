@@ -1,12 +1,17 @@
 import type { Payload } from 'payload'
 
 import type { Profile as CreatorProfile, User as AppUser } from '@/payload-types'
-import { getServerSideURL } from './getURL'
+import {
+  getMercadoPagoOAuthConfig,
+  MERCADO_PAGO_AUTH_URL,
+  MERCADO_PAGO_OAUTH_TOKEN_URL,
+  MERCADO_PAGO_USER_INFO_URL,
+} from './mercadoPagoConfig'
+import { describeConnectionHealth } from './mercadoPagoTokens'
 import { decryptSecret, encryptSecret } from './secrets'
 
-const MERCADO_PAGO_AUTH_URL = 'https://auth.mercadopago.com/authorization'
-const MERCADO_PAGO_OAUTH_TOKEN_URL = 'https://api.mercadopago.com/oauth/token'
-const MERCADO_PAGO_USER_INFO_URL = 'https://api.mercadolibre.com/users/me'
+export { getMercadoPagoOAuthConfig }
+
 
 type MercadoPagoProfileConnection = NonNullable<CreatorProfile['mercadoPagoConnection']>
 
@@ -23,21 +28,6 @@ type MercadoPagoSellerInfo = {
   email?: string
   id?: number | string
   nickname?: string
-}
-
-export function getMercadoPagoOAuthConfig() {
-  const clientID = process.env.MERCADOPAGO_CLIENT_ID || ''
-  const clientSecret = process.env.MERCADOPAGO_CLIENT_SECRET || ''
-
-  if (!clientID || !clientSecret) {
-    throw new Error('Missing Mercado Pago OAuth credentials.')
-  }
-
-  return {
-    clientID,
-    clientSecret,
-    redirectURI: `${getServerSideURL()}/creator-api/payments/connect/callback`,
-  }
 }
 
 export function buildMercadoPagoAuthorizationURL(state: string) {
@@ -132,13 +122,19 @@ export async function findCreatorProfileByOAuthState({
   return (result.docs[0] as CreatorProfile | undefined) || null
 }
 
+/**
+ * Everything about a connection that is safe to hand to the browser. The
+ * encrypted tokens are deliberately absent.
+ */
 export function sanitizeMercadoPagoConnection(profile: CreatorProfile | null) {
   const connection = profile?.mercadoPagoConnection
 
   return {
     accessTokenExpiresAt: connection?.accessTokenExpiresAt || null,
+    health: describeConnectionHealth(profile),
     lastConnectedAt: connection?.lastConnectedAt || null,
     lastError: connection?.lastError || null,
+    lastRefreshedAt: connection?.lastRefreshedAt || null,
     sellerEmail: connection?.sellerEmail || null,
     sellerID: connection?.sellerID || null,
     sellerNickname: connection?.sellerNickname || null,
@@ -146,6 +142,16 @@ export function sanitizeMercadoPagoConnection(profile: CreatorProfile | null) {
   }
 }
 
+export type SanitizedMercadoPagoConnection = ReturnType<typeof sanitizeMercadoPagoConnection>
+
+/**
+ * Reads the stored token without checking whether it is still alive.
+ *
+ * Prefer `getValidMercadoPagoAccessToken` or `withMercadoPagoAccessToken` from
+ * `mercadoPagoTokens`: those renew first and retry on a 401. This one exists for
+ * the webhook, which is handed a payment ID by Mercado Pago and only needs to
+ * read it back.
+ */
 export function getDecryptedMercadoPagoAccessToken(profile: CreatorProfile) {
   return decryptSecret(profile.mercadoPagoConnection?.encryptedAccessToken)
 }
@@ -169,7 +175,12 @@ export function buildConnectedMercadoPagoProfileUpdate({
         : undefined,
       lastConnectedAt: now.toISOString(),
       lastError: '',
+      lastRefreshedAt: now.toISOString(),
       oauthState: '',
+      // A fresh authorisation supersedes any earlier grant, so the recovery
+      // copy and the failure tally start over with it.
+      previousEncryptedRefreshToken: '',
+      refreshFailureCount: 0,
       sellerEmail: sellerInfo.email || '',
       sellerID: String(sellerInfo.id || tokenData.user_id || ''),
       sellerNickname: sellerInfo.nickname || '',

@@ -6,11 +6,13 @@ import { getPayload } from 'payload'
 import Link from 'next/link'
 import { notFound, permanentRedirect } from 'next/navigation'
 
+import { AddToCartButton } from '@/components/Cart/AddToCartButton'
 import { Media as MediaComponent } from '@/components/Media'
 import { ShopBackButton } from './ShopBackButton'
 import { findPublicProfileBySlug } from '@/utilities/publicProfiles'
 import { listCommerceProducts } from '@/utilities/commerceProducts'
 import { isMercadoPagoReadyForProfile } from '@/utilities/mercadoPagoCheckout'
+import { formatCOP } from '@/utilities/money'
 import { normalizePublicSlugParam } from '@/utilities/publicSlugs'
 
 type Args = {
@@ -87,6 +89,7 @@ export default async function ArtistShopPage({ params: paramsPromise }: Args) {
     notFound()
   }
 
+  const acceptsPayments = isMercadoPagoReadyForProfile(profile)
   const shopGridClassName =
     products.length === 1 ? 'grid gap-5' : 'grid grid-cols-2 gap-4 md:grid-cols-2 md:gap-5 xl:grid-cols-3'
 
@@ -162,9 +165,9 @@ export default async function ArtistShopPage({ params: paramsPromise }: Args) {
                   </div>
 
                   <div className="flex flex-wrap gap-2 text-[12px] text-foreground/72 dark:text-white/80">
-                    {typeof product.priceInUSD === 'number' ? (
+                    {typeof product.priceInCOP === 'number' ? (
                       <span className="rounded-full bg-[#f4efe6] px-3 py-1.5 dark:bg-white/10 dark:text-white">
-                        USD {product.priceInUSD}
+                        {formatCOP(product.priceInCOP)}
                       </span>
                     ) : null}
                     {typeof product.inventory === 'number' ? (
@@ -180,7 +183,16 @@ export default async function ArtistShopPage({ params: paramsPromise }: Args) {
                   </div>
 
                   <div className="flex flex-wrap gap-3">
-                    {product.externalCheckoutURL ? (
+                    {product.checkoutProvider === 'mercadopago' ? (
+                      <AddToCartButton
+                        label={product.checkoutButtonLabel || 'Agregar al carrito'}
+                        productID={product.id}
+                        // An artist without a linked Mercado Pago account has
+                        // nowhere to receive the money, so the shop shows the
+                        // product rather than a button that would dead-end.
+                        unavailable={!acceptsPayments}
+                      />
+                    ) : product.externalCheckoutURL ? (
                       <a
                         className="inline-flex h-11 items-center justify-center rounded-full bg-[#312e2e] px-5 text-[13px] font-medium text-white transition hover:opacity-90"
                         href={product.externalCheckoutURL}
@@ -189,17 +201,6 @@ export default async function ArtistShopPage({ params: paramsPromise }: Args) {
                       >
                         {product.checkoutButtonLabel || 'Comprar'}
                       </a>
-                    ) : product.checkoutProvider === 'mercadopago' && isMercadoPagoReadyForProfile(profile) ? (
-                      <a
-                        className="inline-flex h-11 items-center justify-center rounded-full bg-[#312e2e] px-5 text-[13px] font-medium text-white transition hover:opacity-90"
-                        href={`/creator-api/payments/checkout/start?product=${product.id}&profile=${profile.slug}`}
-                      >
-                        Comprar con Mercado Pago
-                      </a>
-                    ) : product.checkoutProvider === 'mercadopago' ? (
-                      <span className="inline-flex h-11 items-center justify-center rounded-full border border-border px-5 text-[13px] font-medium text-foreground/60 dark:border-white/15 dark:text-white/60">
-                        Mercado Pago no disponible
-                      </span>
                     ) : null}
                     {product.release?.slug ? (
                       <Link

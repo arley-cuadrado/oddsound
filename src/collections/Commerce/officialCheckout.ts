@@ -36,6 +36,17 @@ export function extendEcommerceOrdersCollection({ defaultCollection }: OverrideA
         },
       },
       {
+        // One cart can produce several orders — one per artist — because
+        // Mercado Pago's split pays a single seller per transaction. This is
+        // what ties them back together.
+        name: 'cart',
+        type: 'relationship',
+        relationTo: 'carts',
+        admin: {
+          position: 'sidebar',
+        },
+      },
+      {
         name: 'paymentProvider',
         type: 'select',
         defaultValue: 'mercadopago',
@@ -100,6 +111,15 @@ export function extendEcommerceOrdersCollection({ defaultCollection }: OverrideA
       {
         name: 'trackingNumber',
         type: 'text',
+      },
+      {
+        // Claimed atomically the first time a payment is approved, so Mercado
+        // Pago's retries cannot decrement stock more than once.
+        name: 'inventoryAdjustedAt',
+        type: 'date',
+        admin: {
+          readOnly: true,
+        },
       },
     ],
   }

@@ -62,7 +62,11 @@ That's it! Changes made in `./src` will be reflected in your app. Then check out
 
 `pnpm seed` fills the database with a catalogue big enough to exercise Discovery:
 8 artists across 7 genres and 8 countries, 32 releases, 6 scenes, 8 biographies
-and 4 shop products, with cover art generated on the fly by `sharp`.
+and 5 shop products, with cover art generated on the fly by `sharp`.
+
+The products belong to three different artists on purpose. Connect two of them to
+Mercado Pago test accounts and leave the third alone, and a single cart then shows
+both a payable and a blocked group.
 
 | Command | What it does |
 | --- | --- |
@@ -79,6 +83,66 @@ documents through those accounts, so `--fresh` never touches real content.
 
 The seed refuses to run when `NODE_ENV=production` or when `DATABASE_URL` does not
 point at localhost, unless you pass `--force`.
+
+## Merch and Mercado Pago
+
+Artists sell merch through **Mercado Pago's Split Payments 1:1**, which pays exactly
+one seller per transaction plus the marketplace's commission. That constraint is the
+reason the cart settles **once per artist** rather than once per order: a cart holding
+merch from three artists produces three payments, three orders and three preferences.
+
+Reference: <https://www.mercadopago.com.co/developers/es/docs/split-payments/split-1-1/overview>
+
+### One-time setup for oddsound
+
+1. In [Tus integraciones](https://www.mercadopago.com.co/developers/panel/app), create
+   an application with solution **Pagos online**, product **Checkout Pro** and
+   integration model **Marketplace**.
+2. Edit it and set the Redirect URL to
+   `https://<tu-dominio>/creator-api/payments/connect/callback`. It must match exactly —
+   Mercado Pago rejects the authorisation otherwise, which is why any extra data travels
+   in the OAuth `state` instead.
+3. Copy `client_id` and `client_secret` into `MERCADOPAGO_CLIENT_ID` and
+   `MERCADOPAGO_CLIENT_SECRET`.
+4. In the application's **Webhooks** section, copy the signing secret into
+   `MERCADOPAGO_WEBHOOK_SECRET`. Notifications without a valid `x-signature` are rejected.
+
+### What each artist does
+
+Nothing but authorise. There is no key to paste: the artist clicks **Conectar Mercado
+Pago** in `/creator/dashboard`, approves on Mercado Pago's own site, and the resulting
+access and refresh tokens are stored encrypted with AES-256-GCM
+(`src/utilities/secrets.ts`). Those fields have `read: () => false`, so they never leave
+the server — not even for the artist who owns them.
+
+### Keeping the connection alive
+
+Mercado Pago access tokens live 180 days and the refresh token rotates on every renewal.
+Six layers keep a checkout from ever meeting a dead token:
+
+| Layer | Where |
+| --- | --- |
+| A cron that actually runs on serverless | `vercel.json` → `/api/cron/jobs` |
+| Proactive renewal once a token is 30 days old | `src/jobs/refreshMercadoPagoTokens.ts` |
+| Just-in-time renewal before a checkout | `getValidMercadoPagoAccessToken` |
+| Retry after Mercado Pago rejects the token | `withMercadoPagoAccessToken` |
+| A compare-and-set lock so concurrent checkouts cannot spend the same single-use refresh token | `src/utilities/mercadoPagoTokens.ts` |
+| The artist's group is blocked in the cart before anyone presses pay | `src/utilities/cartGroups.ts` |
+
+`jobs.autoRun` is only used in development. Payload's own types warn against it on
+serverless, so production is driven by the Vercel cron. On the Hobby plan crons are
+limited to once a day — change the schedule in `vercel.json` accordingly.
+
+### Testing without real money
+
+Create test accounts in the application's **Cuentas de prueba** section: one seller, one
+buyer, and the integrator account itself. Connect an artist with the test seller, then
+buy with the test buyer. Mercado Pago refuses to let an account pay its own preference.
+
+Before going live, confirm three things with a Mercado Pago commercial executive: that
+`marketplace_fee` is enabled for the account, that the seller reaches KYC level 6, and
+what the documented "payments using available balance between Mercado Pago accounts"
+restriction means for card and PSE payments in Colombia.
 
 ## How it works
 

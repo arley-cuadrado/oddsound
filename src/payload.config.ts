@@ -33,6 +33,8 @@ import { Header } from './Header/config'
 import { oddsoundVercelBlobStorage } from './plugins/oddsoundVercelBlob'
 import { plugins } from './plugins'
 import { payloadUploadOptions } from '@/config/uploadLimits'
+import { currenciesConfig } from '@/config/currencies'
+import { refreshMercadoPagoTokensTask } from '@/jobs/refreshMercadoPagoTokens'
 import { defaultLexical } from '@/fields/defaultLexical'
 import { payloadSpanish } from '@/i18n/payloadSpanish'
 import { collectTrustedServerURLs, getServerSideURL } from './utilities/getURL'
@@ -155,9 +157,14 @@ export default buildConfig({
         publicAccess: ecommercePublicAccess,
       },
       carts: {
-        allowGuestCarts: false,
+        // Merch is an impulse buy. Forcing a signup before someone can put a
+        // vinyl in the cart costs more sales than the account is worth; the
+        // plugin keeps guest carts behind a per-cart secret and merges them on
+        // login.
+        allowGuestCarts: true,
         cartsCollectionOverride: extendEcommerceCartsCollection,
       },
+      currencies: currenciesConfig,
       customers: {
         slug: Users.slug,
       },
@@ -204,6 +211,10 @@ export default buildConfig({
         return authHeader === `Bearer ${secret}`
       },
     },
+    // In-process cron only. Payload's own types warn that `autoRun` should not
+    // be used on serverless platforms, where nothing guarantees a live process,
+    // so production is driven by the Vercel cron in `vercel.json` calling
+    // `/api/cron/jobs`.
     autoRun: [
       {
         cron: '* * * * *',
@@ -211,6 +222,7 @@ export default buildConfig({
         queue: 'default',
       },
     ],
-    tasks: [],
+    shouldAutoRun: () => process.env.NODE_ENV !== 'production',
+    tasks: [refreshMercadoPagoTokensTask],
   },
 })
