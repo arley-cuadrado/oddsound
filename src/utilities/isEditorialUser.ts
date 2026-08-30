@@ -39,6 +39,12 @@ export function canAccessPayloadDashboard(user: UserLike) {
   return candidate.role === 'creator' && !isFanUser(user)
 }
 
+export function hasEditorialIdentity(user: UserLike) {
+  const candidate = readUserFields(user)
+
+  return candidate.userType === 'editor' || candidate.editorAccess
+}
+
 export function getUserLoginPath(user: UserLike) {
   const candidate = readUserFields(user)
 
@@ -54,7 +60,7 @@ export function isEditorialUser(user: UserLike) {
   return (
     candidate.role === 'creator' &&
     !isFanUser(user) &&
-    (candidate.userType === 'editor' || candidate.editorAccess)
+    hasEditorialIdentity(user)
   )
 }
 

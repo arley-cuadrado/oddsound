@@ -8,6 +8,7 @@ import type {
 
 import { authenticated } from '@/access/authenticated'
 import { hasFreshAdminAccess } from '@/access/hasFreshAdminAccess'
+import { hasEditorialIdentity } from '@/utilities/isEditorialUser'
 import { isAdminUser } from '@/utilities/isAdminUser'
 import { slugField } from 'payload'
 
@@ -57,9 +58,10 @@ function isEditorialProfileForAdminCondition(args: {
   user?: null | {
     editorAccess?: boolean | null
     role?: null | string
+    userType?: null | string
   }
 }) {
-  return Boolean(args.user?.editorAccess) || isEditorialProfile(args.siblingData)
+  return hasEditorialIdentity(args.user) || isEditorialProfile(args.siblingData)
 }
 
 function getOwnerID(owner: ProfileData['owner']) {
@@ -153,7 +155,7 @@ async function resolveEditorialProfileData(args: {
         args.originalDoc?.displayName ??
         owner?.name ??
         null,
-      editorialProfile: Boolean(owner?.editorAccess),
+      editorialProfile: hasEditorialIdentity(owner),
     }
   } catch {
     return {

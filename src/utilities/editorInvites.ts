@@ -5,6 +5,7 @@ import {
   findUserByEmail,
 } from '@/utilities/creatorAuth'
 import { ensureCreatorProfile } from '@/utilities/creatorProfiles'
+import { hasEditorialIdentity } from '@/utilities/isEditorialUser'
 import { isAdminUser } from '@/utilities/isAdminUser'
 
 export type EditorInviteStatus =
@@ -45,7 +46,7 @@ function isConsumerIdentity(user?: null | Pick<EditorLikeUser, 'authProvider' | 
 function getExistingEditorState(user: EditorLikeUser) {
   const email = typeof user.email === 'string' ? user.email : undefined
 
-  if (!user.editorAccess) {
+  if (!hasEditorialIdentity(user)) {
     if (isConsumerIdentity(user)) {
       return {
         message: CROSS_ACCOUNT_EMAIL_CONFLICT_MESSAGE,
@@ -75,7 +76,7 @@ function getExistingEditorState(user: EditorLikeUser) {
   }
 
   return {
-      email,
+    email,
     message: 'Esta cuenta editor ya está verificada. Ya puede iniciar sesión.',
     ok: false,
     showResend: false,

@@ -17,6 +17,7 @@ import {
   generateCreatorVerificationEmailHTML,
   generateCreatorVerificationEmailSubject,
 } from '@/utilities/emailVerification'
+import { hasEditorialIdentity } from '@/utilities/isEditorialUser'
 import { createProfile } from './hooks/createProfile'
 import { deleteCreatorData } from './hooks/deleteCreatorData'
 import { ensureCreatorDefaults } from './hooks/ensureCreatorDefaults'
@@ -76,7 +77,7 @@ export const Users: CollectionConfig = {
     },
     verify: {
       generateEmailHTML: ({ token, user }) =>
-        user?.editorAccess
+        hasEditorialIdentity(user)
           ? generateEditorVerificationEmailHTML({
               token,
               user,
@@ -86,7 +87,7 @@ export const Users: CollectionConfig = {
               user,
             }),
       generateEmailSubject: ({ user }) =>
-        user?.editorAccess
+        hasEditorialIdentity(user)
           ? generateEditorVerificationEmailSubject()
           : generateCreatorVerificationEmailSubject(),
     },

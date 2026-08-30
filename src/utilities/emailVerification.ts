@@ -7,6 +7,7 @@ export const CREATOR_RESET_PASSWORD_EXPIRATION_MS = 60 * 60 * 1000
 
 type VerificationUser = Pick<User, 'email' | 'name'> & {
   editorAccess?: boolean | null
+  userType?: User['userType']
 }
 
 type EmailTemplateOptions = {

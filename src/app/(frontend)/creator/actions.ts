@@ -13,6 +13,7 @@ import {
   generateEditorVerificationEmailSubject,
   getVerificationCooldownMessage,
 } from '@/utilities/emailVerification'
+import { hasEditorialIdentity } from '@/utilities/isEditorialUser'
 import {
   getExpiredPayloadTokenCookieOptions,
   getPayloadTokenCookieOptions,
@@ -135,13 +136,14 @@ export async function resendVerificationEmail(input: {
     })
 
     await payload.sendEmail({
-      html: updatedUser.editorAccess
+      html: hasEditorialIdentity(updatedUser)
         ? generateEditorVerificationEmailHTML({
             token,
             user: {
               editorAccess: updatedUser.editorAccess,
               email: updatedUser.email || email,
               name: updatedUser.name || updatedUser.email || email,
+              userType: updatedUser.userType,
             },
           })
         : generateCreatorVerificationEmailHTML({
@@ -150,9 +152,10 @@ export async function resendVerificationEmail(input: {
               editorAccess: updatedUser.editorAccess,
               email: updatedUser.email || email,
               name: updatedUser.name || updatedUser.email || email,
+              userType: updatedUser.userType,
             },
           }),
-      subject: updatedUser.editorAccess
+      subject: hasEditorialIdentity(updatedUser)
         ? generateEditorVerificationEmailSubject()
         : generateCreatorVerificationEmailSubject(),
       to: email,
