@@ -13,6 +13,7 @@ function isValidURL(value: null | string | undefined) {
 
 export function socialLinksField(options?: {
   label?: string
+  maxRows?: number
   minRows?: number
   platformLabel?: string
   required?: boolean
@@ -22,6 +23,7 @@ export function socialLinksField(options?: {
     name: 'socialLinks',
     type: 'array',
     label: options?.label || 'Enlaces sociales',
+    maxRows: options?.maxRows,
     minRows: options?.minRows ?? 1,
     required: options?.required ?? false,
     labels: {

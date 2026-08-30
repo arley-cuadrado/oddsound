@@ -62,6 +62,29 @@
   margin-bottom: 0;
 }
 
+.editorial-profile-identity-field {
+  margin-bottom: calc(var(--base) * 0.4);
+}
+
+.editorial-profile-identity-field__eyebrow,
+.editorial-profile-identity-field__title {
+  margin: 0;
+}
+
+.editorial-profile-identity-field__eyebrow {
+  color: var(--theme-elevation-700);
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.editorial-profile-identity-field__title {
+  margin-top: calc(var(--base) * 0.15);
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
 .create-redactor-section__description,
 .create-redactor-section__message p,
 .create-redactor-section__group-header h3,

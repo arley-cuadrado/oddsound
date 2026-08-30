@@ -2,6 +2,8 @@ import type { Comment, ConsumerProfile, Page, Profile } from '@/payload-types'
 
 export const CREATOR_COMMENTS_PAGE_SIZE = 10
 
+export type CreatorCommentsViewerKind = 'admin' | 'editorial' | 'musical'
+
 type SearchParamsValue = string | string[] | undefined
 
 type SearchParamsLike = Record<string, SearchParamsValue>
@@ -45,9 +47,42 @@ export function getCreatorCommentsPage(searchParams?: null | SearchParamsLike) {
   return parsedPage
 }
 
-export function getCreatorCommentsEmptyMessage(hasSearch: boolean) {
-  if (hasSearch) {
+export function getCreatorCommentsViewerKind(user: {
+  editorAccess?: boolean | null
+  role?: null | string
+} | null | undefined): CreatorCommentsViewerKind {
+  if (user?.role === 'admin') return 'admin'
+  if (user?.editorAccess) return 'editorial'
+
+  return 'musical'
+}
+
+export function getCreatorCommentsDescription(viewerKind: CreatorCommentsViewerKind) {
+  if (viewerKind === 'editorial') {
+    return 'Lee los comentarios que han dejado en tus artículos y entra al detalle de cada uno.'
+  }
+
+  if (viewerKind === 'admin') {
+    return 'Lee los comentarios que han dejado en los contenidos y entra al detalle de cada uno.'
+  }
+
+  return 'Lee los comentarios que tus fans han dejado en tus lanzamientos y entra al detalle de cada uno.'
+}
+
+export function getCreatorCommentsEmptyMessage(args: {
+  hasSearch: boolean
+  viewerKind: CreatorCommentsViewerKind
+}) {
+  if (args.hasSearch) {
     return 'No hay resultados. La búsqueda no generó coincidencias.'
+  }
+
+  if (args.viewerKind === 'editorial') {
+    return 'Aún no tienes comentarios por leer, invita a tus lectores a comentar tus artículos.'
+  }
+
+  if (args.viewerKind === 'admin') {
+    return 'Aún no hay comentarios por leer en los contenidos.'
   }
 
   return 'Aún no tienes comentarios por leer, invita a tus fans a comentar tus lanzamientos.'

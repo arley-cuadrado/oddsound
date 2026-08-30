@@ -369,21 +369,20 @@ export interface Profile {
   editorGender?: ('male' | 'female' | 'indeterminate') | null;
   contactEmail?: string | null;
   /**
-   * Registra al menos una red social para el perfil editorial.
+   * Agrega una sola red social con el nombre visible o usuario y su enlace.
    */
-  editorSocials?: {
-    instagram?: string | null;
-    x?: string | null;
-    threads?: string | null;
-    facebook?: string | null;
-  };
   socialLinks?:
     | {
-        label: string;
+        platform: string;
         url: string;
         id?: string | null;
       }[]
     | null;
+  /**
+   * Déjala vacía si no quieres cambiar la contraseña del editor.
+   */
+  editorPassword?: string | null;
+  editorPasswordConfirmation?: string | null;
   mercadoPagoConnection?: {
     status?: ('not_connected' | 'connecting' | 'connected' | 'action_required') | null;
     sellerID?: string | null;
@@ -2040,21 +2039,15 @@ export interface ProfilesSelect<T extends boolean = true> {
   genre?: T;
   editorGender?: T;
   contactEmail?: T;
-  editorSocials?:
-    | T
-    | {
-        instagram?: T;
-        x?: T;
-        threads?: T;
-        facebook?: T;
-      };
   socialLinks?:
     | T
     | {
-        label?: T;
+        platform?: T;
         url?: T;
         id?: T;
       };
+  editorPassword?: T;
+  editorPasswordConfirmation?: T;
   mercadoPagoConnection?:
     | T
     | {

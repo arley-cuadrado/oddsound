@@ -337,6 +337,16 @@ export const Profiles: CollectionConfig = {
       },
     },
     {
+      name: 'editorialIdentity',
+      type: 'ui',
+      admin: {
+        components: {
+          Field: '@/components/EditorialProfileIdentityField',
+        },
+        condition: (_data, siblingData) => isEditorialProfile(siblingData),
+      },
+    },
+    {
       name: 'displayName',
       type: 'text',
       label: 'Nombre artístico',
@@ -486,13 +496,15 @@ export const Profiles: CollectionConfig = {
     {
       ...socialLinksField({
         label: 'Redes sociales',
+        maxRows: 1,
         minRows: 0,
-        platformLabel: 'Nombre',
+        platformLabel: 'Nombre / máscara',
+        urlLabel: 'Enlace',
       }),
       admin: {
         condition: (_data, siblingData) => isEditorialProfile(siblingData),
         description:
-          'Agrega el nombre visible y el enlace de cada red social que quieres asociar al perfil editorial.',
+          'Agrega una sola red social con el nombre visible o usuario y su enlace.',
       },
     },
     {
@@ -678,6 +690,9 @@ export const Profiles: CollectionConfig = {
       name: 'commerce',
       type: 'group',
       label: 'Tienda',
+      admin: {
+        condition: (_data, siblingData) => !isEditorialProfile(siblingData),
+      },
       fields: [
         {
           name: 'shippingFlatRateCOP',

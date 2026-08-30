@@ -44,10 +44,20 @@ describe('creator comments list view helpers', () => {
   })
 
   it('returns the creator empty-state copy based on whether a search exists', () => {
-    expect(getCreatorCommentsEmptyMessage(false)).toBe(
+    expect(
+      getCreatorCommentsEmptyMessage({
+        hasSearch: false,
+        viewerKind: 'musical',
+      }),
+    ).toBe(
       'Aún no tienes comentarios por leer, invita a tus fans a comentar tus lanzamientos.',
     )
-    expect(getCreatorCommentsEmptyMessage(true)).toBe(
+    expect(
+      getCreatorCommentsEmptyMessage({
+        hasSearch: true,
+        viewerKind: 'musical',
+      }),
+    ).toBe(
       'No hay resultados. La búsqueda no generó coincidencias.',
     )
   })
@@ -61,9 +71,9 @@ describe('creator comments list view helpers', () => {
     ).toBe('Fan Uno')
   })
 
-  it('only enables the custom view for creator accounts without editorial access', () => {
+  it('enables the custom view for admin, artists, bands, and editors', () => {
     expect(isCreatorCommentsViewer({ role: 'creator' })).toBe(true)
-    expect(isCreatorCommentsViewer({ editorAccess: true, role: 'creator' })).toBe(false)
-    expect(isCreatorCommentsViewer({ role: 'admin' })).toBe(false)
+    expect(isCreatorCommentsViewer({ editorAccess: true, role: 'creator' })).toBe(true)
+    expect(isCreatorCommentsViewer({ role: 'admin' })).toBe(true)
   })
 })

@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  getCreatorCommentsDescription,
+  getCreatorCommentsEmptyMessage,
+  getCreatorCommentsViewerKind,
   getCreatorCommentReleaseHref,
   getCreatorCommentReleaseTitle,
   getCreatorCommentTargetLabel,
@@ -13,6 +16,21 @@ describe('Creator comments list helpers', () => {
     expect(isCreatorCommentsViewer({ editorAccess: false, role: 'creator' })).toBe(true)
     expect(isCreatorCommentsViewer({ editorAccess: true, role: 'creator' })).toBe(true)
     expect(isCreatorCommentsViewer({ role: 'fan' as never })).toBe(false)
+  })
+
+  it('returns editor-specific copy for article comments', () => {
+    expect(getCreatorCommentsViewerKind({ editorAccess: true, role: 'creator' })).toBe(
+      'editorial',
+    )
+    expect(getCreatorCommentsDescription('editorial')).toBe(
+      'Lee los comentarios que han dejado en tus artículos y entra al detalle de cada uno.',
+    )
+    expect(
+      getCreatorCommentsEmptyMessage({
+        hasSearch: false,
+        viewerKind: 'editorial',
+      }),
+    ).toBe('Aún no tienes comentarios por leer, invita a tus lectores a comentar tus artículos.')
   })
 
   it('builds a public href for release comments', () => {

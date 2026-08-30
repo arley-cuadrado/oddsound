@@ -10,6 +10,7 @@ import { resolveUserProfileID } from '@/utilities/userRelations'
 import {
   CREATOR_COMMENTS_PAGE_SIZE,
   getCreatorCommentAuthorName,
+  getCreatorCommentsDescription,
   getCreatorCommentReleaseHref,
   getCreatorCommentReleaseTitle,
   getCreatorCommentStatusLabel,
@@ -18,6 +19,7 @@ import {
   getCreatorCommentsListHref,
   getCreatorCommentsPage,
   getCreatorCommentsSearchValue,
+  getCreatorCommentsViewerKind,
   isCreatorCommentsViewer,
 } from './shared'
 import { deleteDashboardComment } from './actions'
@@ -36,8 +38,11 @@ type CreatorComment = Comment & {
   release?: (string | null) | Pick<Page, 'id' | 'profile' | 'slug' | 'title'>
 }
 
-function CreatorCommentsEmptyState({ hasSearch }: { hasSearch: boolean }) {
-  const message = getCreatorCommentsEmptyMessage(hasSearch)
+function CreatorCommentsEmptyState(args: {
+  hasSearch: boolean
+  viewerKind: 'admin' | 'editorial' | 'musical'
+}) {
+  const message = getCreatorCommentsEmptyMessage(args)
 
   return (
     <div className="creator-comments-list__empty no-results">
@@ -93,6 +98,7 @@ function CreatorCommentsPagination(args: {
 export default async function CreatorCommentsListView(props: ListViewServerProps) {
   const creatorUser = props.user as CreatorUser | null
   const isAdminViewer = creatorUser?.role === 'admin'
+  const viewerKind = getCreatorCommentsViewerKind(creatorUser)
 
   if (!isCreatorCommentsViewer(creatorUser)) {
     return <DefaultListView {...props} />
@@ -115,7 +121,10 @@ export default async function CreatorCommentsListView(props: ListViewServerProps
       <section className="creator-comments-list">
         <header className="creator-comments-list__header">
           <h1>Comentarios</h1>
-          <p>No encontramos el perfil vinculado a esta cuenta de artista o banda.</p>
+          <p>
+            No encontramos el perfil vinculado a esta cuenta
+            {viewerKind === 'editorial' ? ' editorial.' : ' de artista o banda.'}
+          </p>
         </header>
       </section>
     )
@@ -142,20 +151,32 @@ export default async function CreatorCommentsListView(props: ListViewServerProps
               },
             ]
           : []),
-        {
-          or: [
-            {
-              release: {
-                exists: true,
+        viewerKind === 'admin'
+          ? {
+              or: [
+                {
+                  release: {
+                    exists: true,
+                  },
+                },
+                {
+                  post: {
+                    exists: true,
+                  },
+                },
+              ],
+            }
+          : viewerKind === 'editorial'
+            ? {
+                post: {
+                  exists: true,
+                },
+              }
+            : {
+                release: {
+                  exists: true,
+                },
               },
-            },
-            {
-              post: {
-                exists: true,
-              },
-            },
-          ],
-        },
         ...(search
           ? [
               {
@@ -175,9 +196,7 @@ export default async function CreatorCommentsListView(props: ListViewServerProps
     <section className="creator-comments-list">
       <header className="creator-comments-list__header">
         <h1>Comentarios</h1>
-        <p>
-          Lee los comentarios que tus fans han dejado en tus {isAdminViewer ? 'contenidos' : 'lanzamientos y artículos'} y entra al detalle de cada uno.
-        </p>
+        <p>{getCreatorCommentsDescription(viewerKind)}</p>
       </header>
 
       <form action="/dashboard/collections/comments" className="creator-comments-list__search" method="GET">
@@ -287,8 +306,8 @@ export default async function CreatorCommentsListView(props: ListViewServerProps
           />
         </>
       ) : (
-        <CreatorCommentsEmptyState hasSearch={Boolean(search)} />
-      )}
+          <CreatorCommentsEmptyState hasSearch={Boolean(search)} viewerKind={viewerKind} />
+        )}
     </section>
   )
 }
