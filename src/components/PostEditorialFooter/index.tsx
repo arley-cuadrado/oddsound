@@ -1,5 +1,6 @@
 import { Media } from '@/components/Media'
 import type { Post, Profile } from '@/payload-types'
+import Link from 'next/link'
 
 type EditorialProfile = Post['profile'] | Profile | null | undefined
 
@@ -14,13 +15,8 @@ function getEditorialProfile(profile: EditorialProfile) {
 }
 
 function getEditorialSocialLink(profile: Profile) {
-  if (!Array.isArray(profile.socialLinks) || profile.socialLinks.length === 0) {
-    return null
-  }
-
-  const firstLink = profile.socialLinks[0]
-  const label = firstLink?.platform?.trim()
-  const url = firstLink?.url?.trim()
+  const label = profile.editorSocialLink?.label?.trim()
+  const url = profile.editorSocialLink?.url?.trim()
 
   if (!label || !url) return null
 
@@ -36,6 +32,7 @@ export default function PostEditorialFooter({ profile }: { profile: EditorialPro
   if (!editorialProfile) return null
 
   const socialLink = getEditorialSocialLink(editorialProfile)
+  const profileHref = editorialProfile.slug ? `/editor/${editorialProfile.slug}` : null
 
   return (
     <footer className="mx-auto mt-12 max-w-[48rem] border-t border-border px-4 pt-8 md:px-0">
@@ -50,7 +47,15 @@ export default function PostEditorialFooter({ profile }: { profile: EditorialPro
 
         <div className="min-w-0 space-y-3">
           <div>
-            <h2 className="text-2xl leading-tight">{editorialProfile.displayName}</h2>
+            {profileHref ? (
+              <h2 className="text-2xl leading-tight">
+                <Link href={profileHref} className="transition hover:underline">
+                  {editorialProfile.displayName}
+                </Link>
+              </h2>
+            ) : (
+              <h2 className="text-2xl leading-tight">{editorialProfile.displayName}</h2>
+            )}
           </div>
 
           {socialLink ? (
@@ -58,7 +63,7 @@ export default function PostEditorialFooter({ profile }: { profile: EditorialPro
               href={socialLink.url}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex text-sm text-muted-foreground underline underline-offset-4"
+              className="inline-flex text-sm text-muted-foreground"
             >
               {socialLink.label}
             </a>

@@ -8,7 +8,6 @@ import type {
 
 import { authenticated } from '@/access/authenticated'
 import { hasFreshAdminAccess } from '@/access/hasFreshAdminAccess'
-import { socialLinksField } from '@/fields/socialLinks'
 import { isAdminUser } from '@/utilities/isAdminUser'
 import { slugField } from 'payload'
 
@@ -28,6 +27,10 @@ type ProfileData = {
   accountType?: 'artist' | 'band' | null
   contactEmail?: null | string
   displayName?: null | string
+  editorSocialLink?: {
+    label?: null | string
+    url?: null | string
+  } | null
   editorPassword?: null | string
   editorPasswordConfirmation?: null | string
   editorialProfile?: boolean | null
@@ -216,6 +219,7 @@ const syncEditorialProfileState: CollectionBeforeChangeHook = async ({
     nextData.mercadoPagoConnection = {}
   } else {
     nextData.accountType = nextData.profileType
+    nextData.editorSocialLink = null
     nextData.socialLinks = []
   }
 
@@ -509,19 +513,35 @@ export const Profiles: CollectionConfig = {
       label: 'Correo electrónico',
     },
     {
-      ...socialLinksField({
-        label: 'Redes sociales',
-        maxRows: 1,
-        minRows: 0,
-        platformLabel: 'Nombre / máscara',
-        urlLabel: 'Enlace',
-      }),
+      name: 'editorSocialLink',
+      type: 'group',
+      label: 'Red social',
       admin: {
         condition: (_data, siblingData, { user }) =>
           isEditorialProfileForAdminCondition({ siblingData, user }),
-        description:
-          'Agrega una sola red social con el nombre visible o usuario y su enlace.',
       },
+      fields: [
+        {
+          name: 'label',
+          type: 'text',
+          label: 'Nombre / máscara',
+        },
+        {
+          name: 'url',
+          type: 'text',
+          label: 'Enlace',
+          validate: (value: null | string | undefined) => {
+            if (typeof value !== 'string' || !value.trim()) return true
+
+            try {
+              new URL(value)
+              return true
+            } catch {
+              return 'Ingresa una URL válida.'
+            }
+          },
+        },
+      ],
     },
     {
       name: 'editorPassword',

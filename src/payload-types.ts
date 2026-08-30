@@ -368,16 +368,10 @@ export interface Profile {
   genre?: string | null;
   editorGender?: ('male' | 'female' | 'indeterminate') | null;
   contactEmail?: string | null;
-  /**
-   * Agrega una sola red social con el nombre visible o usuario y su enlace.
-   */
-  socialLinks?:
-    | {
-        platform: string;
-        url: string;
-        id?: string | null;
-      }[]
-    | null;
+  editorSocialLink?: {
+    label?: string | null;
+    url?: string | null;
+  };
   /**
    * Déjala vacía si no quieres cambiar la contraseña del editor.
    */
@@ -2039,12 +2033,11 @@ export interface ProfilesSelect<T extends boolean = true> {
   genre?: T;
   editorGender?: T;
   contactEmail?: T;
-  socialLinks?:
+  editorSocialLink?:
     | T
     | {
-        platform?: T;
+        label?: T;
         url?: T;
-        id?: T;
       };
   editorPassword?: T;
   editorPasswordConfirmation?: T;
