@@ -83,6 +83,40 @@ describe('ensureCreatorProfile', () => {
     expect(payload.create.mock.calls[0]?.[0]?.data).not.toHaveProperty('accountType')
   })
 
+  it('treats explicit editor userType as an editorial profile', async () => {
+    const payload = {
+      create: vi.fn().mockResolvedValue({ id: 'profile-editor-2' }),
+      find: vi.fn().mockResolvedValue({
+        docs: [],
+      }),
+      update: vi.fn().mockResolvedValue({}),
+    }
+
+    await expect(
+      ensureCreatorProfile({
+        payload: payload as never,
+        user: {
+          email: 'editor2@example.com',
+          id: 'user-editor-2',
+          name: 'Editor Two',
+          role: 'creator',
+          userType: 'editor',
+        },
+      }),
+    ).resolves.toBe('profile-editor-2')
+
+    expect(payload.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        collection: 'profiles',
+        data: expect.objectContaining({
+          editorialProfile: true,
+          owner: 'user-editor-2',
+          profileType: 'editorial',
+        }),
+      }),
+    )
+  })
+
   it('normalizes existing inline editorial profiles away from artist account types', async () => {
     const payload = {
       create: vi.fn(),

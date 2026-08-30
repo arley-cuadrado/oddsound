@@ -17,6 +17,16 @@ function getInlineProfileId(user: CreatorLike | null | undefined) {
   return typeof user.profile === 'string' ? user.profile : user.profile?.id || null
 }
 
+function isEditorialCreator(user: CreatorLike) {
+  return user.userType === 'editor' || Boolean(user.editorAccess)
+}
+
+function resolveMusicalAccountType(user: CreatorLike) {
+  if (user.accountType === 'band' || user.userType === 'band') return 'band'
+
+  return 'artist'
+}
+
 function toSlug(value: string) {
   return value
     .toLowerCase()
@@ -85,7 +95,7 @@ export async function ensureCreatorProfile({
 }) {
   if (user.role !== 'creator') return user.profile || null
 
-  const isEditorialProfile = Boolean(user.editorAccess)
+  const isEditorialProfile = isEditorialCreator(user)
   const inlineProfileId = getInlineProfileId(user)
 
   if (inlineProfileId) {
@@ -156,11 +166,11 @@ export async function ensureCreatorProfile({
             profileType: 'editorial',
           }
         : {
-            profileType: user.accountType === 'band' ? 'band' : 'artist',
+            profileType: resolveMusicalAccountType(user),
           }),
       ...(!isEditorialProfile
         ? {
-            accountType: user.accountType === 'band' ? 'band' : 'artist',
+            accountType: resolveMusicalAccountType(user),
           }
         : {}),
       contactEmail: user.email || undefined,
