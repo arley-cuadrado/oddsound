@@ -547,7 +547,7 @@ export const generateEditorVerificationEmailHTML = ({
   return buildEmailTemplate({
     actionLabel: 'Confirmar cuenta editor',
     actionURL: verificationURL,
-    body: 'Tu cuenta de redactor en oddsound ya esta lista. Confirma tu correo y luego inicia sesion con tu correo y contrasena para comenzar a escribir en la plataforma.',
+    body: 'Tu cuenta de redactor en oddsound ya está lista. Confirma dando click en el botón, luego inicia sesión con tu correo y contraseña para comenzar a escribir en la plataforma. ;)',
     fallbackPrefix: 'Si el boton no abre, copia y pega este enlace en tu navegador:',
     heroPhotographerName: EMAIL_VERIFICATION_HERO_PHOTOGRAPHER_NAME,
     heroPhotographerPhotoURL: EMAIL_VERIFICATION_HERO_PHOTOGRAPHER_PHOTO_URL,
