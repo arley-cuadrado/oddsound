@@ -76,7 +76,12 @@ export async function registerCreator(input: {
   name: string
   password: string
 }): Promise<ExtendedActionResult> {
-  return registerCreatorAccount(input)
+  const verificationReq = await buildVerificationEmailReq()
+
+  return registerCreatorAccount({
+    ...input,
+    req: verificationReq,
+  })
 }
 
 export async function loginCreator(input: {

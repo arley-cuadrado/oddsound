@@ -28,6 +28,7 @@ import {
 describe('creator auth flow', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mockCreateLocalReq.mockResolvedValue({})
   })
 
   it('registers an artist account and stores profile country and genre', async () => {
@@ -132,6 +133,53 @@ describe('creator auth flow', () => {
         depth: 0,
       }),
     )
+  })
+
+  it('passes through request headers so verification emails use the active host', async () => {
+    const payload = {
+      create: vi.fn().mockResolvedValue({
+        email: 'preview@example.com',
+        id: 'user-preview-1',
+        profile: 'profile-preview-1',
+      }),
+      find: vi.fn().mockResolvedValue({ docs: [] }),
+      logger: {
+        error: vi.fn(),
+      },
+      update: vi.fn().mockResolvedValue({}),
+    }
+
+    const payloadReq = {}
+    mockGetPayload.mockResolvedValue(payload)
+    mockCreateLocalReq.mockResolvedValue(payloadReq)
+
+    await registerCreatorAccount({
+      acceptedLegal: true,
+      accountType: 'artist',
+      country: 'Colombia',
+      email: 'preview@example.com',
+      genre: 'Indie Rock',
+      name: 'Preview Artist',
+      password: 'secure-password',
+      req: {
+        headers: new Headers({
+          'x-forwarded-host': 'oddsound-preview.vercel.app',
+          'x-forwarded-proto': 'https',
+        }),
+      },
+    })
+
+    expect(payload.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        req: expect.objectContaining({
+          headers: expect.any(Headers),
+        }),
+      }),
+    )
+
+    expect(
+      (payload.create.mock.calls[0]?.[0]?.req?.headers as Headers).get('x-forwarded-host'),
+    ).toBe('oddsound-preview.vercel.app')
   })
 
   it('keeps signup successful when the profile sync fails after the user was created', async () => {
