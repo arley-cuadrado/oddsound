@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 
-import { CollectionArchive } from '@/components/CollectionArchive'
+import EditorialPageShareButton from '@/components/EditorialPageShareButton'
+import EditorialPostsList from '@/components/EditorialPostsList'
 import { Media } from '@/components/Media'
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
@@ -18,8 +19,10 @@ type Args = {
 }
 
 const EDITOR_POST_SELECT = {
-  categories: true,
-  meta: true,
+  content: true,
+  heroImage: true,
+  profile: true,
+  publishedAt: true,
   slug: true,
   title: true,
 } as const
@@ -70,7 +73,10 @@ async function queryEditorialPosts(profileID: string) {
     },
   })
 
-  return result.docs as Pick<Post, 'categories' | 'meta' | 'slug' | 'title'>[]
+  return result.docs as Pick<
+    Post,
+    'content' | 'heroImage' | 'profile' | 'publishedAt' | 'slug' | 'title'
+  >[]
 }
 
 export async function generateStaticParams() {
@@ -129,53 +135,66 @@ export default async function EditorialProfilePage({ params: paramsPromise }: Ar
   ])
 
   return (
-    <div className="mx-auto max-w-4xl pb-4 pt-4 md:pb-12 md:pt-16">
-      <div className="container space-y-8">
-        <header className="space-y-6 border-b border-border pb-8">
-          <div className="flex items-start gap-4">
-            {profile.avatar && typeof profile.avatar === 'object' ? (
-              <Media
-                resource={profile.avatar}
-                className="relative h-14 w-14 shrink-0 overflow-hidden rounded-full"
-                imgClassName="h-full w-full object-cover"
-              />
-            ) : (
-              <div className="h-14 w-14 shrink-0 rounded-full bg-muted" />
-            )}
+    <div className="mx-auto max-w-6xl pb-8 pt-6 md:pb-16 md:pt-10">
+      <div className="container space-y-12">
+        <header className="space-y-7 pb-8">
+          <div className="space-y-5">
+            <p className="text-xs uppercase tracking-[0.28em] text-[#777] dark:text-[#858c98]">
+              Editor
+            </p>
 
-            <div className="min-w-0 space-y-1">
-              <p className="text-sm text-[#777] dark:text-[#858c98]">Editor</p>
-              <h1 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white md:text-5xl">
-                {profile.displayName}
-              </h1>
-              {socialLink ? (
-                <a
-                  href={socialLink.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center text-[13px] font-medium text-[#777] underline underline-offset-4 dark:text-[#858c98]"
-                >
-                  {socialLink.label}
-                </a>
+            <div className="flex items-start gap-4 md:gap-6">
+              {profile.avatar && typeof profile.avatar === 'object' ? (
+                <Media
+                  resource={profile.avatar}
+                  className="relative h-14 w-14 shrink-0 overflow-hidden rounded-full bg-[#d9d9d9] md:h-16 md:w-16"
+                  imgClassName="h-full w-full object-cover"
+                />
               ) : null}
+              {!profile.avatar || typeof profile.avatar === 'string' ? (
+                <div className="h-14 w-14 shrink-0 rounded-full bg-[#d9d9d9] md:h-16 md:w-16" />
+              ) : null}
+
+              <div className="min-w-0 space-y-2">
+                <h1 className="text-[2.75rem] font-black leading-none tracking-tight text-slate-900 dark:text-white md:text-[4.6rem]">
+                  {profile.displayName}
+                </h1>
+                {socialLink ? (
+                  <a
+                    href={socialLink.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center text-[13px] font-medium text-[#d14d8b] underline underline-offset-4 transition-opacity hover:opacity-70"
+                  >
+                    {socialLink.label}
+                  </a>
+                ) : null}
+              </div>
             </div>
           </div>
 
           {profile.bio?.trim() ? (
-            <p className="max-w-3xl text-sm leading-7 text-[#777] dark:text-[#858c98]">
+            <p className="max-w-4xl text-sm leading-7 text-[#777] dark:text-[#858c98]">
               {profile.bio}
             </p>
           ) : null}
 
-          <p className="max-w-3xl text-sm leading-7 text-[#777] dark:text-[#858c98]">
+          <p className="max-w-4xl text-[10px] leading-4 text-[#777] dark:text-[#858c98]">
             El editor es dueño de su artículo, oddosund como plataforma editorial presta su uso
             en colaboración.
           </p>
+
+          <EditorialPageShareButton
+            title={profile.displayName}
+            urlPath={`/editor/${profile.slug}`}
+          />
         </header>
 
-        <section className="space-y-4">
+        <div className="border-t border-border" />
+
+        <section className="space-y-8">
           <div className="flex items-center justify-between gap-4">
-            <h2 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">
+            <h2 className="text-[2rem] font-medium tracking-tight text-slate-900 dark:text-white">
               Artículos
             </h2>
             <Link
@@ -187,9 +206,9 @@ export default async function EditorialProfilePage({ params: paramsPromise }: Ar
           </div>
 
           {posts.length > 0 ? (
-            <CollectionArchive posts={posts} />
+            <EditorialPostsList posts={posts} />
           ) : (
-            <p className="text-sm text-[#777] dark:text-[#858c98]">
+            <p className="text-sm text-[#b2b2b2] dark:text-[#858c98]">
               Este editor aún no tiene artículos publicados.
             </p>
           )}

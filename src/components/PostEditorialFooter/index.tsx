@@ -1,4 +1,5 @@
 import { Media } from '@/components/Media'
+import EditorialOwnershipTooltip from '@/components/EditorialOwnershipTooltip'
 import type { Post, Profile } from '@/payload-types'
 import Link from 'next/link'
 
@@ -69,10 +70,7 @@ export default function PostEditorialFooter({ profile }: { profile: EditorialPro
             </a>
           ) : null}
 
-          <p className="max-w-xl text-sm leading-6 text-muted-foreground">
-            El editor es dueño de su artículo, oddosund como plataforma editorial presta su uso
-            en colaboración.
-          </p>
+          <EditorialOwnershipTooltip />
         </div>
       </div>
     </footer>
