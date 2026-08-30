@@ -46,103 +46,79 @@ export default function EditorialPostsList({
       {posts.map((post) => {
         const heroImage =
           post.heroImage && typeof post.heroImage === 'object' ? post.heroImage : null
+        const postHref = `/posts/${post.slug}`
         const publishedDate = formatPublishedDate(post.publishedAt)
         const excerpt = getExcerpt(post.content)
         const authorProfile = post.profile && typeof post.profile === 'object' ? post.profile : null
         const authorSocialLabel = getSocialLabel(authorProfile)
-        const authorHref = authorProfile?.slug ? `/editor/${authorProfile.slug}` : null
 
         return (
-          <article
-            className="grid gap-5 md:grid-cols-[172px_minmax(0,1fr)] md:gap-7"
-            key={post.slug}
-          >
+          <article key={post.slug}>
             <Link
-              className="block overflow-hidden rounded-[24px] bg-[#d9d9d9]"
-              href={`/posts/${post.slug}`}
+              className="grid gap-5 transition-opacity hover:opacity-90 md:grid-cols-[172px_minmax(0,1fr)] md:gap-7"
+              href={postHref}
             >
-              {heroImage ? (
-                <Media
-                  resource={heroImage}
-                  className="aspect-square h-full w-full"
-                  imgClassName="h-full w-full object-cover"
-                />
-              ) : (
-                <div className="aspect-square h-full w-full bg-[#d9d9d9]" />
-              )}
-            </Link>
-
-            <div className="grid gap-3">
-              <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
-                <Link href={`/posts/${post.slug}`}>
-                  <h3 className="text-[2rem] font-black leading-none tracking-tight text-slate-900 transition-opacity hover:opacity-80 dark:text-white">
-                    {post.title}
-                  </h3>
-                </Link>
-
-                {publishedDate ? (
-                  <time
-                    className="shrink-0 pt-1 text-[13px] text-[#777] dark:text-[#858c98]"
-                    dateTime={post.publishedAt || undefined}
-                  >
-                    {publishedDate}
-                  </time>
-                ) : null}
+              <div className="block overflow-hidden rounded-[0.625rem] bg-[#d9d9d9]">
+                {heroImage ? (
+                  <Media
+                    resource={heroImage}
+                    className="aspect-square h-full w-full"
+                    imgClassName="h-full w-full object-cover"
+                  />
+                ) : (
+                  <div className="aspect-square h-full w-full bg-[#d9d9d9]" />
+                )}
               </div>
 
-              {excerpt ? (
-                <p className="max-w-3xl text-sm leading-5 text-[#777] dark:text-[#858c98]">
-                  {excerpt}
-                </p>
-              ) : null}
+              <div className="grid gap-3">
+                <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
+                  <h3 className="text-[2rem] font-black leading-none tracking-tight text-slate-900 dark:text-white">
+                    {post.title}
+                  </h3>
 
-              {showAuthor && authorProfile ? (
-                <div className="flex items-center gap-3 pt-1">
-                  {authorHref ? (
-                    <Link href={authorHref} className="shrink-0 transition-opacity hover:opacity-80">
-                      {authorProfile.avatar && typeof authorProfile.avatar === 'object' ? (
-                        <Media
-                          resource={authorProfile.avatar}
-                          className="h-10 w-10 overflow-hidden rounded-full bg-[#d9d9d9]"
-                          imgClassName="h-full w-full object-cover"
-                        />
-                      ) : (
-                        <div className="h-10 w-10 rounded-full bg-[#d9d9d9]" />
-                      )}
-                    </Link>
-                  ) : authorProfile.avatar && typeof authorProfile.avatar === 'object' ? (
-                    <Media
-                      resource={authorProfile.avatar}
-                      className="h-10 w-10 shrink-0 overflow-hidden rounded-full bg-[#d9d9d9]"
-                      imgClassName="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <div className="h-10 w-10 shrink-0 rounded-full bg-[#d9d9d9]" />
-                  )}
+                  {publishedDate ? (
+                    <time
+                      className="shrink-0 pt-1 text-[13px] text-[#777] dark:text-[#858c98]"
+                      dateTime={post.publishedAt || undefined}
+                    >
+                      {publishedDate}
+                    </time>
+                  ) : null}
+                </div>
 
-                  <div className="min-w-0">
-                    {authorHref ? (
-                      <Link
-                        className="block text-[1.05rem] leading-5 text-slate-900 transition-opacity hover:opacity-80 dark:text-white"
-                        href={authorHref}
-                      >
-                        {authorProfile.displayName}
-                      </Link>
+                {excerpt ? (
+                  <p className="max-w-3xl text-sm leading-5 text-[#777] dark:text-[#858c98]">
+                    {excerpt}
+                  </p>
+                ) : null}
+
+                {showAuthor && authorProfile ? (
+                  <div className="flex items-center gap-3 pt-1">
+                    {authorProfile.avatar && typeof authorProfile.avatar === 'object' ? (
+                      <Media
+                        resource={authorProfile.avatar}
+                        className="h-10 w-10 shrink-0 overflow-hidden rounded-full bg-[#d9d9d9]"
+                        imgClassName="h-full w-full object-cover"
+                      />
                     ) : (
+                      <div className="h-10 w-10 shrink-0 rounded-full bg-[#d9d9d9]" />
+                    )}
+
+                    <div className="min-w-0">
                       <p className="text-[1.05rem] leading-5 text-slate-900 dark:text-white">
                         {authorProfile.displayName}
                       </p>
-                    )}
 
-                    {authorSocialLabel ? (
-                      <p className="text-[10px] leading-4 text-[#777] dark:text-[#858c98]">
-                        {authorSocialLabel}
-                      </p>
-                    ) : null}
+                      {authorSocialLabel ? (
+                        <p className="text-[10px] leading-4 text-[#777] dark:text-[#858c98]">
+                          {authorSocialLabel}
+                        </p>
+                      ) : null}
+                    </div>
                   </div>
-                </div>
-              ) : null}
-            </div>
+                ) : null}
+              </div>
+            </Link>
           </article>
         )
       })}

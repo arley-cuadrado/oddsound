@@ -6,7 +6,6 @@ import React, { useEffect } from 'react'
 import type { Post } from '@/payload-types'
 
 import { Media } from '@/components/Media'
-import EditorialOwnershipTooltip from '@/components/EditorialOwnershipTooltip'
 import { formatAuthors } from '@/utilities/formatAuthors'
 import { formatRelativePublishedAt } from '@/utilities/formatRelativePublishedAt'
 
@@ -89,8 +88,6 @@ export const PostHero: React.FC<{
                   Publicado: {formatRelativePublishedAt(publishedAt)}
                 </time>
               ) : null}
-
-              {editorialProfile ? <EditorialOwnershipTooltip /> : null}
             </div>
           </div>
         </div>

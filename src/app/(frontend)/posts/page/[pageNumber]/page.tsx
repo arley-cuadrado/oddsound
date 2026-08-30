@@ -77,10 +77,7 @@ export default async function Page({ params: paramsPromise }: Args) {
         <div className="border-t border-border" />
 
         <section className="space-y-8">
-          <div className="flex items-center justify-between gap-4">
-            <h2 className="text-[2rem] font-medium tracking-tight text-slate-900 dark:text-white">
-              Artículos
-            </h2>
+          <div className="flex justify-end">
             <Link
               href="/"
               className="inline-flex items-center text-[13px] font-medium text-[#777] underline underline-offset-4 dark:text-[#858c98]"

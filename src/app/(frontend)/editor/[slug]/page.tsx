@@ -159,16 +159,16 @@ export default async function EditorialProfilePage({ params: paramsPromise }: Ar
                   {profile.displayName}
                 </h1>
                 {socialLink ? (
-                  <a
-                    href={socialLink.url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center text-[13px] font-medium text-[#d14d8b] underline underline-offset-4 transition-opacity hover:opacity-70"
-                  >
-                    {socialLink.label}
-                  </a>
-                ) : null}
-              </div>
+                <a
+                  href={socialLink.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="title inline-flex items-center text-[13px] font-medium text-[#d14d8b] underline underline-offset-4 transition-opacity hover:opacity-70"
+                >
+                  {socialLink.label}
+                </a>
+              ) : null}
+            </div>
             </div>
           </div>
 
@@ -177,11 +177,6 @@ export default async function EditorialProfilePage({ params: paramsPromise }: Ar
               {profile.bio}
             </p>
           ) : null}
-
-          <p className="max-w-4xl text-[10px] leading-4 text-[#777] dark:text-[#858c98]">
-            El editor es dueño de su artículo, oddosund como plataforma editorial presta su uso
-            en colaboración.
-          </p>
 
         </header>
 
