@@ -49,6 +49,16 @@ function isEditorialProfile(data?: null | Pick<ProfileData, 'editorialProfile' |
   return Boolean(data?.editorialProfile) || isEditorialProfileType(data?.profileType)
 }
 
+function isEditorialProfileForAdminCondition(args: {
+  siblingData?: null | Pick<ProfileData, 'editorialProfile' | 'profileType'>
+  user?: null | {
+    editorAccess?: boolean | null
+    role?: null | string
+  }
+}) {
+  return Boolean(args.user?.editorAccess) || isEditorialProfile(args.siblingData)
+}
+
 function getOwnerID(owner: ProfileData['owner']) {
   if (typeof owner === 'string' || typeof owner === 'number') return String(owner)
   if (owner && typeof owner === 'object' && owner.id) return String(owner.id)
@@ -343,7 +353,8 @@ export const Profiles: CollectionConfig = {
         components: {
           Field: '@/components/EditorialProfileIdentityField',
         },
-        condition: (_data, siblingData) => isEditorialProfile(siblingData),
+        condition: (_data, siblingData, { user }) =>
+          isEditorialProfileForAdminCondition({ siblingData, user }),
       },
     },
     {
@@ -398,7 +409,8 @@ export const Profiles: CollectionConfig = {
       label: 'Tipo de cuenta',
       defaultValue: 'artist',
       admin: {
-        condition: (_data, siblingData) => !isEditorialProfile(siblingData),
+        condition: (_data, siblingData, { user }) =>
+          !isEditorialProfileForAdminCondition({ siblingData, user }),
       },
       options: [
         {
@@ -420,7 +432,8 @@ export const Profiles: CollectionConfig = {
       name: 'bio',
       type: 'textarea',
       admin: {
-        condition: (_data, siblingData) => isEditorialProfile(siblingData),
+        condition: (_data, siblingData, { user }) =>
+          isEditorialProfileForAdminCondition({ siblingData, user }),
       },
     },
     {
@@ -455,7 +468,8 @@ export const Profiles: CollectionConfig = {
           : 'El país es obligatorio para creadores.'
       }) as TextFieldSingleValidation,
       admin: {
-        condition: (_data, siblingData) => !isEditorialProfile(siblingData),
+        condition: (_data, siblingData, { user }) =>
+          !isEditorialProfileForAdminCondition({ siblingData, user }),
       },
     },
     {
@@ -463,7 +477,8 @@ export const Profiles: CollectionConfig = {
       type: 'text',
       label: 'Género',
       admin: {
-        condition: (_data, siblingData) => !isEditorialProfile(siblingData),
+        condition: (_data, siblingData, { user }) =>
+          !isEditorialProfileForAdminCondition({ siblingData, user }),
       },
     },
     {
@@ -502,7 +517,8 @@ export const Profiles: CollectionConfig = {
         urlLabel: 'Enlace',
       }),
       admin: {
-        condition: (_data, siblingData) => isEditorialProfile(siblingData),
+        condition: (_data, siblingData, { user }) =>
+          isEditorialProfileForAdminCondition({ siblingData, user }),
         description:
           'Agrega una sola red social con el nombre visible o usuario y su enlace.',
       },
@@ -516,7 +532,8 @@ export const Profiles: CollectionConfig = {
         components: {
           Field: '@/components/ProfilePasswordField',
         },
-        condition: (_data, siblingData) => isEditorialProfile(siblingData),
+        condition: (_data, siblingData, { user }) =>
+          isEditorialProfileForAdminCondition({ siblingData, user }),
         description: 'Déjala vacía si no quieres cambiar la contraseña del editor.',
       },
       validate: ((value, { siblingData }: any) => {
@@ -546,7 +563,8 @@ export const Profiles: CollectionConfig = {
         components: {
           Field: '@/components/ProfilePasswordField',
         },
-        condition: (_data, siblingData) => isEditorialProfile(siblingData),
+        condition: (_data, siblingData, { user }) =>
+          isEditorialProfileForAdminCondition({ siblingData, user }),
       },
       validate: ((value, { siblingData }: any) => {
         if (!isEditorialProfile(siblingData)) return true
@@ -691,7 +709,8 @@ export const Profiles: CollectionConfig = {
       type: 'group',
       label: 'Tienda',
       admin: {
-        condition: (_data, siblingData) => !isEditorialProfile(siblingData),
+        condition: (_data, siblingData, { user }) =>
+          !isEditorialProfileForAdminCondition({ siblingData, user }),
       },
       fields: [
         {
