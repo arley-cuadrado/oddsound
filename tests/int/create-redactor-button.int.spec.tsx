@@ -4,17 +4,22 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import CreateRedactorButton from '@/components/CreateRedactorButton'
 
+const actionMocks = vi.hoisted(() => ({
+  resendEditorInvitation: vi.fn(),
+  submitEditorInvitation: vi.fn(),
+}))
+
+vi.mock('@/components/CreateRedactorButton/actions', () => ({
+  resendEditorInvitation: actionMocks.resendEditorInvitation,
+  submitEditorInvitation: actionMocks.submitEditorInvitation,
+}))
+
 vi.mock('@payloadcms/ui', () => ({
   Banner: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
   Button: ({
-    buttonStyle: _buttonStyle,
     children,
-    el: _el,
     ...props
-  }: React.ButtonHTMLAttributes<HTMLButtonElement> & {
-    buttonStyle?: string
-    el?: string
-  }) => <button {...props}>{children}</button>,
+  }: React.ButtonHTMLAttributes<HTMLButtonElement>) => <button {...props}>{children}</button>,
   FieldLabel: ({
     label,
     path,
@@ -47,7 +52,6 @@ vi.mock('@payloadcms/ui', () => ({
         onChange={(event) => onChange?.({ value: event.target.value })}
         value={value || ''}
       >
-        <option value="">Seleccionar genero</option>
         {options.map((option) => (
           <option key={option.value} value={option.value}>
             {option.label}
@@ -57,12 +61,14 @@ vi.mock('@payloadcms/ui', () => ({
     </label>
   ),
   TextInput: ({
+    htmlAttributes,
     label,
     onChange,
     path,
     required,
     value,
   }: {
+    htmlAttributes?: Record<string, string>
     label: string
     onChange?: React.ChangeEventHandler<HTMLInputElement>
     path: string
@@ -73,6 +79,7 @@ vi.mock('@payloadcms/ui', () => ({
       {label}
       {required ? ' *' : ''}
       <input
+        {...htmlAttributes}
         id={`field-${path.replace(/\./g, '__')}`}
         name={path}
         onChange={onChange}
@@ -85,7 +92,8 @@ vi.mock('@payloadcms/ui', () => ({
 describe('CreateRedactorButton', () => {
   beforeEach(() => {
     vi.restoreAllMocks()
-    vi.stubGlobal('fetch', vi.fn())
+    actionMocks.submitEditorInvitation.mockReset()
+    actionMocks.resendEditorInvitation.mockReset()
     window.history.replaceState({}, '', '/dashboard/collections/users?editors=1')
   })
 
@@ -93,18 +101,14 @@ describe('CreateRedactorButton', () => {
     cleanup()
   })
 
-  it('allows creating an editor without gender or social links', async () => {
-    const fetchMock = vi.mocked(fetch)
-
-    fetchMock
-      .mockResolvedValueOnce({
-        json: async () => ({ profile: 'profile-1' }),
-        ok: true,
-      } as Response)
-      .mockResolvedValueOnce({
-        json: async () => ({}),
-        ok: true,
-      } as Response)
+  it('creates an editor with only the required fields', async () => {
+    actionMocks.submitEditorInvitation.mockResolvedValue({
+      email: 'arley.cuadradosierra@gmail.com',
+      message: 'Editor creado correctamente. Ya enviamos el correo para confirmar la cuenta.',
+      ok: true,
+      showResend: false,
+      status: 'created_and_sent',
+    })
 
     render(React.createElement(CreateRedactorButton))
 
@@ -113,99 +117,97 @@ describe('CreateRedactorButton', () => {
     fireEvent.change(screen.getByLabelText('Nombre completo *'), {
       target: { value: 'Arlo Cuadrado' },
     })
-    fireEvent.change(screen.getByLabelText('Nombre de usuario *'), {
-      target: { value: 'arlo_cuadrado' },
-    })
-    fireEvent.change(screen.getByLabelText('Email *'), {
+    fireEvent.change(screen.getByLabelText('Correo electrónico *'), {
       target: { value: 'arley.cuadradosierra@gmail.com' },
     })
-    fireEvent.change(screen.getByLabelText('Contrasena *'), {
+    fireEvent.change(screen.getByLabelText('Contraseña *'), {
       target: { value: 'super-secret-password' },
     })
-    fireEvent.change(screen.getByLabelText('Confirmar contrasena *'), {
+    fireEvent.change(screen.getByLabelText('Confirmar contraseña *'), {
       target: { value: 'super-secret-password' },
     })
 
-    fireEvent.click(screen.getByRole('button', { name: 'Crear redactor' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Crear editor' }))
 
     await waitFor(() => {
-      expect(fetchMock).toHaveBeenCalledTimes(2)
+      expect(actionMocks.submitEditorInvitation).toHaveBeenCalledWith({
+        email: 'arley.cuadradosierra@gmail.com',
+        fullName: 'Arlo Cuadrado',
+        password: 'super-secret-password',
+        socialRows: [],
+      })
     })
 
-    expect(fetchMock).toHaveBeenNthCalledWith(
-      1,
-      '/api/users',
-      expect.objectContaining({
-        body: JSON.stringify({
-          editorAccess: true,
-          email: 'arley.cuadradosierra@gmail.com',
-          name: 'Arlo Cuadrado',
-          password: 'super-secret-password',
-          role: 'creator',
-          username: 'arlo_cuadrado',
-        }),
-        method: 'POST',
-      }),
-    )
-
-    expect(fetchMock).toHaveBeenNthCalledWith(
-      2,
-      '/api/profiles/profile-1',
-      expect.objectContaining({
-        body: JSON.stringify({
-          editorGender: '',
-          editorSocials: {
-            facebook: '',
-            instagram: '',
-            threads: '',
-            x: '',
-          },
-        }),
-        method: 'PATCH',
-      }),
-    )
+    expect(screen.queryByLabelText('Nombre de usuario *')).toBeNull()
+    expect(screen.queryByLabelText('Genero del editor')).toBeNull()
   })
 
-  it('shows a confirmation-focused message when the editor already exists', async () => {
-    const fetchMock = vi.mocked(fetch)
-
-    fetchMock.mockResolvedValueOnce({
-      json: async () => ({
-        message: 'Account with this email already exists.',
-      }),
+  it('shows resend action when the editor already exists without verification', async () => {
+    actionMocks.submitEditorInvitation.mockResolvedValue({
+      email: 'editor@oddsound.co',
+      message:
+        'Este editor ya existe y sigue pendiente de confirmar su correo. Puedes reenviar el enlace desde aquí.',
       ok: false,
-    } as Response)
+      showResend: true,
+      status: 'existing_pending_verification',
+    })
+
+    actionMocks.resendEditorInvitation.mockResolvedValue({
+      email: 'editor@oddsound.co',
+      message: 'Te enviamos un nuevo enlace de verificación.',
+      ok: true,
+      showResend: false,
+      status: 'created_and_sent',
+    })
 
     render(React.createElement(CreateRedactorButton))
 
     fireEvent.click(screen.getByRole('button', { name: 'Crear editor' }))
-
     fireEvent.change(screen.getByLabelText('Nombre completo *'), {
-      target: { value: 'Arlo Cuadrado' },
+      target: { value: 'Editor Test' },
     })
-    fireEvent.change(screen.getByLabelText('Nombre de usuario *'), {
-      target: { value: 'arlo_cuadrado' },
+    fireEvent.change(screen.getByLabelText('Correo electrónico *'), {
+      target: { value: 'editor@oddsound.co' },
     })
-    fireEvent.change(screen.getByLabelText('Email *'), {
-      target: { value: 'arley.cuadrado@icloud.com' },
-    })
-    fireEvent.change(screen.getByLabelText('Contrasena *'), {
+    fireEvent.change(screen.getByLabelText('Contraseña *'), {
       target: { value: 'super-secret-password' },
     })
-    fireEvent.change(screen.getByLabelText('Confirmar contrasena *'), {
+    fireEvent.change(screen.getByLabelText('Confirmar contraseña *'), {
       target: { value: 'super-secret-password' },
     })
 
-    fireEvent.click(screen.getByRole('button', { name: 'Crear redactor' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Crear editor' }))
 
     await waitFor(() => {
       expect(
-        screen.getByText(
-          'Este editor ya existe o ya recibió el correo. Pídele que revise su bandeja y confirme la cuenta antes de intentar crearlo de nuevo.',
-        ),
+        screen.getByRole('button', { name: 'Reenviar correo de confirmación' }),
       ).toBeTruthy()
     })
 
-    expect(fetchMock).toHaveBeenCalledTimes(1)
+    fireEvent.click(screen.getByRole('button', { name: 'Reenviar correo de confirmación' }))
+
+    await waitFor(() => {
+      expect(actionMocks.resendEditorInvitation).toHaveBeenCalledWith({
+        email: 'editor@oddsound.co',
+      })
+    })
+  })
+
+  it('toggles password visibility for both password fields', async () => {
+    render(React.createElement(CreateRedactorButton))
+
+    fireEvent.click(screen.getByRole('button', { name: 'Crear editor' }))
+
+    const passwordInput = screen.getByLabelText('Contraseña *') as HTMLInputElement
+    const confirmPasswordInput = screen.getByLabelText('Confirmar contraseña *') as HTMLInputElement
+
+    expect(passwordInput.type).toBe('password')
+    expect(confirmPasswordInput.type).toBe('password')
+
+    fireEvent.click(screen.getAllByRole('button', { name: 'Ver contraseña' })[0])
+    fireEvent.click(screen.getAllByRole('button', { name: 'Ver contraseña' })[0])
+
+    expect(passwordInput.type).toBe('text')
+    expect(confirmPasswordInput.type).toBe('text')
   })
 })

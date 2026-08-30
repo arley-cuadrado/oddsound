@@ -2,101 +2,86 @@
 
 import React, { useMemo, useState } from 'react'
 import { Banner, Button, FieldLabel, SelectInput, TextInput } from '@payloadcms/ui'
-import type { OptionObject } from 'payload'
 
-type EditorGender = 'female' | 'indeterminate' | 'male'
-
-type EditorSocials = {
-  facebook: string
-  instagram: string
-  threads: string
-  x: string
-}
+import {
+  resendEditorInvitation,
+  submitEditorInvitation,
+} from '@/components/CreateRedactorButton/actions'
+import type { EditorSocialPlatform, EditorSocialRow } from '@/utilities/editorInvites'
 
 type CreateEditorFormState = {
   confirmPassword: string
-  editorGender: EditorGender | ''
   email: string
   fullName: string
   password: string
-  socials: EditorSocials
-  username: string
+}
+
+type EditorMessage = {
+  email?: string
+  showResend?: boolean
+  text: string
+  type: 'error' | 'success'
+}
+
+type SocialRowState = EditorSocialRow & {
+  id: string
 }
 
 const INITIAL_FORM_STATE: CreateEditorFormState = {
   confirmPassword: '',
-  editorGender: '',
   email: '',
   fullName: '',
   password: '',
-  socials: {
-    facebook: '',
-    instagram: '',
-    threads: '',
-    x: '',
-  },
-  username: '',
 }
 
-const EDITOR_GENDER_OPTIONS: OptionObject[] = [
+const SOCIAL_PLATFORM_OPTIONS = [
   {
-    label: 'Hombre',
-    value: 'male',
+    label: 'Instagram',
+    value: 'instagram',
   },
   {
-    label: 'Mujer',
-    value: 'female',
+    label: 'X',
+    value: 'x',
   },
   {
-    label: 'Indeterminado',
-    value: 'indeterminate',
+    label: 'Threads',
+    value: 'threads',
+  },
+  {
+    label: 'Facebook',
+    value: 'facebook',
   },
 ]
 
-function normalizeEditorCreationErrorMessage(message?: string) {
-  const fallbackMessage =
-    'No pudimos completar la creacion desde este formulario. Revisa si el editor ya recibio el correo de confirmacion.'
-
-  const normalizedMessage = message?.trim()
-
-  if (!normalizedMessage) return fallbackMessage
-
-  const lowercaseMessage = normalizedMessage.toLowerCase()
-
-  if (
-    lowercaseMessage.includes('already exists') ||
-    lowercaseMessage.includes('already registered') ||
-    lowercaseMessage.includes('duplicate') ||
-    lowercaseMessage.includes('email') ||
-    lowercaseMessage.includes('username') ||
-    lowercaseMessage.includes('ya existe') ||
-    lowercaseMessage.includes('ya esta registrado') ||
-    lowercaseMessage.includes('ya está registrado') ||
-    lowercaseMessage.includes('ya fue registrado')
-  ) {
-    return 'Este editor ya existe o ya recibió el correo. Pídele que revise su bandeja y confirme la cuenta antes de intentar crearlo de nuevo.'
+function createSocialRow(): SocialRowState {
+  return {
+    id: typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+      ? crypto.randomUUID()
+      : `social-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+    platform: 'instagram',
+    value: '',
   }
-
-  return normalizedMessage
 }
 
-function DashboardInputField({
+function PasswordInputField({
   autoComplete,
   label,
   name,
   onChange,
-  placeholder,
   required,
-  type,
+  showPassword,
+  toggleLabel,
+  onToggle,
   value,
 }: {
   autoComplete?: string
   label: string
   name: string
   onChange: React.ChangeEventHandler<HTMLInputElement>
-  placeholder?: string
+  onToggle: () => void
   required?: boolean
-  type: 'email' | 'password' | 'text'
+  showPassword: boolean
+  toggleLabel: string
   value: string
 }) {
   return (
@@ -108,32 +93,22 @@ function DashboardInputField({
           id={`field-${name.replace(/\./g, '__')}`}
           name={name}
           onChange={onChange}
-          placeholder={placeholder}
           required={required}
-          type={type}
+          type={showPassword ? 'text' : 'password'}
           value={value}
         />
+        <button
+          aria-controls={`field-${name.replace(/\./g, '__')}`}
+          aria-label={showPassword ? 'Ocultar contraseña' : 'Ver contraseña'}
+          className="field-type__toggle"
+          onClick={onToggle}
+          type="button"
+        >
+          {toggleLabel}
+        </button>
       </div>
     </div>
   )
-}
-
-function extractProfileID(payload: unknown) {
-  if (!payload || typeof payload !== 'object') return null
-
-  const candidate =
-    'profile' in payload
-      ? payload.profile
-      : 'doc' in payload && payload.doc && typeof payload.doc === 'object' && 'profile' in payload.doc
-        ? payload.doc.profile
-        : null
-
-  if (typeof candidate === 'string') return candidate
-  if (candidate && typeof candidate === 'object' && 'id' in candidate && typeof candidate.id === 'string') {
-    return candidate.id
-  }
-
-  return null
 }
 
 export default function CreateRedactorButton() {
@@ -146,33 +121,25 @@ export default function CreateRedactorButton() {
 
   const [showForm, setShowForm] = useState(false)
   const [formData, setFormData] = useState<CreateEditorFormState>(INITIAL_FORM_STATE)
+  const [socialRows, setSocialRows] = useState<SocialRowState[]>([])
   const [loading, setLoading] = useState(false)
-  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+  const [message, setMessage] = useState<EditorMessage | null>(null)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
 
   if (!isEditorsView) return null
 
   const resetForm = () => {
     setFormData(INITIAL_FORM_STATE)
+    setSocialRows([])
     setMessage(null)
+    setShowConfirmPassword(false)
     setShowForm(false)
+    setShowPassword(false)
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target
-
-    if (name.startsWith('socials.')) {
-      const socialKey = name.replace('socials.', '') as keyof EditorSocials
-
-      setFormData((prev) => ({
-        ...prev,
-        socials: {
-          ...prev.socials,
-          [socialKey]: value,
-        },
-      }))
-
-      return
-    }
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = event.target
 
     setFormData((prev) => ({
       ...prev,
@@ -180,91 +147,113 @@ export default function CreateRedactorButton() {
     }))
   }
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
+  const handleSocialPlatformChange = (id: string, nextValue: string) => {
+    setSocialRows((prev) =>
+      prev.map((row) =>
+        row.id === id ? { ...row, platform: nextValue as EditorSocialPlatform } : row,
+      ),
+    )
+  }
+
+  const handleSocialValueChange = (id: string, nextValue: string) => {
+    setSocialRows((prev) => prev.map((row) => (row.id === id ? { ...row, value: nextValue } : row)))
+  }
+
+  const addSocialRow = () => {
+    setSocialRows((prev) => [...prev, createSocialRow()])
+  }
+
+  const removeSocialRow = (id: string) => {
+    setSocialRows((prev) => prev.filter((row) => row.id !== id))
+  }
+
+  const handleResend = async () => {
+    const email = message?.email?.trim() || formData.email.trim()
+
+    if (!email) {
+      setMessage({
+        text: 'Necesitamos un correo electrónico para reenviar el enlace.',
+        type: 'error',
+      })
+      return
+    }
+
+    setLoading(true)
+
+    try {
+      const result = await resendEditorInvitation({ email })
+
+      setMessage({
+        email: result.email || email,
+        showResend: result.showResend,
+        text: result.message,
+        type: result.ok ? 'success' : 'error',
+      })
+    } catch (error) {
+      setMessage({
+        email,
+        showResend: true,
+        text: error instanceof Error ? error.message : 'No fue posible reenviar el correo.',
+        type: 'error',
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
     setLoading(true)
     setMessage(null)
 
     try {
       if (formData.password !== formData.confirmPassword) {
-        setMessage({ type: 'error', text: 'Las contrasenas no coinciden.' })
+        setMessage({ text: 'Las contraseñas no coinciden.', type: 'error' })
         setLoading(false)
         return
       }
 
-      if (!formData.email || !formData.fullName || !formData.username || !formData.password) {
+      if (!formData.email || !formData.fullName || !formData.password) {
         setMessage({
+          text: 'Nombre completo, correo electrónico y contraseña son obligatorios.',
           type: 'error',
-          text: 'Email, nombre completo, username y contrasena son obligatorios.',
         })
         setLoading(false)
         return
       }
 
-      const response = await fetch('/api/users', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          editorAccess: true,
-          email: formData.email,
-          name: formData.fullName,
-          password: formData.password,
-          role: 'creator',
-          username: formData.username,
-        }),
+      const result = await submitEditorInvitation({
+        email: formData.email,
+        fullName: formData.fullName,
+        password: formData.password,
+        socialRows: socialRows
+          .map(({ platform, value }) => ({
+            platform,
+            value,
+          }))
+          .filter((row) => row.value.trim()),
       })
-
-      if (!response.ok) {
-        const error = await response.json().catch(() => null)
-        throw new Error(normalizeEditorCreationErrorMessage(error?.message))
-      }
-
-      const createdUser = await response.json()
-      const profileID = extractProfileID(createdUser)
-
-      if (!profileID) {
-        throw new Error(
-          'La cuenta se creo, pero no fue posible localizar el perfil editorial para guardar genero y redes sociales.',
-        )
-      }
-
-      const profileResponse = await fetch(`/api/profiles/${profileID}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          editorGender: formData.editorGender,
-          editorSocials: formData.socials,
-        }),
-      })
-
-      if (!profileResponse.ok) {
-        const error = await profileResponse.json().catch(() => null)
-        throw new Error(
-          error?.message ||
-            'La cuenta se creo, pero no fue posible guardar el perfil editorial con genero y redes sociales.',
-        )
-      }
 
       setMessage({
-        type: 'success',
-        text: 'Editor creado correctamente. Ya enviamos el correo para confirmar la cuenta editor.',
+        email: result.email,
+        showResend: result.showResend,
+        text: result.message,
+        type: result.ok ? 'success' : 'error',
       })
-      setFormData(INITIAL_FORM_STATE)
 
-      setTimeout(() => {
-        window.location.reload()
-      }, 1200)
+      if (result.ok) {
+        setFormData(INITIAL_FORM_STATE)
+        setShowConfirmPassword(false)
+        setShowPassword(false)
+        setSocialRows([])
+      }
     } catch (error) {
       setMessage({
-        type: 'error',
         text:
           error instanceof Error
-            ? normalizeEditorCreationErrorMessage(error.message)
-            : 'No pudimos completar la creacion desde este formulario. Revisa si el editor ya recibio el correo de confirmacion.',
+            ? error.message
+            : 'No pudimos completar la creación desde este formulario.',
+        type: 'error',
       })
     } finally {
       setLoading(false)
@@ -274,26 +263,33 @@ export default function CreateRedactorButton() {
   return (
     <div className="create-redactor-section">
       {!showForm ? (
-        <Button
-          onClick={() => setShowForm(true)}
-          buttonStyle="primary"
-          el="button"
-          type="button"
-        >
+        <Button onClick={() => setShowForm(true)} buttonStyle="primary" el="button" type="button">
           Crear editor
         </Button>
       ) : (
         <section className="create-redactor-section__content" aria-labelledby="create-redactor-title">
           <div className="create-redactor-section__header">
             <h3 id="create-redactor-title">Crear editor</h3>
-            <p>
-              Los nuevos editores reciben un correo para confirmar su cuenta y luego iniciar
-              sesion.
-            </p>
+            <p>El editor recibirá un correo de confirmación antes de iniciar sesión.</p>
           </div>
 
           {message ? (
-            <Banner type={message.type === 'success' ? 'success' : 'error'}>{message.text}</Banner>
+            <Banner type={message.type === 'success' ? 'success' : 'error'}>
+              <div className="create-redactor-section__message">
+                <p>{message.text}</p>
+                {message.showResend ? (
+                  <Button
+                    onClick={handleResend}
+                    buttonStyle="secondary"
+                    disabled={loading}
+                    el="button"
+                    type="button"
+                  >
+                    {loading ? 'Reenviando...' : 'Reenviar correo de confirmación'}
+                  </Button>
+                ) : null}
+              </div>
+            </Banner>
           ) : null}
 
           <form className="create-redactor-section__form" onSubmit={handleSubmit}>
@@ -301,126 +297,100 @@ export default function CreateRedactorButton() {
               label="Nombre completo"
               onChange={handleChange}
               path="fullName"
-              placeholder="Nombre completo del redactor"
+              placeholder="Nombre completo del editor"
               required
               value={formData.fullName}
             />
 
             <TextInput
-              label="Nombre de usuario"
+              htmlAttributes={{
+                autoComplete: 'email',
+              }}
+              label="Correo electrónico"
               onChange={handleChange}
-              path="username"
-              placeholder="nombre.usuario"
+              path="email"
+              placeholder="editor@oddsound.co"
               required
-              value={formData.username}
-            />
-
-            <DashboardInputField
-              autoComplete="email"
-              label="Email"
-              name="email"
-              onChange={handleChange as React.ChangeEventHandler<HTMLInputElement>}
-              placeholder="redactor@example.com"
-              required
-              type="email"
               value={formData.email}
             />
 
-            <DashboardInputField
+            <PasswordInputField
               autoComplete="new-password"
-              label="Contrasena"
+              label="Contraseña"
               name="password"
-              onChange={handleChange as React.ChangeEventHandler<HTMLInputElement>}
-              placeholder="Contrasena"
+              onChange={handleChange}
+              onToggle={() => setShowPassword((current) => !current)}
               required
-              type="password"
+              showPassword={showPassword}
+              toggleLabel={showPassword ? 'Ocultar' : 'Ver'}
               value={formData.password}
             />
 
-            <DashboardInputField
+            <PasswordInputField
               autoComplete="new-password"
-              label="Confirmar contrasena"
+              label="Confirmar contraseña"
               name="confirmPassword"
-              onChange={handleChange as React.ChangeEventHandler<HTMLInputElement>}
-              placeholder="Confirmar contrasena"
+              onChange={handleChange}
+              onToggle={() => setShowConfirmPassword((current) => !current)}
               required
-              type="password"
+              showPassword={showConfirmPassword}
+              toggleLabel={showConfirmPassword ? 'Ocultar' : 'Ver'}
               value={formData.confirmPassword}
-            />
-
-            <SelectInput
-              isClearable
-              label="Genero del editor"
-              name="editorGender"
-              onChange={(option) => {
-                const nextValue =
-                  option && !Array.isArray(option) && typeof option === 'object' && 'value' in option
-                    ? String(option.value || '')
-                    : ''
-
-                setFormData((prev) => ({
-                  ...prev,
-                  editorGender: nextValue as EditorGender | '',
-                }))
-              }}
-              options={EDITOR_GENDER_OPTIONS}
-              path="editorGender"
-              placeholder="Seleccionar genero"
-              value={formData.editorGender}
             />
 
             <fieldset className="create-redactor-section__group">
               <legend>Redes sociales</legend>
-              <p className="create-redactor-section__hint">
-                Puedes agregarlas ahora o mas tarde.
-              </p>
+              <p className="create-redactor-section__hint">Puedes agregarlas ahora o más tarde.</p>
 
-              <div className="create-redactor-section__social-grid">
-                <TextInput
-                  label="Instagram"
-                  onChange={handleChange}
-                  path="socials.instagram"
-                  placeholder="@usuario o URL"
-                  value={formData.socials.instagram}
-                />
+              {socialRows.map((row, index) => (
+                <div className="create-redactor-section__social-row" key={row.id}>
+                  <SelectInput
+                    label={`Red social ${index + 1}`}
+                    name={`social-platform-${row.id}`}
+                    onChange={(option) => {
+                      const nextValue =
+                        option && !Array.isArray(option) && typeof option === 'object' && 'value' in option
+                          ? String(option.value || '')
+                          : ''
 
-                <TextInput
-                  label="X"
-                  onChange={handleChange}
-                  path="socials.x"
-                  placeholder="@usuario o URL"
-                  value={formData.socials.x}
-                />
+                      handleSocialPlatformChange(row.id, nextValue)
+                    }}
+                    options={SOCIAL_PLATFORM_OPTIONS}
+                    path={`social-platform-${row.id}`}
+                    value={row.platform}
+                  />
 
-                <TextInput
-                  label="Threads"
-                  onChange={handleChange}
-                  path="socials.threads"
-                  placeholder="@usuario o URL"
-                  value={formData.socials.threads}
-                />
+                  <TextInput
+                    label="Usuario o URL"
+                    onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+                      handleSocialValueChange(row.id, event.target.value)
+                    }
+                    path={`social-value-${row.id}`}
+                    placeholder="@usuario o URL"
+                    value={row.value}
+                  />
 
-                <TextInput
-                  label="Facebook"
-                  onChange={handleChange}
-                  path="socials.facebook"
-                  placeholder="Perfil o URL"
-                  value={formData.socials.facebook}
-                />
-              </div>
+                  <Button
+                    onClick={() => removeSocialRow(row.id)}
+                    buttonStyle="secondary"
+                    el="button"
+                    type="button"
+                  >
+                    Eliminar
+                  </Button>
+                </div>
+              ))}
+
+              <Button onClick={addSocialRow} buttonStyle="secondary" el="button" type="button">
+                Agregar red social
+              </Button>
             </fieldset>
 
             <div className="create-redactor-section__actions">
               <Button type="submit" buttonStyle="primary" disabled={loading} el="button">
-                {loading ? 'Creando...' : 'Crear redactor'}
+                {loading ? 'Creando...' : 'Crear editor'}
               </Button>
-              <Button
-                onClick={resetForm}
-                buttonStyle="secondary"
-                el="button"
-                type="button"
-                disabled={loading}
-              >
+              <Button onClick={resetForm} buttonStyle="secondary" el="button" type="button">
                 Cancelar
               </Button>
             </div>
