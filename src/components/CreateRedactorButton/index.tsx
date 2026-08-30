@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import { usePathname, useSearchParams } from 'next/navigation'
-import { Banner, Button, FieldLabel, SelectInput, TextInput } from '@payloadcms/ui'
+import { Banner, Button, FieldLabel, Gutter, SelectInput, TextInput } from '@payloadcms/ui'
 
 import {
   resendEditorInvitation,
@@ -262,190 +262,194 @@ export default function CreateRedactorButton() {
   return (
     <div className="create-redactor-section">
       {!showForm ? (
-        <div className="list-header create-redactor-section__launcher">
-          <div className="list-header__content">
-            <div className="list-header__title-and-actions" />
-            <div className="list-header__actions">
-              <Button
-                onClick={() => setShowForm(true)}
-                buttonStyle="primary"
-                el="button"
-                margin={false}
-                type="button"
-              >
-                Crear editor
-              </Button>
-            </div>
-          </div>
-        </div>
-      ) : (
-        <section
-          aria-labelledby="create-redactor-title"
-          className="create-redactor-section__content collection-list__sub-header"
-        >
-          <div className="list-header create-redactor-section__header">
+        <Gutter className="create-redactor-section__launcher" left right>
+          <div className="list-header">
             <div className="list-header__content">
-              <div className="list-header__title-and-actions">
-                <h2 className="list-header__title" id="create-redactor-title">
-                  Crear editor
-                </h2>
-              </div>
+              <div className="list-header__title-and-actions" />
               <div className="list-header__actions">
                 <Button
-                  onClick={resetForm}
+                  onClick={() => setShowForm(true)}
+                  buttonStyle="primary"
+                  el="button"
+                  margin={false}
+                  type="button"
+                >
+                  Crear editor
+                </Button>
+              </div>
+            </div>
+          </div>
+        </Gutter>
+      ) : (
+        <Gutter left right>
+          <section
+            aria-labelledby="create-redactor-title"
+            className="create-redactor-section__content collection-list__sub-header"
+          >
+            <div className="list-header create-redactor-section__header">
+              <div className="list-header__content">
+                <div className="list-header__title-and-actions">
+                  <h2 className="list-header__title" id="create-redactor-title">
+                    Crear editor
+                  </h2>
+                </div>
+                <div className="list-header__actions">
+                  <Button
+                    onClick={resetForm}
+                    buttonStyle="secondary"
+                    el="button"
+                    margin={false}
+                    type="button"
+                  >
+                    Cerrar
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            <p className="create-redactor-section__description">
+              El editor recibirá un correo de confirmación antes de iniciar sesión.
+            </p>
+
+            {message ? (
+              <Banner type={message.type === 'success' ? 'success' : 'error'}>
+                <div className="create-redactor-section__message">
+                  <p>{message.text}</p>
+                  {message.showResend ? (
+                    <Button
+                      onClick={handleResend}
+                      buttonStyle="secondary"
+                      disabled={loading}
+                      el="button"
+                      margin={false}
+                      type="button"
+                    >
+                      {loading ? 'Reenviando...' : 'Reenviar correo de confirmación'}
+                    </Button>
+                  ) : null}
+                </div>
+              </Banner>
+            ) : null}
+
+            <form className="create-redactor-section__form" onSubmit={handleSubmit}>
+              <TextInput
+                label="Nombre completo"
+                onChange={handleChange}
+                path="fullName"
+                placeholder="Nombre completo del editor"
+                required
+                value={formData.fullName}
+              />
+
+              <TextInput
+                htmlAttributes={{
+                  autoComplete: 'email',
+                }}
+                label="Correo electrónico"
+                onChange={handleChange}
+                path="email"
+                placeholder="editor@oddsound.co"
+                required
+                value={formData.email}
+              />
+
+              <PasswordInputField
+                autoComplete="new-password"
+                label="Contraseña"
+                name="password"
+                onChange={handleChange}
+                onToggle={() => setShowPassword((current) => !current)}
+                required
+                showPassword={showPassword}
+                toggleLabel={showPassword ? 'Ocultar' : 'Ver'}
+                value={formData.password}
+              />
+
+              <PasswordInputField
+                autoComplete="new-password"
+                label="Confirmar contraseña"
+                name="confirmPassword"
+                onChange={handleChange}
+                onToggle={() => setShowConfirmPassword((current) => !current)}
+                required
+                showPassword={showConfirmPassword}
+                toggleLabel={showConfirmPassword ? 'Ocultar' : 'Ver'}
+                value={formData.confirmPassword}
+              />
+
+              <div className="create-redactor-section__group">
+                <div className="create-redactor-section__group-header">
+                  <h3>Redes sociales</h3>
+                  <p>Puedes agregarlas ahora o más tarde.</p>
+                </div>
+
+                {socialRows.map((row, index) => (
+                  <div className="create-redactor-section__social-row" key={row.id}>
+                    <SelectInput
+                      label={`Red social ${index + 1}`}
+                      name={`social-platform-${row.id}`}
+                      onChange={(option) => {
+                        const nextValue =
+                          option &&
+                          !Array.isArray(option) &&
+                          typeof option === 'object' &&
+                          'value' in option
+                            ? String(option.value || '')
+                            : ''
+
+                        handleSocialPlatformChange(row.id, nextValue)
+                      }}
+                      options={SOCIAL_PLATFORM_OPTIONS}
+                      path={`social-platform-${row.id}`}
+                      value={row.platform}
+                    />
+
+                    <TextInput
+                      label="Usuario o URL"
+                      onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+                        handleSocialValueChange(row.id, event.target.value)
+                      }
+                      path={`social-value-${row.id}`}
+                      placeholder="@usuario o URL"
+                      value={row.value}
+                    />
+
+                    <div className="create-redactor-section__social-row-action">
+                      <Button
+                        onClick={() => removeSocialRow(row.id)}
+                        buttonStyle="secondary"
+                        el="button"
+                        margin={false}
+                        type="button"
+                      >
+                        Eliminar
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+
+                <Button
+                  onClick={addSocialRow}
                   buttonStyle="secondary"
                   el="button"
                   margin={false}
                   type="button"
                 >
-                  Cerrar
+                  Agregar red social
                 </Button>
               </div>
-            </div>
-          </div>
 
-          <p className="create-redactor-section__description">
-            El editor recibirá un correo de confirmación antes de iniciar sesión.
-          </p>
-
-          {message ? (
-            <Banner type={message.type === 'success' ? 'success' : 'error'}>
-              <div className="create-redactor-section__message">
-                <p>{message.text}</p>
-                {message.showResend ? (
-                  <Button
-                    onClick={handleResend}
-                    buttonStyle="secondary"
-                    disabled={loading}
-                    el="button"
-                    margin={false}
-                    type="button"
-                  >
-                    {loading ? 'Reenviando...' : 'Reenviar correo de confirmación'}
-                  </Button>
-                ) : null}
+              <div className="create-redactor-section__actions">
+                <Button type="submit" buttonStyle="primary" disabled={loading} el="button" margin={false}>
+                  {loading ? 'Creando...' : 'Crear editor'}
+                </Button>
+                <Button onClick={resetForm} buttonStyle="secondary" el="button" margin={false} type="button">
+                  Cancelar
+                </Button>
               </div>
-            </Banner>
-          ) : null}
-
-          <form className="create-redactor-section__form" onSubmit={handleSubmit}>
-            <TextInput
-              label="Nombre completo"
-              onChange={handleChange}
-              path="fullName"
-              placeholder="Nombre completo del editor"
-              required
-              value={formData.fullName}
-            />
-
-            <TextInput
-              htmlAttributes={{
-                autoComplete: 'email',
-              }}
-              label="Correo electrónico"
-              onChange={handleChange}
-              path="email"
-              placeholder="editor@oddsound.co"
-              required
-              value={formData.email}
-            />
-
-            <PasswordInputField
-              autoComplete="new-password"
-              label="Contraseña"
-              name="password"
-              onChange={handleChange}
-              onToggle={() => setShowPassword((current) => !current)}
-              required
-              showPassword={showPassword}
-              toggleLabel={showPassword ? 'Ocultar' : 'Ver'}
-              value={formData.password}
-            />
-
-            <PasswordInputField
-              autoComplete="new-password"
-              label="Confirmar contraseña"
-              name="confirmPassword"
-              onChange={handleChange}
-              onToggle={() => setShowConfirmPassword((current) => !current)}
-              required
-              showPassword={showConfirmPassword}
-              toggleLabel={showConfirmPassword ? 'Ocultar' : 'Ver'}
-              value={formData.confirmPassword}
-            />
-
-            <div className="create-redactor-section__group">
-              <div className="create-redactor-section__group-header">
-                <h3>Redes sociales</h3>
-                <p>Puedes agregarlas ahora o más tarde.</p>
-              </div>
-
-              {socialRows.map((row, index) => (
-                <div className="create-redactor-section__social-row" key={row.id}>
-                  <SelectInput
-                    label={`Red social ${index + 1}`}
-                    name={`social-platform-${row.id}`}
-                    onChange={(option) => {
-                      const nextValue =
-                        option &&
-                        !Array.isArray(option) &&
-                        typeof option === 'object' &&
-                        'value' in option
-                          ? String(option.value || '')
-                          : ''
-
-                      handleSocialPlatformChange(row.id, nextValue)
-                    }}
-                    options={SOCIAL_PLATFORM_OPTIONS}
-                    path={`social-platform-${row.id}`}
-                    value={row.platform}
-                  />
-
-                  <TextInput
-                    label="Usuario o URL"
-                    onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
-                      handleSocialValueChange(row.id, event.target.value)
-                    }
-                    path={`social-value-${row.id}`}
-                    placeholder="@usuario o URL"
-                    value={row.value}
-                  />
-
-                  <div className="create-redactor-section__social-row-action">
-                    <Button
-                      onClick={() => removeSocialRow(row.id)}
-                      buttonStyle="secondary"
-                      el="button"
-                      margin={false}
-                      type="button"
-                    >
-                      Eliminar
-                    </Button>
-                  </div>
-                </div>
-              ))}
-
-              <Button
-                onClick={addSocialRow}
-                buttonStyle="secondary"
-                el="button"
-                margin={false}
-                type="button"
-              >
-                Agregar red social
-              </Button>
-            </div>
-
-            <div className="create-redactor-section__actions">
-              <Button type="submit" buttonStyle="primary" disabled={loading} el="button" margin={false}>
-                {loading ? 'Creando...' : 'Crear editor'}
-              </Button>
-              <Button onClick={resetForm} buttonStyle="secondary" el="button" margin={false} type="button">
-                Cancelar
-              </Button>
-            </div>
-          </form>
-        </section>
+            </form>
+          </section>
+        </Gutter>
       )}
     </div>
   )

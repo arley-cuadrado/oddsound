@@ -38,6 +38,13 @@ vi.mock('@payloadcms/ui', () => ({
     path: string
     required?: boolean
   }) => <label htmlFor={`field-${path.replace(/\./g, '__')}`}>{label}{required ? ' *' : ''}</label>,
+  Gutter: ({
+    children,
+    className,
+  }: {
+    children?: React.ReactNode
+    className?: string
+  }) => <div className={className}>{children}</div>,
   SelectInput: ({
     label,
     name,
