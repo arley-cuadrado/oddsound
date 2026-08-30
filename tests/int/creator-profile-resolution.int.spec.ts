@@ -83,6 +83,41 @@ describe('ensureCreatorProfile', () => {
     expect(payload.create.mock.calls[0]?.[0]?.data).not.toHaveProperty('accountType')
   })
 
+  it('creates editorial profiles for admins who author posts', async () => {
+    const payload = {
+      create: vi.fn().mockResolvedValue({ id: 'profile-admin-1' }),
+      find: vi.fn().mockResolvedValue({
+        docs: [],
+      }),
+      update: vi.fn().mockResolvedValue({}),
+    }
+
+    await expect(
+      ensureCreatorProfile({
+        payload: payload as never,
+        user: {
+          email: 'admin@oddsound.co',
+          id: 'admin-1',
+          name: 'Admin One',
+          role: 'admin',
+        },
+      }),
+    ).resolves.toBe('profile-admin-1')
+
+    expect(payload.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        collection: 'profiles',
+        data: expect.objectContaining({
+          contactEmail: 'admin@oddsound.co',
+          displayName: 'Admin One',
+          editorialProfile: true,
+          owner: 'admin-1',
+          profileType: 'editorial',
+        }),
+      }),
+    )
+  })
+
   it('treats explicit editor userType as an editorial profile', async () => {
     const payload = {
       create: vi.fn().mockResolvedValue({ id: 'profile-editor-2' }),
@@ -305,5 +340,35 @@ describe('assignOwnership', () => {
       title: 'Admin Release',
     })
     expect(payload.find).not.toHaveBeenCalled()
+  })
+
+  it('creates and assigns an editorial profile for admins without one', async () => {
+    const payload = {
+      create: vi.fn().mockResolvedValue({ id: 'profile-admin-2' }),
+      find: vi.fn().mockResolvedValue({
+        docs: [],
+      }),
+      update: vi.fn().mockResolvedValue({}),
+    }
+
+    const result = await assignOwnership({
+      data: { title: 'Admin Post' },
+      req: {
+        context: {},
+        payload,
+        user: {
+          email: 'admin2@oddsound.co',
+          id: 'admin-2',
+          name: 'Admin Two',
+          role: 'admin',
+        },
+      },
+    } as never)
+
+    expect(result).toMatchObject({
+      owner: 'admin-2',
+      profile: 'profile-admin-2',
+      title: 'Admin Post',
+    })
   })
 })

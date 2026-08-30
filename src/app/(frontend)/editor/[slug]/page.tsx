@@ -35,11 +35,20 @@ function getEditorialSocialLink(profile: Profile) {
   return { label, url }
 }
 
+function isPublicEditorialAuthorProfile(profile: null | Profile) {
+  if (!profile) return false
+  if (profile.profileType === 'editorial' || profile.editorialProfile) return true
+
+  const owner = profile.owner
+
+  return Boolean(owner && typeof owner === 'object' && 'role' in owner && owner.role === 'admin')
+}
+
 async function queryEditorialProfileBySlug(slug: string) {
   const payload = await getPayload({ config: configPromise })
   const profile = await findPublicProfileBySlug({ payload, slug })
 
-  if (!profile || profile.profileType !== 'editorial') {
+  if (!isPublicEditorialAuthorProfile(profile)) {
     return null
   }
 
@@ -82,11 +91,13 @@ export async function generateStaticParams() {
   const payload = await getPayload({ config: configPromise })
   const profiles = await payload.find({
     collection: 'profiles',
-    depth: 0,
+    depth: 1,
     limit: 1000,
     overrideAccess: true,
     pagination: false,
     select: {
+      editorialProfile: true,
+      owner: true,
       profileType: true,
       slug: true,
     },
@@ -95,7 +106,7 @@ export async function generateStaticParams() {
   return profiles.docs
     .filter(
       (profile) =>
-        profile.profileType === 'editorial' &&
+        isPublicEditorialAuthorProfile(profile as Profile) &&
         typeof profile.slug === 'string' &&
         profile.slug.trim().length > 0,
     )

@@ -1,4 +1,5 @@
 import type { Payload, PayloadRequest } from 'payload'
+import { isAdminUser } from '@/utilities/isAdminUser'
 
 type CreatorLike = {
   accountType?: null | 'artist' | 'band' | 'label'
@@ -18,7 +19,7 @@ function getInlineProfileId(user: CreatorLike | null | undefined) {
 }
 
 function isEditorialCreator(user: CreatorLike) {
-  return user.userType === 'editor' || Boolean(user.editorAccess)
+  return isAdminUser(user) || user.userType === 'editor' || Boolean(user.editorAccess)
 }
 
 function resolveMusicalAccountType(user: CreatorLike) {
@@ -93,7 +94,7 @@ export async function ensureCreatorProfile({
   req?: PayloadRequest
   user: CreatorLike
 }) {
-  if (user.role !== 'creator') return user.profile || null
+  if (user.role !== 'creator' && user.role !== 'admin') return user.profile || null
 
   const isEditorialProfile = isEditorialCreator(user)
   const inlineProfileId = getInlineProfileId(user)
