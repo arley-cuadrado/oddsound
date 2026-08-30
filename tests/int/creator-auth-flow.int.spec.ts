@@ -35,9 +35,15 @@ describe('creator auth flow', () => {
       create: vi.fn().mockResolvedValue({
         email: 'artist@example.com',
         id: 'user-artist-1',
+        logger: {
+          error: vi.fn(),
+        },
         profile: 'profile-artist-1',
       }),
       find: vi.fn().mockResolvedValue({ docs: [] }),
+      logger: {
+        error: vi.fn(),
+      },
       update: vi.fn().mockResolvedValue({}),
     }
 
@@ -72,6 +78,7 @@ describe('creator auth flow', () => {
           role: 'creator',
           username: 'artist-name',
         }),
+        depth: 0,
         draft: false,
         overrideAccess: true,
       }),
@@ -84,6 +91,7 @@ describe('creator auth flow', () => {
           genre: 'Indie Rock',
           location: 'Colombia',
         },
+        depth: 0,
         id: 'profile-artist-1',
       }),
     )
@@ -97,6 +105,9 @@ describe('creator auth flow', () => {
         profile: 'profile-band-1',
       }),
       find: vi.fn().mockResolvedValue({ docs: [] }),
+      logger: {
+        error: vi.fn(),
+      },
       update: vi.fn().mockResolvedValue({}),
     }
 
@@ -118,8 +129,47 @@ describe('creator auth flow', () => {
           accountType: 'band',
           username: 'band-name',
         }),
+        depth: 0,
       }),
     )
+  })
+
+  it('keeps signup successful when the profile sync fails after the user was created', async () => {
+    const payload = {
+      create: vi.fn().mockResolvedValue({
+        email: 'artist@example.com',
+        id: 'user-artist-2',
+        profile: 'profile-artist-2',
+      }),
+      find: vi.fn().mockResolvedValue({ docs: [] }),
+      logger: {
+        error: vi.fn(),
+      },
+      update: vi
+        .fn()
+        .mockRejectedValue(new Error("Cannot read properties of null (reading 'label')")),
+    }
+
+    mockGetPayload.mockResolvedValue(payload)
+
+    await expect(
+      registerCreatorAccount({
+        acceptedLegal: true,
+        accountType: 'artist',
+        country: 'Colombia',
+        email: 'artist@example.com',
+        genre: 'Indie Rock',
+        name: 'Artist Name',
+        password: 'secure-password',
+      }),
+    ).resolves.toEqual({
+      email: 'artist@example.com',
+      message: 'Tu cuenta fue creada. Revisa tu correo para activarla.',
+      ok: true,
+      status: 'pending_verification',
+    })
+
+    expect(payload.logger.error).toHaveBeenCalled()
   })
 
   it('keeps login blocked until the creator confirms the email', async () => {

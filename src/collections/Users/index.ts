@@ -76,13 +76,15 @@ export const Users: CollectionConfig = {
       generateEmailSubject: generateCreatorResetPasswordEmailSubject,
     },
     verify: {
-      generateEmailHTML: ({ token, user }) =>
+      generateEmailHTML: ({ req, token, user }) =>
         hasEditorialIdentity(user)
           ? generateEditorVerificationEmailHTML({
+              req,
               token,
               user,
             })
           : generateCreatorVerificationEmailHTML({
+              req,
               token,
               user,
             }),

@@ -59,6 +59,42 @@ const EMAIL_RESET_OUTLOOK_HERO_IMAGE_URL = new URL(
   SITE_URL,
 ).toString()
 
+function readHeaderValue(headers: unknown, name: string) {
+  if (!headers || typeof headers !== 'object') return null
+
+  if (typeof (headers as Headers).get === 'function') {
+    return (headers as Headers).get(name)
+  }
+
+  const directValue = (headers as Record<string, unknown>)[name]
+
+  if (typeof directValue === 'string') return directValue
+
+  const lowerCaseValue = (headers as Record<string, unknown>)[name.toLowerCase()]
+
+  return typeof lowerCaseValue === 'string' ? lowerCaseValue : null
+}
+
+function resolveVerificationServerURL(req?: unknown) {
+  const headers =
+    req && typeof req === 'object' && 'headers' in req ? (req as { headers?: unknown }).headers : null
+
+  const forwardedHost = readHeaderValue(headers, 'x-forwarded-host')
+  const host = forwardedHost || readHeaderValue(headers, 'host')
+
+  if (!host) return SITE_URL
+
+  const forwardedProto = readHeaderValue(headers, 'x-forwarded-proto')
+  const proto =
+    forwardedProto === 'http' || forwardedProto === 'https'
+      ? forwardedProto
+      : host.includes('localhost') || host.startsWith('127.0.0.1')
+        ? 'http'
+        : 'https'
+
+  return `${proto}://${host}`
+}
+
 function escapeHtml(value: string) {
   return value
     .replaceAll('&', '&amp;')
@@ -495,8 +531,16 @@ export const getVerificationCooldownMessage = (msRemaining: number) => {
   return `Espera ${minutes} minuto${minutes === 1 ? '' : 's'} antes de pedir otro enlace.`
 }
 
-export const getCreatorVerificationURL = ({ email, token }: { email: string; token: string }) => {
-  const url = new URL('/creator/verify', SITE_URL)
+export const getCreatorVerificationURL = ({
+  email,
+  serverURL,
+  token,
+}: {
+  email: string
+  serverURL?: string
+  token: string
+}) => {
+  const url = new URL('/creator/verify', serverURL || SITE_URL)
 
   url.searchParams.set('email', email)
   url.searchParams.set('token', token)
@@ -505,14 +549,17 @@ export const getCreatorVerificationURL = ({ email, token }: { email: string; tok
 }
 
 export const generateCreatorVerificationEmailHTML = ({
+  req,
   token,
   user,
 }: {
+  req?: unknown
   token: string
   user: VerificationUser
 }) => {
   const verificationURL = getCreatorVerificationURL({
     email: user.email,
+    serverURL: resolveVerificationServerURL(req),
     token,
   })
 
@@ -534,14 +581,17 @@ export const generateCreatorVerificationEmailHTML = ({
 export const generateCreatorVerificationEmailSubject = () => 'Confirma tu correo en oddsound'
 
 export const generateEditorVerificationEmailHTML = ({
+  req,
   token,
   user,
 }: {
+  req?: unknown
   token: string
   user: VerificationUser
 }) => {
   const verificationURL = getCreatorVerificationURL({
     email: user.email,
+    serverURL: resolveVerificationServerURL(req),
     token,
   })
 

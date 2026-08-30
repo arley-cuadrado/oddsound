@@ -2,7 +2,7 @@
 
 import config from '@payload-config'
 import crypto from 'crypto'
-import { cookies } from 'next/headers'
+import { cookies, headers } from 'next/headers'
 import { createLocalReq, getPayload } from 'payload'
 
 import {
@@ -47,6 +47,24 @@ function getCooldownRemaining(isoDate?: null | string) {
   if (Number.isNaN(sentAt)) return 0
 
   return Math.max(0, VERIFICATION_RESEND_COOLDOWN_MS - (Date.now() - sentAt))
+}
+
+async function buildVerificationEmailReq() {
+  const requestHeaders = await headers()
+  const forwardedHost = requestHeaders.get('x-forwarded-host')
+  const host = forwardedHost || requestHeaders.get('host')
+  const forwardedProto = requestHeaders.get('x-forwarded-proto')
+
+  return {
+    headers: {
+      get(name: string) {
+        if (name === 'x-forwarded-host' || name === 'host') return host
+        if (name === 'x-forwarded-proto') return forwardedProto
+
+        return null
+      },
+    },
+  }
 }
 
 export async function registerCreator(input: {
@@ -121,6 +139,7 @@ export async function resendVerificationEmail(input: {
 
     const payloadReq = await createLocalReq({}, payload)
     const token = crypto.randomBytes(20).toString('hex')
+    const verificationReq = await buildVerificationEmailReq()
 
     const updatedUser = await payload.update({
       id: user.id,
@@ -138,6 +157,7 @@ export async function resendVerificationEmail(input: {
     await payload.sendEmail({
       html: hasEditorialIdentity(updatedUser)
         ? generateEditorVerificationEmailHTML({
+            req: verificationReq,
             token,
             user: {
               editorAccess: updatedUser.editorAccess,
@@ -147,6 +167,7 @@ export async function resendVerificationEmail(input: {
             },
           })
         : generateCreatorVerificationEmailHTML({
+            req: verificationReq,
             token,
             user: {
               editorAccess: updatedUser.editorAccess,

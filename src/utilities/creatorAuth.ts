@@ -152,6 +152,7 @@ export async function registerCreatorAccount(input: {
         userType: input.accountType,
         username: buildUsernameSeed({ email, name }),
       },
+      depth: 0,
       draft: false,
       overrideAccess: true,
     })
@@ -160,15 +161,27 @@ export async function registerCreatorAccount(input: {
       typeof createdUser.profile === 'string' ? createdUser.profile : createdUser.profile?.id
 
     if (profileId) {
-      await payload.update({
-        id: profileId,
-        collection: 'profiles',
-        data: {
-          genre,
-          location: country,
-        },
-        overrideAccess: true,
-      })
+      try {
+        await payload.update({
+          id: profileId,
+          collection: 'profiles',
+          data: {
+            genre,
+            location: country,
+          },
+          depth: 0,
+          overrideAccess: true,
+        })
+      } catch (error) {
+        payload.logger.error(
+          {
+            err: error,
+            profileId,
+            userEmail: email,
+          },
+          'Creator registration profile sync failed after account creation',
+        )
+      }
     }
 
     return {
