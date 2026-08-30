@@ -6,7 +6,7 @@ import React from 'react'
 import type { Profile } from '@/payload-types'
 import { getMeUser } from '@/utilities/getMeUser'
 import { listCommerceProducts, resolveUserProfileID } from '@/utilities/commerceProducts'
-import { canAccessPayloadDashboard } from '@/utilities/isEditorialUser'
+import { canAccessPayloadDashboard, isMusicalCreatorUser } from '@/utilities/isEditorialUser'
 import { getMerchOnboarding } from '@/utilities/merchOnboarding'
 import { getPlatformFeePercent } from '@/utilities/money'
 
@@ -38,7 +38,7 @@ const BeforeDashboard = async () => {
   const user = currentUser?.user || null
   if (!canAccessPayloadDashboard(user)) return null
   const userRole = user?.role || null
-  const isMusicalCreator = userRole === 'creator' && !Boolean(user?.editorAccess)
+  const isMusicalCreator = isMusicalCreatorUser(user)
   const profileID = resolveUserProfileID(user)
   const commerceProducts =
     userRole === 'admin' || isMusicalCreator

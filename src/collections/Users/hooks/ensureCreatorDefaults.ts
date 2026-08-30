@@ -82,18 +82,22 @@ export const ensureCreatorDefaults: CollectionBeforeChangeHook = async ({
     nextData.isActive = true
   }
 
-  if (typeof nextData.userType !== 'string' || !nextData.userType) {
-    nextData.userType =
-      typeof originalDoc?.userType === 'string' && originalDoc.userType
+  const requestedUserType =
+    typeof nextData.userType === 'string' && nextData.userType
+      ? nextData.userType
+      : typeof originalDoc?.userType === 'string' && originalDoc.userType
         ? originalDoc.userType
         : 'creator'
-  }
 
   if (nextData.role === 'admin') {
     nextData.editorAccess = false
-    if (nextData.userType === 'consumer' || nextData.userType === 'fan') {
+    if (requestedUserType === 'consumer' || requestedUserType === 'fan') {
       nextData.userType = 'creator'
+    } else {
+      nextData.userType = requestedUserType
     }
+  } else if (requestedUserType === 'editor') {
+    nextData.editorAccess = true
   } else if (typeof nextData.editorAccess === 'boolean') {
     nextData.editorAccess = nextData.editorAccess
   } else if (typeof originalDoc?.editorAccess === 'boolean') {
@@ -102,12 +106,24 @@ export const ensureCreatorDefaults: CollectionBeforeChangeHook = async ({
     nextData.editorAccess = false
   }
 
-  if (nextData.userType === 'consumer' || nextData.userType === 'fan') {
+  if (requestedUserType === 'consumer' || requestedUserType === 'fan') {
+    nextData.userType = 'fan'
     nextData.editorAccess = false
     nextData.accountType = null
     nextData.profile = null
-  } else if (!nextData.editorAccess && !nextData.accountType) {
-    nextData.accountType = 'artist'
+  } else if (nextData.editorAccess) {
+    nextData.userType = 'editor'
+    nextData.accountType = null
+  } else {
+    const resolvedAccountType =
+      nextData.accountType === 'artist' || nextData.accountType === 'band'
+        ? nextData.accountType
+        : originalDoc?.accountType === 'artist' || originalDoc?.accountType === 'band'
+          ? originalDoc.accountType
+          : 'artist'
+
+    nextData.accountType = resolvedAccountType
+    nextData.userType = resolvedAccountType
   }
 
   const currentID =

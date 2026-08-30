@@ -226,6 +226,18 @@ export const Users: CollectionConfig = {
           value: 'creator',
         },
         {
+          label: 'Editor',
+          value: 'editor',
+        },
+        {
+          label: 'Artista',
+          value: 'artist',
+        },
+        {
+          label: 'Banda',
+          value: 'band',
+        },
+        {
           label: 'Fan',
           value: 'fan',
         },
@@ -244,7 +256,7 @@ export const Users: CollectionConfig = {
         condition: (_data, siblingData, { user }) => {
           const isAdmin = isAdminUser(user as { role?: null | string } | null | undefined)
           if (!isAdmin || siblingData?.role === 'admin') return false
-          if (siblingData?.editorAccess) return false
+          if (siblingData?.editorAccess || siblingData?.userType === 'editor') return false
           if (siblingData?.userType === 'consumer' || siblingData?.userType === 'fan') return false
 
           return true
@@ -267,7 +279,7 @@ export const Users: CollectionConfig = {
         },
       ],
       validate: ((value: string | null | undefined, { siblingData }: any) => {
-        if (siblingData?.editorAccess) return true
+        if (siblingData?.editorAccess || siblingData?.userType === 'editor') return true
         if (siblingData?.userType === 'consumer' || siblingData?.userType === 'fan') return true
 
         return value ? true : 'El tipo de cuenta es obligatorio para cuentas de artista o banda.'

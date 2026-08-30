@@ -19,6 +19,7 @@ describe('Creator comments list helpers', () => {
   })
 
   it('returns editor-specific copy for article comments', () => {
+    expect(getCreatorCommentsViewerKind({ role: 'creator', userType: 'editor' })).toBe('editorial')
     expect(getCreatorCommentsViewerKind({ editorAccess: true, role: 'creator' })).toBe(
       'editorial',
     )

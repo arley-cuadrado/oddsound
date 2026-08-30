@@ -80,7 +80,7 @@ describe('createEditorInvitation', () => {
         name: 'Editor Test',
         profile: 'profile-1',
         role: 'creator',
-        userType: 'creator',
+        userType: 'editor',
       }),
     }
 
@@ -105,6 +105,7 @@ describe('createEditorInvitation', () => {
           name: 'Editor Test',
           password: 'super-secret-password',
           role: 'creator',
+          userType: 'editor',
         }),
       }),
     )

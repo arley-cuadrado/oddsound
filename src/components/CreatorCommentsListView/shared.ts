@@ -1,4 +1,5 @@
 import type { Comment, ConsumerProfile, Page, Profile } from '@/payload-types'
+import { isEditorialUser } from '@/utilities/isEditorialUser'
 
 export const CREATOR_COMMENTS_PAGE_SIZE = 10
 
@@ -50,9 +51,10 @@ export function getCreatorCommentsPage(searchParams?: null | SearchParamsLike) {
 export function getCreatorCommentsViewerKind(user: {
   editorAccess?: boolean | null
   role?: null | string
+  userType?: null | string
 } | null | undefined): CreatorCommentsViewerKind {
   if (user?.role === 'admin') return 'admin'
-  if (user?.editorAccess) return 'editorial'
+  if (isEditorialUser(user)) return 'editorial'
 
   return 'musical'
 }
@@ -176,6 +178,7 @@ export function getCreatorCommentStatusLabel(status: Comment['status']) {
 export function isCreatorCommentsViewer(user: {
   editorAccess?: boolean | null
   role?: null | string
+  userType?: null | string
 } | null | undefined) {
   return user?.role === 'admin' || user?.role === 'creator'
 }

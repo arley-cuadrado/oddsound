@@ -135,6 +135,7 @@ export async function createEditorInvitation(args: {
         name: fullName,
         password,
         role: 'creator',
+        userType: 'editor',
         username: fullName,
       },
       draft: false,

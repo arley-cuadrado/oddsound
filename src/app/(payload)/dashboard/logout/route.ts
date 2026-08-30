@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server'
 
 import { getExpiredPayloadTokenCookieOptions } from '@/utilities/payloadAuthCookie'
 import { getServerSideURL } from '@/utilities/getURL'
+import { getUserLoginPath } from '@/utilities/isEditorialUser'
 
 type MeResponse = {
   user?: {
@@ -29,11 +30,7 @@ export async function GET() {
       if (meResponse.ok) {
         const { user } = (await meResponse.json()) as MeResponse
 
-        if (user?.userType === 'consumer' || user?.userType === 'fan') {
-          redirectPath = '/fan/login'
-        } else if (user?.role === 'creator') {
-          redirectPath = '/creator/login'
-        }
+        redirectPath = getUserLoginPath(user)
       }
     } catch {
       // Fall back to the admin login if the current user cannot be resolved.

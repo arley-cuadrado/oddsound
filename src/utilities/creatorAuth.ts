@@ -149,6 +149,7 @@ export async function registerCreatorAccount(input: {
         name,
         password: input.password,
         role: 'creator',
+        userType: input.accountType,
         username: buildUsernameSeed({ email, name }),
       },
       draft: false,
