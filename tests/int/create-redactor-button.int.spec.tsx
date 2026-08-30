@@ -14,6 +14,15 @@ vi.mock('@/components/CreateRedactorButton/actions', () => ({
   submitEditorInvitation: actionMocks.submitEditorInvitation,
 }))
 
+const searchParamsState = {
+  value: 'editors=1',
+}
+
+vi.mock('next/navigation', () => ({
+  usePathname: () => '/dashboard/collections/users',
+  useSearchParams: () => new URLSearchParams(searchParamsState.value),
+}))
+
 vi.mock('@payloadcms/ui', () => ({
   Banner: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
   Button: ({
@@ -140,6 +149,19 @@ describe('CreateRedactorButton', () => {
 
     expect(screen.queryByLabelText('Nombre de usuario *')).toBeNull()
     expect(screen.queryByLabelText('Genero del editor')).toBeNull()
+  })
+
+  it('shows the launcher as soon as the editors query is present', async () => {
+    searchParamsState.value = ''
+
+    const { rerender } = render(React.createElement(CreateRedactorButton))
+
+    expect(screen.queryByRole('button', { name: 'Crear editor' })).toBeNull()
+
+    searchParamsState.value = 'editors=1'
+    rerender(React.createElement(CreateRedactorButton))
+
+    expect(screen.getByRole('button', { name: 'Crear editor' })).toBeTruthy()
   })
 
   it('shows resend action when the editor already exists without verification', async () => {

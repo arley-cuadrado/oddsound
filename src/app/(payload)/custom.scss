@@ -45,67 +45,98 @@
 }
 
 .create-redactor-section {
-  margin-bottom: 1.5rem;
+  width: 100%;
+}
+
+.create-redactor-section__launcher {
+  margin-bottom: 0;
 }
 
 .create-redactor-section__content {
-  padding-top: 1rem;
-  max-width: 48rem;
+  max-width: 64rem;
+  padding-top: 0;
 }
 
 .create-redactor-section__header {
-  margin-bottom: 1rem;
+  margin-bottom: 0;
+}
 
-  h3,
-  p {
-    margin: 0;
-  }
+.create-redactor-section__description,
+.create-redactor-section__message p,
+.create-redactor-section__group-header h3,
+.create-redactor-section__group-header p {
+  margin: 0;
+}
 
-  p {
-    color: var(--theme-elevation-700);
-    line-height: 1.5;
-    margin-top: 0.35rem;
-  }
+.create-redactor-section__description,
+.create-redactor-section__group-header p {
+  color: var(--theme-elevation-700);
+  line-height: 1.5;
 }
 
 .create-redactor-section__form {
   display: grid;
-  gap: 1rem;
+  gap: var(--base);
 }
 
 .create-redactor-section__form .field-type {
   margin: 0;
 }
 
-.create-redactor-section__group {
-  margin: 0;
-  padding: 1rem;
-  border: 1px solid var(--theme-elevation-100);
-  border-radius: 0.25rem;
-}
-
-.create-redactor-section__group legend {
-  padding: 0 0.35rem;
-  font-weight: 600;
-}
-
-.create-redactor-section__hint {
-  margin: 0 0 0.85rem;
-  color: var(--theme-elevation-700);
-  line-height: 1.5;
-}
-
-.create-redactor-section__social-grid {
+.create-redactor-section__message {
   display: grid;
-  gap: 0.9rem;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: calc(var(--base) * 0.5);
+}
+
+.create-redactor-section__group {
+  display: grid;
+  gap: var(--base);
+}
+
+.create-redactor-section__group-header {
+  display: grid;
+  gap: calc(var(--base) * 0.35);
+}
+
+.create-redactor-section__social-row {
+  display: grid;
+  grid-template-columns: minmax(0, 14rem) minmax(0, 1fr) auto;
+  gap: calc(var(--base) * 0.75);
+  align-items: end;
+}
+
+.create-redactor-section__social-row-action {
+  display: flex;
+  align-items: flex-end;
+  min-height: 100%;
+}
+
+.create-redactor-section__password-field .field-type__wrap {
+  position: relative;
+}
+
+.create-redactor-section__password-field .field-type__wrap input {
+  padding-right: 4.5rem;
+}
+
+.create-redactor-section__password-field .field-type__toggle {
+  position: absolute;
+  top: 50%;
+  right: calc(var(--base) * 0.75);
+  transform: translateY(-50%);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--theme-elevation-600);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
 }
 
 .create-redactor-section__actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
-  padding-top: 0.25rem;
+  gap: calc(var(--base) * 0.75);
 
   .btn {
     margin: 0;
@@ -125,8 +156,12 @@
     padding-bottom: 0;
   }
 
-  .create-redactor-section__social-grid {
+  .create-redactor-section__social-row {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .create-redactor-section__social-row-action {
+    min-height: auto;
   }
 
   .doc-tabs {

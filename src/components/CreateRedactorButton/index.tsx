@@ -1,6 +1,7 @@
 'use client'
 
-import React, { useMemo, useState } from 'react'
+import React, { useState } from 'react'
+import { usePathname, useSearchParams } from 'next/navigation'
 import { Banner, Button, FieldLabel, SelectInput, TextInput } from '@payloadcms/ui'
 
 import {
@@ -85,7 +86,7 @@ function PasswordInputField({
   value: string
 }) {
   return (
-    <div className="field-type text">
+    <div className="field-type text create-redactor-section__password-field">
       <FieldLabel label={label} path={name} required={required} />
       <div className="field-type__wrap">
         <input
@@ -112,12 +113,10 @@ function PasswordInputField({
 }
 
 export default function CreateRedactorButton() {
-  const isEditorsView = useMemo(() => {
-    if (typeof window === 'undefined') return false
-    if (!window.location.pathname.includes('/dashboard/collections/users')) return false
-
-    return new URLSearchParams(window.location.search).get('editors') === '1'
-  }, [])
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+  const isEditorsView =
+    pathname?.includes('/dashboard/collections/users') && searchParams?.get('editors') === '1'
 
   const [showForm, setShowForm] = useState(false)
   const [formData, setFormData] = useState<CreateEditorFormState>(INITIAL_FORM_STATE)
@@ -263,15 +262,51 @@ export default function CreateRedactorButton() {
   return (
     <div className="create-redactor-section">
       {!showForm ? (
-        <Button onClick={() => setShowForm(true)} buttonStyle="primary" el="button" type="button">
-          Crear editor
-        </Button>
-      ) : (
-        <section className="create-redactor-section__content" aria-labelledby="create-redactor-title">
-          <div className="create-redactor-section__header">
-            <h3 id="create-redactor-title">Crear editor</h3>
-            <p>El editor recibirá un correo de confirmación antes de iniciar sesión.</p>
+        <div className="list-header create-redactor-section__launcher">
+          <div className="list-header__content">
+            <div className="list-header__title-and-actions" />
+            <div className="list-header__actions">
+              <Button
+                onClick={() => setShowForm(true)}
+                buttonStyle="primary"
+                el="button"
+                margin={false}
+                type="button"
+              >
+                Crear editor
+              </Button>
+            </div>
           </div>
+        </div>
+      ) : (
+        <section
+          aria-labelledby="create-redactor-title"
+          className="create-redactor-section__content collection-list__sub-header"
+        >
+          <div className="list-header create-redactor-section__header">
+            <div className="list-header__content">
+              <div className="list-header__title-and-actions">
+                <h2 className="list-header__title" id="create-redactor-title">
+                  Crear editor
+                </h2>
+              </div>
+              <div className="list-header__actions">
+                <Button
+                  onClick={resetForm}
+                  buttonStyle="secondary"
+                  el="button"
+                  margin={false}
+                  type="button"
+                >
+                  Cerrar
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          <p className="create-redactor-section__description">
+            El editor recibirá un correo de confirmación antes de iniciar sesión.
+          </p>
 
           {message ? (
             <Banner type={message.type === 'success' ? 'success' : 'error'}>
@@ -283,6 +318,7 @@ export default function CreateRedactorButton() {
                     buttonStyle="secondary"
                     disabled={loading}
                     el="button"
+                    margin={false}
                     type="button"
                   >
                     {loading ? 'Reenviando...' : 'Reenviar correo de confirmación'}
@@ -338,9 +374,11 @@ export default function CreateRedactorButton() {
               value={formData.confirmPassword}
             />
 
-            <fieldset className="create-redactor-section__group">
-              <legend>Redes sociales</legend>
-              <p className="create-redactor-section__hint">Puedes agregarlas ahora o más tarde.</p>
+            <div className="create-redactor-section__group">
+              <div className="create-redactor-section__group-header">
+                <h3>Redes sociales</h3>
+                <p>Puedes agregarlas ahora o más tarde.</p>
+              </div>
 
               {socialRows.map((row, index) => (
                 <div className="create-redactor-section__social-row" key={row.id}>
@@ -349,7 +387,10 @@ export default function CreateRedactorButton() {
                     name={`social-platform-${row.id}`}
                     onChange={(option) => {
                       const nextValue =
-                        option && !Array.isArray(option) && typeof option === 'object' && 'value' in option
+                        option &&
+                        !Array.isArray(option) &&
+                        typeof option === 'object' &&
+                        'value' in option
                           ? String(option.value || '')
                           : ''
 
@@ -370,27 +411,36 @@ export default function CreateRedactorButton() {
                     value={row.value}
                   />
 
-                  <Button
-                    onClick={() => removeSocialRow(row.id)}
-                    buttonStyle="secondary"
-                    el="button"
-                    type="button"
-                  >
-                    Eliminar
-                  </Button>
+                  <div className="create-redactor-section__social-row-action">
+                    <Button
+                      onClick={() => removeSocialRow(row.id)}
+                      buttonStyle="secondary"
+                      el="button"
+                      margin={false}
+                      type="button"
+                    >
+                      Eliminar
+                    </Button>
+                  </div>
                 </div>
               ))}
 
-              <Button onClick={addSocialRow} buttonStyle="secondary" el="button" type="button">
+              <Button
+                onClick={addSocialRow}
+                buttonStyle="secondary"
+                el="button"
+                margin={false}
+                type="button"
+              >
                 Agregar red social
               </Button>
-            </fieldset>
+            </div>
 
             <div className="create-redactor-section__actions">
-              <Button type="submit" buttonStyle="primary" disabled={loading} el="button">
+              <Button type="submit" buttonStyle="primary" disabled={loading} el="button" margin={false}>
                 {loading ? 'Creando...' : 'Crear editor'}
               </Button>
-              <Button onClick={resetForm} buttonStyle="secondary" el="button" type="button">
+              <Button onClick={resetForm} buttonStyle="secondary" el="button" margin={false} type="button">
                 Cancelar
               </Button>
             </div>
