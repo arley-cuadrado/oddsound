@@ -11,11 +11,17 @@ export default function ProfilePasswordField(props: TextFieldClientProps) {
   const passwordField = useField<string>({
     path,
   })
+  const normalizedField = field && typeof field === 'object' ? field : null
 
   const label = useMemo(() => {
-    if (typeof field.label === 'string') return field.label
+    if (typeof normalizedField?.label === 'string') return normalizedField.label
     return path
-  }, [field.label, path])
+  }, [normalizedField, path])
+
+  const description =
+    normalizedField?.admin && typeof normalizedField.admin === 'object'
+      ? normalizedField.admin.description
+      : undefined
 
   return (
     <TextInput
@@ -31,7 +37,7 @@ export default function ProfilePasswordField(props: TextFieldClientProps) {
         </button>
       }
       className="payload-password-toggle-field"
-      description={field.admin?.description}
+      description={description}
       htmlAttributes={
         {
           autoComplete: 'new-password',
@@ -43,7 +49,7 @@ export default function ProfilePasswordField(props: TextFieldClientProps) {
         passwordField.setValue(event.target.value)
       }}
       path={path}
-      required={field.required}
+      required={Boolean(normalizedField?.required)}
       value={typeof passwordField.value === 'string' ? passwordField.value : ''}
     />
   )
