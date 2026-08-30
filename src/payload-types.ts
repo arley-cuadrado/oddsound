@@ -315,7 +315,7 @@ export interface User {
    * Identifica cuentas editoriales creadas por admin para publicar articulos.
    */
   editorAccess?: boolean | null;
-  userType?: ('artist' | 'band' | 'creator' | 'editor' | 'fan') | null;
+  userType?: ('creator' | 'editor' | 'artist' | 'band' | 'fan') | null;
   accountType?: ('artist' | 'band') | null;
   profile?: (string | null) | Profile;
   consumerProfile?: (string | null) | ConsumerProfile;
