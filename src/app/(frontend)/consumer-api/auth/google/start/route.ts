@@ -6,17 +6,28 @@ import {
   CONSUMER_GOOGLE_STATE_COOKIE,
   isGoogleConsumerOAuthConfigured,
 } from '@/utilities/consumerAuth'
-import { getServerSideURL } from '@/utilities/getURL'
+import { getServerSideURL, normalizeURL } from '@/utilities/getURL'
 
 const CONSUMER_POST_LOGIN_REDIRECT_COOKIE = 'consumer-post-login-redirect'
 
 export async function GET(request: Request) {
   const url = new URL(request.url || `${getServerSideURL()}/consumer-api/auth/google/start`)
   const next = url.searchParams.get('next')
-  const requestOrigin = url.origin
+  const canonicalOrigin = normalizeURL(getServerSideURL())
+  const requestOrigin = normalizeURL(url.origin)
 
   if (!isGoogleConsumerOAuthConfigured()) {
-    return Response.redirect(`${requestOrigin}/fan/login?auth=missing-config`)
+    return Response.redirect(`${getServerSideURL()}/fan/login?auth=missing-config`)
+  }
+
+  if (canonicalOrigin && requestOrigin && canonicalOrigin !== requestOrigin) {
+    const redirectURL = new URL('/consumer-api/auth/google/start', canonicalOrigin)
+
+    if (next && next.startsWith('/')) {
+      redirectURL.searchParams.set('next', next)
+    }
+
+    return Response.redirect(redirectURL.toString())
   }
 
   const state = crypto.randomUUID()
@@ -42,5 +53,5 @@ export async function GET(request: Request) {
     cookieStore.delete(CONSUMER_POST_LOGIN_REDIRECT_COOKIE)
   }
 
-  return Response.redirect(buildGoogleConsumerAuthorizationURL(state, requestOrigin))
+  return Response.redirect(buildGoogleConsumerAuthorizationURL(state))
 }

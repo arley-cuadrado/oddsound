@@ -22,39 +22,6 @@ export type CreatorAuthResult = {
   status?: CreatorAuthStatus
 }
 
-type RequestLike = {
-  headers?: unknown
-}
-
-function readHeaderValue(headers: unknown, name: string) {
-  if (!headers || typeof headers !== 'object') return null
-
-  if (typeof (headers as Headers).get === 'function') {
-    return (headers as Headers).get(name)
-  }
-
-  const value = (headers as Record<string, unknown>)[name]
-
-  return typeof value === 'string' ? value : null
-}
-
-function normalizeRequestHeaders(headers: unknown) {
-  const normalizedHeaders = new Headers()
-  const host = readHeaderValue(headers, 'x-forwarded-host') || readHeaderValue(headers, 'host')
-  const proto = readHeaderValue(headers, 'x-forwarded-proto')
-
-  if (host) {
-    normalizedHeaders.set('host', host)
-    normalizedHeaders.set('x-forwarded-host', host)
-  }
-
-  if (proto) {
-    normalizedHeaders.set('x-forwarded-proto', proto)
-  }
-
-  return normalizedHeaders
-}
-
 export type VerificationUser = {
   authProvider?: null | string
   name?: null | string
@@ -94,22 +61,6 @@ function buildUsernameSeed({ email, name }: { email: string; name: string }) {
     .replace(/^-+|-+$/g, '')
 }
 
-async function createPayloadReqWithHeaders({
-  payload,
-  req,
-}: {
-  payload: Awaited<ReturnType<typeof getPayload>>
-  req?: RequestLike
-}) {
-  const payloadReq = await createLocalReq({}, payload)
-
-  if (req?.headers) {
-    payloadReq.headers = normalizeRequestHeaders(req.headers)
-  }
-
-  return payloadReq
-}
-
 export async function findUserByEmail(
   email: string,
   payloadArg?: Awaited<ReturnType<typeof getPayload>>,
@@ -140,14 +91,9 @@ export async function registerCreatorAccount(input: {
   genre: string
   name: string
   password: string
-  req?: RequestLike
 }): Promise<CreatorAuthResult> {
   try {
     const payload = await getPayload({ config })
-    const payloadReq = await createPayloadReqWithHeaders({
-      payload,
-      req: input.req,
-    })
     const country = input.country.trim()
     const email = input.email.trim().toLowerCase()
     const genre = input.genre.trim()
@@ -206,38 +152,23 @@ export async function registerCreatorAccount(input: {
         userType: input.accountType,
         username: buildUsernameSeed({ email, name }),
       },
-      depth: 0,
       draft: false,
       overrideAccess: true,
-      req: payloadReq,
     })
 
     const profileId =
       typeof createdUser.profile === 'string' ? createdUser.profile : createdUser.profile?.id
 
     if (profileId) {
-      try {
-        await payload.update({
-          id: profileId,
-          collection: 'profiles',
-          data: {
-            genre,
-            location: country,
-          },
-          depth: 0,
-          overrideAccess: true,
-          req: payloadReq,
-        })
-      } catch (error) {
-        payload.logger.error(
-          {
-            err: error,
-            profileId,
-            userEmail: email,
-          },
-          'Creator registration profile sync failed after account creation',
-        )
-      }
+      await payload.update({
+        id: profileId,
+        collection: 'profiles',
+        data: {
+          genre,
+          location: country,
+        },
+        overrideAccess: true,
+      })
     }
 
     return {
@@ -282,7 +213,7 @@ export async function loginCreatorAccount(input: {
       }
     }
 
-    const payloadReq = await createPayloadReqWithHeaders({ payload })
+    const payloadReq = await createLocalReq({}, payload)
 
     const result = await payload.login({
       collection: 'users',
