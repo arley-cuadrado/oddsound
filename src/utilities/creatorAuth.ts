@@ -34,6 +34,7 @@ export type CreatorAuthResult = {
 
 export type VerificationUser = {
   authProvider?: null | string
+  editorAccess?: boolean | null
   name?: null | string
   role?: null | string
   userType?: null | string
