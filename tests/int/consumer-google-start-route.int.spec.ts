@@ -1,3 +1,5 @@
+// @vitest-environment node
+
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mocks = vi.hoisted(() => ({
@@ -5,6 +7,8 @@ const mocks = vi.hoisted(() => ({
   cookiesMock: vi.fn(),
   getServerSideURLMock: vi.fn(),
   isGoogleConsumerOAuthConfiguredMock: vi.fn(),
+  normalizeURLMock: vi.fn((value: string) => value),
+  resolveRequestOriginMock: vi.fn(),
 }))
 
 vi.mock('next/headers', () => ({
@@ -19,6 +23,8 @@ vi.mock('@/utilities/consumerAuth', () => ({
 
 vi.mock('@/utilities/getURL', () => ({
   getServerSideURL: mocks.getServerSideURLMock,
+  normalizeURL: mocks.normalizeURLMock,
+  resolveRequestOrigin: mocks.resolveRequestOriginMock,
 }))
 
 import { GET } from '@/app/(frontend)/consumer-api/auth/google/start/route'
@@ -33,6 +39,9 @@ describe('consumer google start route', () => {
     })
     mocks.isGoogleConsumerOAuthConfiguredMock.mockReturnValue(true)
     mocks.getServerSideURLMock.mockReturnValue('https://oddsound.co')
+    mocks.resolveRequestOriginMock.mockImplementation((request: Request | string) =>
+      typeof request === 'string' ? new URL(request).origin : new URL(request.url).origin,
+    )
     mocks.buildGoogleConsumerAuthorizationURLMock.mockReturnValue('https://accounts.google.com/mock')
   })
 

@@ -1,9 +1,12 @@
+// @vitest-environment node
+
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mocks = vi.hoisted(() => ({
   cookiesMock: vi.fn(),
   getPayloadTokenCookieOptionsMock: vi.fn(),
   loginOrRegisterConsumerWithGoogleMock: vi.fn(),
+  resolveRequestOriginMock: vi.fn(),
 }))
 
 vi.mock('next/headers', () => ({
@@ -19,11 +22,18 @@ vi.mock('@/utilities/payloadAuthCookie', () => ({
   getPayloadTokenCookieOptions: mocks.getPayloadTokenCookieOptionsMock,
 }))
 
+vi.mock('@/utilities/getURL', () => ({
+  resolveRequestOrigin: mocks.resolveRequestOriginMock,
+}))
+
 import { GET } from '@/app/(frontend)/consumer-api/auth/google/callback/route'
 
 describe('consumer google callback route', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mocks.resolveRequestOriginMock.mockImplementation((request: Request | string) =>
+      typeof request === 'string' ? new URL(request).origin : new URL(request.url).origin,
+    )
     mocks.getPayloadTokenCookieOptionsMock.mockResolvedValue({
       httpOnly: true,
       path: '/',

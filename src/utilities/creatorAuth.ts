@@ -1,8 +1,15 @@
-import config from '@payload-config'
+import crypto from 'crypto'
 import { createLocalReq, getPayload } from 'payload'
 
 import { getTemporaryLoginLockMessage } from '@/utilities/authLocking'
 import { ensureCreatorProfile } from '@/utilities/creatorProfiles'
+import {
+  generateCreatorVerificationEmailHTML,
+  generateCreatorVerificationEmailSubject,
+  generateEditorVerificationEmailHTML,
+  generateEditorVerificationEmailSubject,
+} from '@/utilities/emailVerification'
+import { hasEditorialIdentity } from '@/utilities/isEditorialUser'
 
 export type AccountType = 'artist' | 'band'
 export type LegacyAccountType = AccountType | 'label'
@@ -13,7 +20,10 @@ export type CreatorAuthStatus =
   | 'password_reset_completed'
   | 'password_reset_requested'
   | 'pending_verification'
+  | 'verification_already_completed'
+  | 'verification_completed'
   | 'verification_email_resent'
+  | 'verification_token_invalid'
 
 export type CreatorAuthResult = {
   email?: string
@@ -43,6 +53,12 @@ export const CREATOR_LEGAL_VERSION = '2026-05-14'
 export const CREATOR_VERIFICATION_ERROR_MESSAGE = 'Debes confirmar tu correo antes de iniciar sesión.'
 export const CROSS_ACCOUNT_EMAIL_CONFLICT_MESSAGE =
   'Este correo ya está asociado a una cuenta de otro tipo dentro de Oddsound.'
+
+async function getPayloadConfig() {
+  const { default: config } = await import('@payload-config')
+
+  return config
+}
 
 function isConsumerIdentity(user?: null | Pick<VerificationUser, 'authProvider' | 'userType'>) {
   return user?.userType === 'consumer' || user?.userType === 'fan' || user?.authProvider === 'google'
@@ -97,11 +113,62 @@ export async function createPayloadReqWithHeaders(
   return payloadReq
 }
 
+async function issueVerificationEmail(args: {
+  payload: Awaited<ReturnType<typeof getPayload>>
+  req?: VerificationRequestLike
+  user: VerificationUser
+}) {
+  const { payload, req, user } = args
+  const payloadReq = await createPayloadReqWithHeaders(req, payload)
+  const token = crypto.randomBytes(20).toString('hex')
+
+  const updatedUser = await payload.update({
+    id: user.id,
+    collection: 'users',
+    data: {
+      _verificationToken: token,
+      _verified: false,
+    } as never,
+    depth: 0,
+    overrideAccess: true,
+    req: payloadReq,
+    showHiddenFields: true,
+  })
+
+  await payload.sendEmail({
+    html: hasEditorialIdentity(updatedUser)
+      ? generateEditorVerificationEmailHTML({
+          req,
+          token,
+          user: {
+            editorAccess: updatedUser.editorAccess,
+            email: updatedUser.email || user.email,
+            name: updatedUser.name || updatedUser.email || user.email,
+            userType: updatedUser.userType,
+          },
+        })
+      : generateCreatorVerificationEmailHTML({
+          req,
+          token,
+          user: {
+            editorAccess: updatedUser.editorAccess,
+            email: updatedUser.email || user.email,
+            name: updatedUser.name || updatedUser.email || user.email,
+            userType: updatedUser.userType,
+          },
+        }),
+    subject: hasEditorialIdentity(updatedUser)
+      ? generateEditorVerificationEmailSubject()
+      : generateCreatorVerificationEmailSubject(),
+    to: user.email,
+  })
+}
+
 export async function findUserByEmail(
   email: string,
   payloadArg?: Awaited<ReturnType<typeof getPayload>>,
 ): Promise<null | VerificationUser> {
-  const payload = payloadArg || (await getPayload({ config }))
+  const payload = payloadArg || (await getPayload({ config: await getPayloadConfig() }))
   const existingUser = await payload.find({
     collection: 'users',
     depth: 0,
@@ -119,6 +186,127 @@ export async function findUserByEmail(
   return (existingUser.docs[0] as VerificationUser | undefined) || null
 }
 
+async function findUserByEmailAndVerificationToken(args: {
+  email: string
+  payload: Awaited<ReturnType<typeof getPayload>>
+  token: string
+}): Promise<null | VerificationUser> {
+  const result = await args.payload.find({
+    collection: 'users',
+    depth: 0,
+    limit: 1,
+    overrideAccess: true,
+    pagination: false,
+    showHiddenFields: true,
+    where: {
+      and: [
+        {
+          email: {
+            equals: args.email,
+          },
+        },
+        {
+          _verificationToken: {
+            equals: args.token,
+          },
+        },
+      ],
+    },
+  })
+
+  return (result.docs[0] as VerificationUser | undefined) || null
+}
+
+export async function confirmCreatorVerification(input: {
+  email?: string
+  token?: string
+}): Promise<CreatorAuthResult> {
+  const email = input.email?.trim().toLowerCase() || ''
+  const token = input.token?.trim() || ''
+
+  if (!email || !token) {
+    return {
+      message: 'El enlace de verificación no es válido o está incompleto.',
+      ok: false,
+      status: 'verification_token_invalid',
+    }
+  }
+
+  try {
+    const payload = await getPayload({ config: await getPayloadConfig() })
+    const existingUser = await findUserByEmail(email, payload)
+
+    if (!existingUser) {
+      return {
+        email,
+        message: 'No encontramos una cuenta pendiente con ese correo.',
+        ok: false,
+        status: 'verification_token_invalid',
+      }
+    }
+
+    if (existingUser._verified) {
+      return {
+        email,
+        message: 'Tu correo ya había sido confirmado. Ya puedes iniciar sesión.',
+        ok: true,
+        status: 'verification_already_completed',
+      }
+    }
+
+    const matchedUser = await findUserByEmailAndVerificationToken({
+      email,
+      payload,
+      token,
+    })
+
+    if (!matchedUser) {
+      return {
+        email,
+        message: 'El enlace ya no es válido. Solicita uno nuevo para continuar.',
+        ok: false,
+        status: 'verification_token_invalid',
+      }
+    }
+
+    await payload.verifyEmail({
+      collection: 'users',
+      token,
+    })
+
+    return {
+      email,
+      message: 'Tu correo fue confirmado correctamente. Ya puedes iniciar sesión.',
+      ok: true,
+      status: 'verification_completed',
+    }
+  } catch (error) {
+    try {
+      const payload = await getPayload({ config: await getPayloadConfig() })
+      const refreshedUser = email ? await findUserByEmail(email, payload) : null
+
+      if (refreshedUser?._verified) {
+        return {
+          email,
+          message: 'Tu correo ya había sido confirmado. Ya puedes iniciar sesión.',
+          ok: true,
+          status: 'verification_already_completed',
+        }
+      }
+    } catch {
+      // Keep the original failure message if the fallback lookup also fails.
+    }
+
+    return {
+      email,
+      message:
+        error instanceof Error ? error.message : 'No fue posible confirmar el correo electrónico.',
+      ok: false,
+      status: 'verification_token_invalid',
+    }
+  }
+}
+
 export async function registerCreatorAccount(input: {
   acceptedLegal: boolean
   accountType: AccountType
@@ -130,7 +318,7 @@ export async function registerCreatorAccount(input: {
   req?: VerificationRequestLike
 }): Promise<CreatorAuthResult> {
   try {
-    const payload = await getPayload({ config })
+    const payload = await getPayload({ config: await getPayloadConfig() })
     const country = input.country.trim()
     const email = input.email.trim().toLowerCase()
     const genre = input.genre.trim()
@@ -167,11 +355,17 @@ export async function registerCreatorAccount(input: {
     }
 
     if (existingUser) {
+      await issueVerificationEmail({
+        payload,
+        req: input.req,
+        user: existingUser,
+      })
+
       return {
         email,
-        message: 'Esta cuenta ya existe y está pendiente de verificación.',
+        message: 'Te enviamos un nuevo enlace de verificación.',
         ok: true,
-        status: 'pending_verification',
+        status: 'verification_email_resent',
       }
     }
 
@@ -190,6 +384,7 @@ export async function registerCreatorAccount(input: {
         userType: input.accountType,
         username: buildUsernameSeed({ email, name }),
       },
+      disableVerificationEmail: true,
       draft: false,
       overrideAccess: true,
       req: payloadReq,
@@ -199,16 +394,40 @@ export async function registerCreatorAccount(input: {
       typeof createdUser.profile === 'string' ? createdUser.profile : createdUser.profile?.id
 
     if (profileId) {
-      await payload.update({
-        id: profileId,
-        collection: 'profiles',
-        data: {
-          genre,
-          location: country,
-        },
-        overrideAccess: true,
-      })
+      try {
+        await payload.update({
+          id: profileId,
+          collection: 'profiles',
+          data: {
+            genre,
+            location: country,
+          },
+          overrideAccess: true,
+        })
+      } catch (error) {
+        payload.logger.error(
+          {
+            err: error,
+            profileId,
+            userEmail: email,
+            userID: createdUser.id,
+          },
+          'Creator profile enrichment failed after user signup',
+        )
+      }
     }
+
+    await issueVerificationEmail({
+      payload,
+      req: input.req,
+      user: {
+        editorAccess: createdUser.editorAccess,
+        email: createdUser.email || email,
+        id: createdUser.id,
+        name: createdUser.name || name,
+        userType: createdUser.userType,
+      },
+    })
 
     return {
       email,
@@ -242,7 +461,7 @@ export async function loginCreatorAccount(input: {
 > {
   try {
     const email = input.email.trim().toLowerCase()
-    const payload = await getPayload({ config })
+    const payload = await getPayload({ config: await getPayloadConfig() })
     const existingUser = await findUserByEmail(email, payload)
 
     if (!existingUser) {

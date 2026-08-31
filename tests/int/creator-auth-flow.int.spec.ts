@@ -34,18 +34,30 @@ describe('creator auth flow', () => {
   it('registers an artist account and stores profile country and genre', async () => {
     const payload = {
       create: vi.fn().mockResolvedValue({
+        editorAccess: false,
         email: 'artist@example.com',
         id: 'user-artist-1',
         logger: {
           error: vi.fn(),
         },
         profile: 'profile-artist-1',
+        userType: 'artist',
       }),
       find: vi.fn().mockResolvedValue({ docs: [] }),
       logger: {
         error: vi.fn(),
       },
-      update: vi.fn().mockResolvedValue({}),
+      sendEmail: vi.fn().mockResolvedValue({}),
+      update: vi
+        .fn()
+        .mockResolvedValueOnce({})
+        .mockResolvedValueOnce({
+          editorAccess: false,
+          email: 'artist@example.com',
+          id: 'user-artist-1',
+          name: 'Artist Name',
+          userType: 'artist',
+        }),
     }
 
     mockGetPayload.mockResolvedValue(payload)
@@ -74,14 +86,20 @@ describe('creator auth flow', () => {
           accountType: 'artist',
           email: 'artist@example.com',
           legalAccepted: true,
+          legalAcceptedAt: expect.any(String),
+          legalAcceptedVersion: '2026-05-14',
           name: 'Artist Name',
           password: 'secure-password',
           role: 'creator',
+          userType: 'artist',
           username: 'artist-name',
         }),
-        depth: 0,
+        disableVerificationEmail: true,
         draft: false,
         overrideAccess: true,
+        req: expect.objectContaining({
+          headers: expect.any(Headers),
+        }),
       }),
     )
 
@@ -92,24 +110,37 @@ describe('creator auth flow', () => {
           genre: 'Indie Rock',
           location: 'Colombia',
         },
-        depth: 0,
         id: 'profile-artist-1',
+        overrideAccess: true,
       }),
     )
+    expect(payload.sendEmail).toHaveBeenCalled()
   })
 
   it('registers a band account with the band account type', async () => {
     const payload = {
       create: vi.fn().mockResolvedValue({
+        editorAccess: false,
         email: 'band@example.com',
         id: 'user-band-1',
         profile: 'profile-band-1',
+        userType: 'band',
       }),
       find: vi.fn().mockResolvedValue({ docs: [] }),
       logger: {
         error: vi.fn(),
       },
-      update: vi.fn().mockResolvedValue({}),
+      sendEmail: vi.fn().mockResolvedValue({}),
+      update: vi
+        .fn()
+        .mockResolvedValueOnce({})
+        .mockResolvedValueOnce({
+          editorAccess: false,
+          email: 'band@example.com',
+          id: 'user-band-1',
+          name: 'Band Name',
+          userType: 'band',
+        }),
     }
 
     mockGetPayload.mockResolvedValue(payload)
@@ -128,9 +159,19 @@ describe('creator auth flow', () => {
       expect.objectContaining({
         data: expect.objectContaining({
           accountType: 'band',
+          email: 'band@example.com',
+          legalAccepted: true,
+          legalAcceptedAt: expect.any(String),
+          legalAcceptedVersion: '2026-05-14',
+          name: 'Band Name',
+          password: 'secure-password',
+          role: 'creator',
+          userType: 'band',
           username: 'band-name',
         }),
-        depth: 0,
+        req: expect.objectContaining({
+          headers: expect.any(Headers),
+        }),
       }),
     )
   })
@@ -138,15 +179,27 @@ describe('creator auth flow', () => {
   it('passes through request headers so verification emails use the active host', async () => {
     const payload = {
       create: vi.fn().mockResolvedValue({
+        editorAccess: false,
         email: 'preview@example.com',
         id: 'user-preview-1',
         profile: 'profile-preview-1',
+        userType: 'artist',
       }),
       find: vi.fn().mockResolvedValue({ docs: [] }),
       logger: {
         error: vi.fn(),
       },
-      update: vi.fn().mockResolvedValue({}),
+      sendEmail: vi.fn().mockResolvedValue({}),
+      update: vi
+        .fn()
+        .mockResolvedValueOnce({})
+        .mockResolvedValueOnce({
+          editorAccess: false,
+          email: 'preview@example.com',
+          id: 'user-preview-1',
+          name: 'Preview Artist',
+          userType: 'artist',
+        }),
     }
 
     const payloadReq = {}
@@ -177,25 +230,109 @@ describe('creator auth flow', () => {
       }),
     )
 
-    expect(
-      (payload.create.mock.calls[0]?.[0]?.req?.headers as Headers).get('x-forwarded-host'),
-    ).toBe('oddsound-preview.vercel.app')
+    expect((payload.create.mock.calls[0]?.[0]?.req?.headers as Headers).get('x-forwarded-host')).toBe(
+      'oddsound-preview.vercel.app',
+    )
+    expect(payload.sendEmail).toHaveBeenCalledWith(
+      expect.objectContaining({
+        html: expect.stringContaining('https://oddsound-preview.vercel.app/creator/verify?'),
+      }),
+    )
+  })
+
+  it('reissues a verification email when the creator already exists unverified', async () => {
+    const payload = {
+      create: vi.fn(),
+      find: vi.fn().mockResolvedValue({
+        docs: [
+          {
+            _verified: false,
+            email: 'artist@example.com',
+            id: 'user-artist-3',
+            name: 'Artist Name',
+            userType: 'artist',
+          },
+        ],
+      }),
+      sendEmail: vi.fn().mockResolvedValue({}),
+      update: vi.fn().mockResolvedValue({
+        _verified: false,
+        email: 'artist@example.com',
+        id: 'user-artist-3',
+        name: 'Artist Name',
+        userType: 'artist',
+      }),
+    }
+
+    mockGetPayload.mockResolvedValue(payload)
+    mockCreateLocalReq.mockResolvedValue({})
+
+    await expect(
+      registerCreatorAccount({
+        acceptedLegal: true,
+        accountType: 'artist',
+        country: 'Colombia',
+        email: 'artist@example.com',
+        genre: 'Indie Rock',
+        name: 'Artist Name',
+        password: 'secure-password',
+        req: {
+          headers: new Headers({
+            'x-forwarded-host': 'oddsound-preview.vercel.app',
+            'x-forwarded-proto': 'https',
+          }),
+        },
+      }),
+    ).resolves.toEqual({
+      email: 'artist@example.com',
+      message: 'Te enviamos un nuevo enlace de verificación.',
+      ok: true,
+      status: 'verification_email_resent',
+    })
+
+    expect(payload.create).not.toHaveBeenCalled()
+    expect(payload.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        collection: 'users',
+        data: {
+          _verificationToken: expect.any(String),
+          _verified: false,
+        },
+        id: 'user-artist-3',
+      }),
+    )
+    expect(payload.sendEmail).toHaveBeenCalledWith(
+      expect.objectContaining({
+        html: expect.stringContaining('https://oddsound-preview.vercel.app/creator/verify?'),
+        to: 'artist@example.com',
+      }),
+    )
   })
 
   it('keeps signup successful when the profile sync fails after the user was created', async () => {
     const payload = {
       create: vi.fn().mockResolvedValue({
+        editorAccess: false,
         email: 'artist@example.com',
         id: 'user-artist-2',
         profile: 'profile-artist-2',
+        userType: 'artist',
       }),
       find: vi.fn().mockResolvedValue({ docs: [] }),
       logger: {
         error: vi.fn(),
       },
+      sendEmail: vi.fn().mockResolvedValue({}),
       update: vi
         .fn()
-        .mockRejectedValue(new Error("Cannot read properties of null (reading 'label')")),
+        .mockRejectedValueOnce(new Error("Cannot read properties of null (reading 'label')"))
+        .mockResolvedValueOnce({
+          editorAccess: false,
+          email: 'artist@example.com',
+          id: 'user-artist-2',
+          name: 'Artist Name',
+          userType: 'artist',
+        }),
     }
 
     mockGetPayload.mockResolvedValue(payload)
@@ -218,6 +355,7 @@ describe('creator auth flow', () => {
     })
 
     expect(payload.logger.error).toHaveBeenCalled()
+    expect(payload.sendEmail).toHaveBeenCalled()
   })
 
   it('keeps login blocked until the creator confirms the email', async () => {

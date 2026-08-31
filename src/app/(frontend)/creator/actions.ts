@@ -4,7 +4,7 @@ import config from '@payload-config'
 import crypto from 'crypto'
 import { cookies } from 'next/headers'
 import { headers } from 'next/headers'
-import { createLocalReq, getPayload } from 'payload'
+import { getPayload } from 'payload'
 
 import {
   VERIFICATION_RESEND_COOLDOWN_MS,
@@ -21,7 +21,9 @@ import {
 } from '@/utilities/payloadAuthCookie'
 import {
   AccountType,
+  confirmCreatorVerification,
   CreatorAuthResult as ActionResult,
+  createPayloadReqWithHeaders,
   findUserByEmail,
   loginCreatorAccount,
   registerCreatorAccount,
@@ -33,7 +35,10 @@ type ActionStatus =
   | 'password_reset_completed'
   | 'password_reset_requested'
   | 'pending_verification'
+  | 'verification_already_completed'
+  | 'verification_completed'
   | 'verification_email_resent'
+  | 'verification_token_invalid'
 
 type ExtendedActionResult = ActionResult & {
   status?:
@@ -134,10 +139,7 @@ export async function resendVerificationEmail(input: {
       }
     }
 
-    const payloadReq = await createLocalReq({}, payload)
-    ;(payloadReq as typeof payloadReq & { headers: Headers }).headers = new Headers(
-      verificationReq.headers,
-    )
+    const payloadReq = await createPayloadReqWithHeaders(verificationReq, payload)
     const token = crypto.randomBytes(20).toString('hex')
 
     const updatedUser = await payload.update({
@@ -194,6 +196,13 @@ export async function resendVerificationEmail(input: {
       ok: false,
     }
   }
+}
+
+export async function confirmCreatorVerificationAction(input: {
+  email?: string
+  token?: string
+}): Promise<ActionResult> {
+  return confirmCreatorVerification(input)
 }
 
 export async function requestCreatorPasswordReset(input: {
