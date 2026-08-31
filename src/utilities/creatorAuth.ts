@@ -1,13 +1,8 @@
-import crypto from 'crypto'
 import config from '@payload-config'
 import { createLocalReq, getPayload } from 'payload'
 
 import { getTemporaryLoginLockMessage } from '@/utilities/authLocking'
 import { ensureCreatorProfile } from '@/utilities/creatorProfiles'
-import {
-  generateCreatorVerificationEmailHTML,
-  generateCreatorVerificationEmailSubject,
-} from '@/utilities/emailVerification'
 
 export type AccountType = 'artist' | 'band'
 export type LegacyAccountType = AccountType | 'label'
@@ -211,12 +206,10 @@ export async function registerCreatorAccount(input: {
         userType: input.accountType,
         username: buildUsernameSeed({ email, name }),
       },
-      disableVerificationEmail: true,
       depth: 0,
       draft: false,
       overrideAccess: true,
       req: payloadReq,
-      showHiddenFields: true,
     })
 
     const profileId =
@@ -246,34 +239,6 @@ export async function registerCreatorAccount(input: {
         )
       }
     }
-
-    const verificationToken = crypto.randomBytes(20).toString('hex')
-
-    await payload.update({
-      id: createdUser.id,
-      collection: 'users',
-      data: {
-        _verificationToken: verificationToken,
-        _verified: false,
-      } as never,
-      depth: 0,
-      overrideAccess: true,
-      req: payloadReq,
-      showHiddenFields: true,
-    })
-
-    await payload.sendEmail({
-      html: generateCreatorVerificationEmailHTML({
-        req: input.req,
-        token: verificationToken,
-        user: {
-          email,
-          name,
-        },
-      }),
-      subject: generateCreatorVerificationEmailSubject(),
-      to: email,
-    })
 
     return {
       email,
