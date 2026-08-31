@@ -23,7 +23,10 @@ import {
   CROSS_ACCOUNT_EMAIL_CONFLICT_MESSAGE,
   registerCreatorAccount,
 } from '@/utilities/creatorAuth'
-import { loginOrRegisterConsumerWithGoogle } from '@/utilities/consumerAuth'
+import {
+  getGoogleConsumerOAuthConfig,
+  loginOrRegisterConsumerWithGoogle,
+} from '@/utilities/consumerAuth'
 
 describe('auth email segmentation', () => {
   beforeEach(() => {
@@ -112,5 +115,13 @@ describe('auth email segmentation', () => {
     ).rejects.toThrow(CROSS_ACCOUNT_EMAIL_CONFLICT_MESSAGE)
 
     fetchMock.mockRestore()
+  })
+
+  it('prefers the active request host over the fixed redirect env for preview oauth', () => {
+    process.env.GOOGLE_OAUTH_REDIRECT_URI = 'https://oddsound.co/consumer-api/auth/google/callback'
+
+    expect(
+      getGoogleConsumerOAuthConfig('https://oddsound-preview.vercel.app').redirectURI,
+    ).toBe('https://oddsound-preview.vercel.app/consumer-api/auth/google/callback')
   })
 })

@@ -62,9 +62,11 @@ function buildConsumerInternalPassword(googleSubjectId: string) {
 export function getGoogleConsumerOAuthConfig(serverURL?: string) {
   const clientID = process.env.GOOGLE_OAUTH_CLIENT_ID
   const clientSecret = process.env.GOOGLE_OAUTH_CLIENT_SECRET
+  const resolvedServerURL = serverURL ? resolveOAuthServerURL(serverURL) : null
   const redirectURI =
+    (resolvedServerURL ? `${resolvedServerURL}/consumer-api/auth/google/callback` : null) ||
     process.env.GOOGLE_OAUTH_REDIRECT_URI ||
-    `${resolveOAuthServerURL(serverURL)}/consumer-api/auth/google/callback`
+    `${getServerSideURL()}/consumer-api/auth/google/callback`
 
   if (!clientID || !clientSecret) {
     throw new Error('Google consumer auth is not configured yet.')
