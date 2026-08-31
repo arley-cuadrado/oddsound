@@ -3,6 +3,7 @@
 import config from '@payload-config'
 import crypto from 'crypto'
 import { cookies } from 'next/headers'
+import { headers } from 'next/headers'
 import { createLocalReq, getPayload } from 'payload'
 
 import {
@@ -39,6 +40,14 @@ type ExtendedActionResult = ActionResult & {
     | ActionStatus
 }
 
+async function buildVerificationEmailReq() {
+  const requestHeaders = await headers()
+
+  return {
+    headers: Object.fromEntries(requestHeaders.entries()),
+  }
+}
+
 function getCooldownRemaining(isoDate?: null | string) {
   if (!isoDate) return 0
 
@@ -58,7 +67,12 @@ export async function registerCreator(input: {
   name: string
   password: string
 }): Promise<ExtendedActionResult> {
-  return registerCreatorAccount(input)
+  const req = await buildVerificationEmailReq()
+
+  return registerCreatorAccount({
+    ...input,
+    req,
+  })
 }
 
 export async function loginCreator(input: {
@@ -93,6 +107,7 @@ export async function resendVerificationEmail(input: {
   try {
     const payload = await getPayload({ config })
     const user = await findUserByEmail(email, payload)
+    const verificationReq = await buildVerificationEmailReq()
 
     if (!user) {
       return {
@@ -120,6 +135,9 @@ export async function resendVerificationEmail(input: {
     }
 
     const payloadReq = await createLocalReq({}, payload)
+    ;(payloadReq as typeof payloadReq & { headers: Headers }).headers = new Headers(
+      verificationReq.headers,
+    )
     const token = crypto.randomBytes(20).toString('hex')
 
     const updatedUser = await payload.update({
@@ -138,6 +156,7 @@ export async function resendVerificationEmail(input: {
     await payload.sendEmail({
       html: hasEditorialIdentity(updatedUser)
         ? generateEditorVerificationEmailHTML({
+            req: verificationReq,
             token,
             user: {
               editorAccess: updatedUser.editorAccess,
@@ -147,6 +166,7 @@ export async function resendVerificationEmail(input: {
             },
           })
         : generateCreatorVerificationEmailHTML({
+            req: verificationReq,
             token,
             user: {
               editorAccess: updatedUser.editorAccess,

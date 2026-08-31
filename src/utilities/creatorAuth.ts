@@ -36,6 +36,9 @@ export type VerificationUser = {
   updatedAt?: null | string
 }
 
+type RequestHeadersLike = Headers | Record<string, string> | Record<string, string | undefined>
+export type VerificationRequestLike = Request | { headers?: RequestHeadersLike }
+
 export const CREATOR_LEGAL_VERSION = '2026-05-14'
 export const CREATOR_VERIFICATION_ERROR_MESSAGE = 'Debes confirmar tu correo antes de iniciar sesión.'
 export const CROSS_ACCOUNT_EMAIL_CONFLICT_MESSAGE =
@@ -59,6 +62,39 @@ function buildUsernameSeed({ email, name }: { email: string; name: string }) {
     .trim()
     .replace(/[^a-z0-9._-]+/g, '-')
     .replace(/^-+|-+$/g, '')
+}
+
+function normalizeRequestHeaders(input?: VerificationRequestLike): Headers {
+  if (!input) return new Headers()
+
+  if (typeof Request !== 'undefined' && input instanceof Request) {
+    return new Headers(input.headers)
+  }
+
+  if (input.headers instanceof Headers) {
+    return new Headers(input.headers)
+  }
+
+  const headers = new Headers()
+
+  for (const [key, value] of Object.entries(input.headers || {})) {
+    if (typeof value === 'string' && value) {
+      headers.set(key, value)
+    }
+  }
+
+  return headers
+}
+
+export async function createPayloadReqWithHeaders(
+  input: VerificationRequestLike | undefined,
+  payload: Awaited<ReturnType<typeof getPayload>>,
+) {
+  const payloadReq = await createLocalReq({}, payload)
+
+  ;(payloadReq as typeof payloadReq & { headers: Headers }).headers = normalizeRequestHeaders(input)
+
+  return payloadReq
 }
 
 export async function findUserByEmail(
@@ -91,6 +127,7 @@ export async function registerCreatorAccount(input: {
   genre: string
   name: string
   password: string
+  req?: VerificationRequestLike
 }): Promise<CreatorAuthResult> {
   try {
     const payload = await getPayload({ config })
@@ -138,6 +175,7 @@ export async function registerCreatorAccount(input: {
       }
     }
 
+    const payloadReq = await createPayloadReqWithHeaders(input.req, payload)
     const createdUser = await payload.create({
       collection: 'users',
       data: {
@@ -154,6 +192,7 @@ export async function registerCreatorAccount(input: {
       },
       draft: false,
       overrideAccess: true,
+      req: payloadReq,
     })
 
     const profileId =

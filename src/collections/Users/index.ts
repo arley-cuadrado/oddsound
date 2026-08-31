@@ -67,6 +67,7 @@ export const Users: CollectionConfig = {
       expiration: CREATOR_RESET_PASSWORD_EXPIRATION_MS,
       generateEmailHTML: (args) =>
         generateCreatorResetPasswordEmailHTML({
+          req: args?.req,
           token: args?.token || '',
           user: {
             email: args?.user?.email || '',
@@ -76,13 +77,15 @@ export const Users: CollectionConfig = {
       generateEmailSubject: generateCreatorResetPasswordEmailSubject,
     },
     verify: {
-      generateEmailHTML: ({ token, user }) =>
+      generateEmailHTML: ({ req, token, user }) =>
         hasEditorialIdentity(user)
           ? generateEditorVerificationEmailHTML({
+              req,
               token,
               user,
             })
           : generateCreatorVerificationEmailHTML({
+              req,
               token,
               user,
             }),
