@@ -17,11 +17,18 @@ type Props = {
 export default async function CreatorVerifyView({ searchParams }: Props) {
   const payload = await getPayload({ config })
   const { email, token } = await searchParams
+  const normalizedEmail = email?.trim().toLowerCase()
 
   let isVerified = false
   let message = 'El enlace no es válido o ya expiró.'
+  const existingUser = normalizedEmail ? await findUserByEmail(normalizedEmail, payload) : null
 
-  if (token) {
+  if (existingUser?._verified) {
+    isVerified = true
+    message = 'Tu correo ya había sido confirmado. Ya puedes iniciar sesión.'
+  }
+
+  if (!isVerified && token) {
     try {
       await payload.verifyEmail({
         collection: 'users',
@@ -33,15 +40,9 @@ export default async function CreatorVerifyView({ searchParams }: Props) {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : message
 
-      if (email) {
-        const existingUser = await findUserByEmail(email, payload)
-
-        if (existingUser?._verified) {
-          isVerified = true
-          message = 'Tu correo ya había sido confirmado. Ya puedes iniciar sesión.'
-        } else {
-          message = errorMessage
-        }
+      if (existingUser?._verified) {
+        isVerified = true
+        message = 'Tu correo ya había sido confirmado. Ya puedes iniciar sesión.'
       } else {
         message = errorMessage
       }
@@ -69,7 +70,7 @@ export default async function CreatorVerifyView({ searchParams }: Props) {
         </Link>
       ) : (
         <div className="space-y-4">
-          {email ? <VerificationResendForm email={email} /> : null}
+          {normalizedEmail ? <VerificationResendForm email={normalizedEmail} /> : null}
           <Link
             className="inline-flex h-12 w-full items-center justify-center border border-border bg-background px-4 text-[13px] font-medium text-foreground"
             href="/creator/register"

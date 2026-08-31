@@ -54,6 +54,7 @@ describe('CreatorVerifyView', () => {
     mockGetPayload.mockResolvedValue({
       verifyEmail,
     })
+    vi.mocked(findUserByEmail).mockResolvedValue(null)
 
     const view = await CreatorVerifyView({
       searchParams: Promise.resolve({
@@ -83,6 +84,7 @@ describe('CreatorVerifyView', () => {
     mockGetPayload.mockResolvedValue({
       verifyEmail,
     })
+    vi.mocked(findUserByEmail).mockResolvedValue(null)
 
     const view = await CreatorVerifyView({
       searchParams: Promise.resolve({
@@ -95,6 +97,7 @@ describe('CreatorVerifyView', () => {
 
     expect(screen.getByText('No pudimos validar el enlace')).toBeTruthy()
     expect(screen.getByText('Verification token is invalid.')).toBeTruthy()
+    expect(findUserByEmail).toHaveBeenCalledWith('artist@example.com', expect.anything())
     expect(screen.getByTestId('verification-resend-form').textContent).toContain(
       'artist@example.com',
     )
@@ -133,5 +136,34 @@ describe('CreatorVerifyView', () => {
     expect(screen.getByRole('link', { name: 'Ir a iniciar sesión' }).getAttribute('href')).toBe(
       '/creator/login',
     )
+  })
+
+  it('skips verifyEmail when the account is already verified before opening the link again', async () => {
+    const verifyEmail = vi.fn()
+
+    mockGetPayload.mockResolvedValue({
+      verifyEmail,
+    })
+    vi.mocked(findUserByEmail).mockResolvedValue({
+      _verified: true,
+      email: 'artist@example.com',
+      id: 'user-artist-1',
+    } as Awaited<ReturnType<typeof findUserByEmail>>)
+
+    const view = await CreatorVerifyView({
+      searchParams: Promise.resolve({
+        email: ' Artist@Example.com ',
+        token: 'already-used-token',
+      }),
+    })
+
+    render(view)
+
+    expect(findUserByEmail).toHaveBeenCalledWith('artist@example.com', expect.anything())
+    expect(verifyEmail).not.toHaveBeenCalled()
+    expect(screen.getByText('Correo confirmado')).toBeTruthy()
+    expect(
+      screen.getByText('Tu correo ya había sido confirmado. Ya puedes iniciar sesión.'),
+    ).toBeTruthy()
   })
 })
