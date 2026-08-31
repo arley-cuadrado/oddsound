@@ -45,6 +45,7 @@ describe('creator auth flow', () => {
       logger: {
         error: vi.fn(),
       },
+      sendEmail: vi.fn().mockResolvedValue(undefined),
       update: vi.fn().mockResolvedValue({}),
     }
 
@@ -79,13 +80,16 @@ describe('creator auth flow', () => {
           role: 'creator',
           username: 'artist-name',
         }),
+        disableVerificationEmail: true,
         depth: 0,
         draft: false,
         overrideAccess: true,
+        showHiddenFields: true,
       }),
     )
 
-    expect(payload.update).toHaveBeenCalledWith(
+    expect(payload.update).toHaveBeenNthCalledWith(
+      1,
       expect.objectContaining({
         collection: 'profiles',
         data: {
@@ -94,6 +98,25 @@ describe('creator auth flow', () => {
         },
         depth: 0,
         id: 'profile-artist-1',
+      }),
+    )
+
+    expect(payload.update).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        collection: 'users',
+        data: expect.objectContaining({
+          _verificationToken: expect.any(String),
+          _verified: false,
+        }),
+        id: 'user-artist-1',
+      }),
+    )
+
+    expect(payload.sendEmail).toHaveBeenCalledWith(
+      expect.objectContaining({
+        subject: 'Confirma tu correo en oddsound',
+        to: 'artist@example.com',
       }),
     )
   })
@@ -109,6 +132,7 @@ describe('creator auth flow', () => {
       logger: {
         error: vi.fn(),
       },
+      sendEmail: vi.fn().mockResolvedValue(undefined),
       update: vi.fn().mockResolvedValue({}),
     }
 
@@ -146,6 +170,7 @@ describe('creator auth flow', () => {
       logger: {
         error: vi.fn(),
       },
+      sendEmail: vi.fn().mockResolvedValue(undefined),
       update: vi.fn().mockResolvedValue({}),
     }
 
@@ -193,9 +218,11 @@ describe('creator auth flow', () => {
       logger: {
         error: vi.fn(),
       },
+      sendEmail: vi.fn().mockResolvedValue(undefined),
       update: vi
         .fn()
-        .mockRejectedValue(new Error("Cannot read properties of null (reading 'label')")),
+        .mockRejectedValueOnce(new Error("Cannot read properties of null (reading 'label')"))
+        .mockResolvedValueOnce({}),
     }
 
     mockGetPayload.mockResolvedValue(payload)
