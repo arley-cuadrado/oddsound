@@ -104,10 +104,10 @@ export const Users: CollectionConfig = {
       access: {
         update: async ({ req, data, siblingData }) => {
           const user = req.user
-          
+
           if (!user) return false
           if (await hasFreshAdminAccess(req as any)) return true
-          
+
           // Creators can only update their own name
           return data?.id === user.id || siblingData?.id === user.id
         },
@@ -137,8 +137,10 @@ export const Users: CollectionConfig = {
       defaultValue: 'creator',
       admin: {
         condition: (_data, siblingData, { user }) => {
-          const isSuperAdmin = isSuperAdminUser(user as { email?: null | string; role?: null | string } | null | undefined)
-          
+          const isSuperAdmin = isSuperAdminUser(
+            user as { email?: null | string; role?: null | string } | null | undefined,
+          )
+
           // Only superadmin can see role field
           return isSuperAdmin && siblingData?.role !== 'admin'
         },
@@ -147,7 +149,9 @@ export const Users: CollectionConfig = {
       access: {
         update: async ({ req }) => {
           // Only superadmin can update roles
-          return isSuperAdminUser(req.user as { email?: null | string; role?: null | string } | null | undefined)
+          return isSuperAdminUser(
+            req.user as { email?: null | string; role?: null | string } | null | undefined,
+          )
         },
       },
       options: [
@@ -187,7 +191,8 @@ export const Users: CollectionConfig = {
           isAdminUser(user as { role?: null | string } | null | undefined) &&
           isConfiguredSuperAdminEmail(data?.email) &&
           siblingData?.role === 'admin',
-        description: 'Esta cuenta es la única superadministradora y puede crear otras cuentas administrativas.',
+        description:
+          'Esta cuenta es la única superadministradora y puede crear otras cuentas administrativas.',
         readOnly: true,
       },
       label: 'Rol',
@@ -201,8 +206,7 @@ export const Users: CollectionConfig = {
         components: {
           Field: '@/components/UsersEditorAccessField',
         },
-        description:
-          'Identifica cuentas editoriales creadas por admin para publicar articulos.',
+        description: 'Identifica cuentas editoriales creadas por admin para publicar articulos.',
       },
     },
     {
@@ -373,6 +377,11 @@ export const Users: CollectionConfig = {
           return await hasFreshAdminAccess(req as any)
         },
       },
+    },
+    {
+      name: 'verificationExpiresAt',
+      type: 'date',
+      hidden: true,
     },
     {
       name: 'legalAccepted',

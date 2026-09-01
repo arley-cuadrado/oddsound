@@ -47,11 +47,10 @@ function buildConsumerInternalPassword(googleSubjectId: string) {
 export function getGoogleConsumerOAuthConfig(serverURL?: string) {
   const clientID = process.env.GOOGLE_OAUTH_CLIENT_ID
   const clientSecret = process.env.GOOGLE_OAUTH_CLIENT_SECRET
-  const redirectURI =
-    serverURL
-      ? `${serverURL.replace(/\/+$/, '')}/consumer-api/auth/google/callback`
-      : process.env.GOOGLE_OAUTH_REDIRECT_URI ||
-        `${getServerSideURL()}/consumer-api/auth/google/callback`
+  const redirectURI = serverURL
+    ? `${serverURL.replace(/\/+$/, '')}/consumer-api/auth/google/callback`
+    : process.env.GOOGLE_OAUTH_REDIRECT_URI ||
+      `${getServerSideURL()}/consumer-api/auth/google/callback`
 
   if (!clientID || !clientSecret) {
     throw new Error('Google consumer auth is not configured yet.')
@@ -210,6 +209,9 @@ export async function loginOrRegisterConsumerWithGoogle(args: {
         })
       : await payload.create({
           collection: 'users',
+          context: {
+            deferProfileCreation: true,
+          },
           data: {
             accountType: null,
             authProvider: 'google',
@@ -234,7 +236,6 @@ export async function loginOrRegisterConsumerWithGoogle(args: {
 
   await ensureConsumerProfile({
     payload,
-    req: payloadReq,
     user: {
       avatar: user.avatar || googleUser.picture || undefined,
       consumerProfile: user.consumerProfile,

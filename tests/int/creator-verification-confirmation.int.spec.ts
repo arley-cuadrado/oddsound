@@ -83,6 +83,7 @@ describe('creator verification confirmation', () => {
 
     mockGetPayload.mockResolvedValue({
       find,
+      update: vi.fn().mockResolvedValue({}),
       verifyEmail,
     })
 
@@ -140,6 +141,42 @@ describe('creator verification confirmation', () => {
     })
 
     expect(verifyEmail).not.toHaveBeenCalled()
+  })
+
+  it('reports an expired verification link without consuming its token', async () => {
+    const verifyEmail = vi.fn()
+    vi.useFakeTimers()
+
+    mockGetPayload.mockResolvedValue({
+      find: vi.fn().mockResolvedValue({
+        docs: [
+          {
+            _verified: false,
+            email: 'artist@example.com',
+            id: 'user-1',
+            verificationExpiresAt: '2026-08-30T12:00:00.000Z',
+          },
+        ],
+      }),
+      verifyEmail,
+    })
+
+    vi.setSystemTime(new Date('2026-08-31T12:00:00.000Z'))
+
+    await expect(
+      confirmCreatorVerification({
+        email: 'artist@example.com',
+        token: 'expired-token',
+      }),
+    ).resolves.toEqual({
+      email: 'artist@example.com',
+      message: 'El enlace de verificación expiró. Solicita uno nuevo para continuar.',
+      ok: false,
+      status: 'verification_token_expired',
+    })
+
+    expect(verifyEmail).not.toHaveBeenCalled()
+    vi.useRealTimers()
   })
 
   it('treats token errors as success if the account ended up verified', async () => {

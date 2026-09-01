@@ -51,12 +51,13 @@ Un correo ya usado por `artist` o `band` no puede reutilizarse como `fan` o `con
 1. El usuario envía nombre, tipo de cuenta, país, género, correo, contraseña y aceptación legal.
 2. El sistema valida campos requeridos y conflicto de identidad por correo.
 3. El sistema crea el usuario creator.
-4. El sistema intenta crear o enlazar su perfil creator.
-5. El sistema genera y envía correo de verificación.
-6. El usuario queda en estado `pending_verification`.
-7. El login creator debe bloquearse mientras `_verified === false`.
-8. Al abrir el enlace válido, la cuenta pasa a `verified`.
-9. Después de verificar, el login creator debe funcionar.
+4. El sistema confirma que el usuario ya es legible desde una operacion nueva.
+5. El sistema intenta crear o enlazar su perfil creator fuera de la transaccion de alta.
+6. El sistema genera y envía correo de verificación.
+7. El usuario queda en estado `pending_verification`.
+8. El login creator debe bloquearse mientras `_verified === false`.
+9. Al abrir el enlace válido, la cuenta pasa a `verified`.
+10. Después de verificar, el login creator debe funcionar.
 
 ## Reglas cerradas
 
@@ -70,6 +71,9 @@ Un correo ya usado por `artist` o `band` no puede reutilizarse como `fan` o `con
 8. La confirmación real debe hacerse con una acción explícita `POST` o equivalente.
 9. El endpoint o vista de verify debe ser idempotente desde UX.
 10. Si la cuenta ya quedó verificada, no debe mostrarse un error genérico de token inválido.
+11. El correo no puede enviarse si una lectura posterior no encuentra el usuario persistido.
+12. El token vence 24 horas después de emitirse y `payload.verifyEmail()` sigue siendo la operación
+    que lo consume y activa la cuenta.
 
 ## Mitigación de scanners
 

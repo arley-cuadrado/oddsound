@@ -38,11 +38,11 @@ type ActionStatus =
   | 'verification_already_completed'
   | 'verification_completed'
   | 'verification_email_resent'
+  | 'verification_token_expired'
   | 'verification_token_invalid'
 
 type ExtendedActionResult = ActionResult & {
-  status?:
-    | ActionStatus
+  status?: ActionStatus
 }
 
 async function buildVerificationEmailReq() {
@@ -97,9 +97,7 @@ export async function loginCreator(input: {
   return { ok: true, status: 'logged_in' }
 }
 
-export async function resendVerificationEmail(input: {
-  email: string
-}): Promise<ActionResult> {
+export async function resendVerificationEmail(input: { email: string }): Promise<ActionResult> {
   const email = input.email.trim().toLowerCase()
 
   if (!email) {
@@ -205,9 +203,7 @@ export async function confirmCreatorVerificationAction(input: {
   return confirmCreatorVerification(input)
 }
 
-export async function requestCreatorPasswordReset(input: {
-  email: string
-}): Promise<ActionResult> {
+export async function requestCreatorPasswordReset(input: { email: string }): Promise<ActionResult> {
   const email = input.email.trim().toLowerCase()
 
   if (!email) {

@@ -23,6 +23,7 @@ export type CreatorAuthStatus =
   | 'verification_already_completed'
   | 'verification_completed'
   | 'verification_email_resent'
+  | 'verification_token_expired'
   | 'verification_token_invalid'
 
 export type CreatorAuthResult = {
@@ -45,13 +46,16 @@ export type VerificationUser = {
   email: string
   id: string
   updatedAt?: null | string
+  verificationExpiresAt?: null | string
 }
 
 type RequestHeadersLike = Headers | Record<string, string> | Record<string, string | undefined>
 export type VerificationRequestLike = Request | { headers?: RequestHeadersLike }
 
 export const CREATOR_LEGAL_VERSION = '2026-05-14'
-export const CREATOR_VERIFICATION_ERROR_MESSAGE = 'Debes confirmar tu correo antes de iniciar sesión.'
+export const CREATOR_VERIFICATION_EXPIRATION_MS = 24 * 60 * 60 * 1000
+export const CREATOR_VERIFICATION_ERROR_MESSAGE =
+  'Debes confirmar tu correo antes de iniciar sesión.'
 export const CROSS_ACCOUNT_EMAIL_CONFLICT_MESSAGE =
   'Este correo ya está asociado a una cuenta de otro tipo dentro de Oddsound.'
 
@@ -62,7 +66,9 @@ async function getPayloadConfig() {
 }
 
 function isConsumerIdentity(user?: null | Pick<VerificationUser, 'authProvider' | 'userType'>) {
-  return user?.userType === 'consumer' || user?.userType === 'fan' || user?.authProvider === 'google'
+  return (
+    user?.userType === 'consumer' || user?.userType === 'fan' || user?.authProvider === 'google'
+  )
 }
 
 function buildUsernameSeed({ email, name }: { email: string; name: string }) {
@@ -127,6 +133,9 @@ async function issueVerificationEmail(args: {
     id: user.id,
     collection: 'users',
     data: {
+      verificationExpiresAt: new Date(
+        Date.now() + CREATOR_VERIFICATION_EXPIRATION_MS,
+      ).toISOString(),
       _verificationToken: token,
       _verified: false,
     } as never,
@@ -296,6 +305,18 @@ export async function confirmCreatorVerification(input: {
       }
     }
 
+    if (
+      existingUser.verificationExpiresAt &&
+      Date.parse(existingUser.verificationExpiresAt) <= Date.now()
+    ) {
+      return {
+        email,
+        message: 'El enlace de verificación expiró. Solicita uno nuevo para continuar.',
+        ok: false,
+        status: 'verification_token_expired',
+      }
+    }
+
     const matchedUser = await findUserByEmailAndVerificationToken({
       email,
       payload,
@@ -314,6 +335,16 @@ export async function confirmCreatorVerification(input: {
     await payload.verifyEmail({
       collection: 'users',
       token,
+    })
+
+    await payload.update({
+      collection: 'users',
+      data: {
+        verificationExpiresAt: null,
+      },
+      depth: 0,
+      id: matchedUser.id,
+      overrideAccess: true,
     })
 
     return {
@@ -414,6 +445,9 @@ export async function registerCreatorAccount(input: {
     const payloadReq = await createPayloadReqWithHeaders(input.req, payload)
     const createdUser = await payload.create({
       collection: 'users',
+      context: {
+        deferProfileCreation: true,
+      },
       data: {
         accountType: input.accountType,
         email,
@@ -425,6 +459,9 @@ export async function registerCreatorAccount(input: {
         role: 'creator',
         userType: input.accountType,
         username: buildUsernameSeed({ email, name }),
+        verificationExpiresAt: new Date(
+          Date.now() + CREATOR_VERIFICATION_EXPIRATION_MS,
+        ).toISOString(),
       },
       disableVerificationEmail: true,
       draft: false,
@@ -433,8 +470,54 @@ export async function registerCreatorAccount(input: {
       showHiddenFields: true,
     })
 
-    const profileId =
-      typeof createdUser.profile === 'string' ? createdUser.profile : createdUser.profile?.id
+    const persistedUser = await findUserByEmail(email, payload)
+
+    if (
+      !persistedUser ||
+      String(persistedUser.id) !== String(createdUser.id) ||
+      persistedUser._verified !== false
+    ) {
+      throw new Error('No fue posible guardar tu cuenta. Intenta nuevamente.')
+    }
+
+    const verificationUser = createdUser as VerificationUser
+    const persistedVerificationToken = persistedUser._verificationToken
+
+    if (
+      verificationUser._verificationToken &&
+      persistedVerificationToken !== verificationUser._verificationToken
+    ) {
+      throw new Error('No fue posible guardar el enlace de verificación. Intenta nuevamente.')
+    }
+
+    let profileId: null | string = null
+
+    try {
+      const ensuredProfile = await ensureCreatorProfile({
+        payload,
+        user: {
+          accountType: createdUser.accountType,
+          editorAccess: createdUser.editorAccess,
+          email: createdUser.email || email,
+          id: String(createdUser.id),
+          name: createdUser.name || name,
+          profile: createdUser.profile,
+          role: createdUser.role,
+          userType: createdUser.userType,
+        },
+      })
+
+      profileId = typeof ensuredProfile === 'string' ? ensuredProfile : ensuredProfile?.id || null
+    } catch (error) {
+      payload.logger.error(
+        {
+          err: error,
+          userEmail: email,
+          userID: createdUser.id,
+        },
+        'Creator profile creation failed after persisted user signup',
+      )
+    }
 
     if (profileId) {
       try {
@@ -460,14 +543,12 @@ export async function registerCreatorAccount(input: {
       }
     }
 
-    const verificationUser = createdUser as VerificationUser
-
-    if (verificationUser._verificationToken) {
+    if (persistedVerificationToken) {
       await sendExistingVerificationEmail({
         payload,
         req: input.req,
-        token: verificationUser._verificationToken,
-        user: verificationUser,
+        token: persistedVerificationToken,
+        user: persistedUser,
       })
     } else {
       // Payload normally returns its native token when hidden fields are requested.
@@ -499,10 +580,7 @@ export async function registerCreatorAccount(input: {
   }
 }
 
-export async function loginCreatorAccount(input: {
-  email: string
-  password: string
-}): Promise<
+export async function loginCreatorAccount(input: { email: string; password: string }): Promise<
   CreatorAuthResult & {
     token?: string
     user?: {

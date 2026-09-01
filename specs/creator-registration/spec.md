@@ -91,6 +91,10 @@ Cuando la validacion previa pasa, el sistema debe crear un documento en `users` 
 - `legalAcceptedVersion`
 - `username` normalizado y unico
 
+La operacion debe terminar y confirmar su transaccion antes de iniciar la creacion del perfil. Un
+hook anidado no puede capturar un error que ya haya abortado la transaccion y aun asi responder como
+si el usuario hubiera quedado guardado.
+
 ### 4. Creacion y sincronizacion del perfil
 
 Despues de crear el usuario, el sistema debe garantizar un `profile` asociado.
@@ -110,6 +114,7 @@ Si la sincronizacion del perfil falla despues de crear el usuario, el sistema no
 El correo de verificacion solo debe enviarse despues de que:
 
 - el usuario exista realmente
+- una lectura nueva por `email` confirme el mismo `user.id` devuelto por la creacion
 - el token haya quedado persistido
 - la cuenta este en estado pendiente de verificacion
 
@@ -129,6 +134,10 @@ Cuando el usuario abre el enlace:
 - la UI debe mostrar exito y CTA a login
 - si la cuenta ya estaba verificada, debe mostrarse un mensaje de estado recuperable
 - si el token es invalido o expiro, debe ofrecerse reenvio
+
+El token vence 24 horas despues de su emision. La aplicacion valida primero que el token pertenezca
+al correo y siga vigente; `payload.verifyEmail()` conserva la responsabilidad final de consumirlo y
+marcar `_verified = true`.
 
 ### 7. Reenvio de verificacion
 

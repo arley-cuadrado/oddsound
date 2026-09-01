@@ -20,75 +20,74 @@ describe('user createProfile hook', () => {
     vi.clearAllMocks()
   })
 
-  it('does not fail signup when creator profile creation throws', async () => {
-    const logger = {
-      error: vi.fn(),
-    }
-
+  it('propagates creator profile failures so the transaction cannot appear successful', async () => {
     mocks.ensureCreatorProfile.mockRejectedValue(
       new Error("Cannot read properties of null (reading 'label')"),
     )
 
-    const result = await createProfile({
-      operation: 'create',
-      req: {
-        payload: {
-          logger,
+    await expect(
+      createProfile({
+        operation: 'create',
+        req: {
+          context: {},
+          payload: {},
         },
-      },
-      result: {
-        accountType: 'artist',
-        email: 'artist@example.com',
-        id: 'creator-1',
-        name: 'Artist Name',
-        role: 'creator',
-        userType: 'artist',
-      },
-    } as any)
-
-    expect(result).toEqual(
-      expect.objectContaining({
-        email: 'artist@example.com',
-        id: 'creator-1',
-        role: 'creator',
-      }),
-    )
-    expect(logger.error).toHaveBeenCalled()
+        result: {
+          accountType: 'artist',
+          email: 'artist@example.com',
+          id: 'creator-1',
+          name: 'Artist Name',
+          role: 'creator',
+          userType: 'artist',
+        },
+      } as any),
+    ).rejects.toThrow("Cannot read properties of null (reading 'label')")
   })
 
-  it('does not fail signup when consumer profile creation throws', async () => {
-    const logger = {
-      error: vi.fn(),
-    }
-
+  it('propagates consumer profile failures so the transaction cannot appear successful', async () => {
     mocks.ensureConsumerProfile.mockRejectedValue(
       new Error("Cannot read properties of null (reading 'label')"),
     )
 
-    const result = await createProfile({
-      operation: 'create',
-      req: {
-        payload: {
-          logger,
+    await expect(
+      createProfile({
+        operation: 'create',
+        req: {
+          context: {},
+          payload: {},
         },
-      },
-      result: {
-        email: 'fan@example.com',
-        id: 'fan-1',
-        name: 'Fan Name',
-        role: 'creator',
-        userType: 'fan',
-      },
-    } as any)
+        result: {
+          email: 'fan@example.com',
+          id: 'fan-1',
+          name: 'Fan Name',
+          role: 'creator',
+          userType: 'fan',
+        },
+      } as any),
+    ).rejects.toThrow("Cannot read properties of null (reading 'label')")
+  })
 
-    expect(result).toEqual(
-      expect.objectContaining({
-        email: 'fan@example.com',
-        id: 'fan-1',
-        role: 'creator',
-        userType: 'fan',
-      }),
-    )
-    expect(logger.error).toHaveBeenCalled()
+  it('defers profile creation when the caller must commit the user first', async () => {
+    const result = {
+      email: 'artist@example.com',
+      id: 'creator-1',
+      role: 'creator',
+      userType: 'artist',
+    }
+
+    await expect(
+      createProfile({
+        operation: 'create',
+        req: {
+          context: {
+            deferProfileCreation: true,
+          },
+        },
+        result,
+      } as any),
+    ).resolves.toBe(result)
+
+    expect(mocks.ensureCreatorProfile).not.toHaveBeenCalled()
+    expect(mocks.ensureConsumerProfile).not.toHaveBeenCalled()
   })
 })

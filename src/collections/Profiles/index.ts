@@ -115,7 +115,9 @@ async function syncEditorialPassword(args: {
   const ownerID = getOwnerID(args.nextData.owner) || getOwnerID(args.originalDoc?.owner)
 
   if (!ownerID) {
-    throw new Error('No fue posible identificar la cuenta del editor para actualizar la contraseña.')
+    throw new Error(
+      'No fue posible identificar la cuenta del editor para actualizar la contraseña.',
+    )
   }
 
   await args.req.payload.update({
@@ -156,15 +158,8 @@ async function resolveEditorialProfileData(args: {
 
     return {
       contactEmail:
-        args.data?.contactEmail ??
-        args.originalDoc?.contactEmail ??
-        owner?.email ??
-        null,
-      displayName:
-        args.data?.displayName ??
-        args.originalDoc?.displayName ??
-        owner?.name ??
-        null,
+        args.data?.contactEmail ?? args.originalDoc?.contactEmail ?? owner?.email ?? null,
+      displayName: args.data?.displayName ?? args.originalDoc?.displayName ?? owner?.name ?? null,
       editorialProfile: hasEditorialProfileIdentity(owner),
     }
   } catch {
@@ -231,7 +226,7 @@ const syncEditorialProfileState: CollectionBeforeChangeHook = async ({
     nextData.mercadoPagoConnection = {}
   } else {
     nextData.accountType = nextData.profileType
-    nextData.editorSocialLink = null
+    nextData.editorSocialLink = {}
     nextData.socialLinks = []
   }
 
@@ -582,9 +577,7 @@ export const Profiles: CollectionConfig = {
           return 'Completa ambos campos de contraseña.'
         }
 
-        return password.length >= 8
-          ? true
-          : 'La nueva contraseña debe tener al menos 8 caracteres.'
+        return password.length >= 8 ? true : 'La nueva contraseña debe tener al menos 8 caracteres.'
       }) as TextFieldSingleValidation,
     },
     {

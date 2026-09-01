@@ -29,6 +29,7 @@ describe('creator auth flow', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockCreateLocalReq.mockResolvedValue({})
+    mockEnsureCreatorProfile.mockResolvedValue('profile-creator-1')
   })
 
   it('registers an artist account and stores profile country and genre', async () => {
@@ -44,7 +45,19 @@ describe('creator auth flow', () => {
         profile: 'profile-artist-1',
         userType: 'artist',
       }),
-      find: vi.fn().mockResolvedValue({ docs: [] }),
+      find: vi
+        .fn()
+        .mockResolvedValueOnce({ docs: [] })
+        .mockResolvedValueOnce({
+          docs: [
+            {
+              _verificationToken: 'native-artist-token',
+              _verified: false,
+              email: 'artist@example.com',
+              id: 'user-artist-1',
+            },
+          ],
+        }),
       logger: {
         error: vi.fn(),
       },
@@ -74,6 +87,9 @@ describe('creator auth flow', () => {
     expect(payload.create).toHaveBeenCalledWith(
       expect.objectContaining({
         collection: 'users',
+        context: {
+          deferProfileCreation: true,
+        },
         data: expect.objectContaining({
           accountType: 'artist',
           email: 'artist@example.com',
@@ -103,7 +119,7 @@ describe('creator auth flow', () => {
           genre: 'Indie Rock',
           location: 'Colombia',
         },
-        id: 'profile-artist-1',
+        id: 'profile-creator-1',
         overrideAccess: true,
       }),
     )
@@ -124,7 +140,19 @@ describe('creator auth flow', () => {
         profile: 'profile-band-1',
         userType: 'band',
       }),
-      find: vi.fn().mockResolvedValue({ docs: [] }),
+      find: vi
+        .fn()
+        .mockResolvedValueOnce({ docs: [] })
+        .mockResolvedValueOnce({
+          docs: [
+            {
+              _verificationToken: 'native-band-token',
+              _verified: false,
+              email: 'band@example.com',
+              id: 'user-band-1',
+            },
+          ],
+        }),
       logger: {
         error: vi.fn(),
       },
@@ -175,7 +203,19 @@ describe('creator auth flow', () => {
         profile: 'profile-preview-1',
         userType: 'artist',
       }),
-      find: vi.fn().mockResolvedValue({ docs: [] }),
+      find: vi
+        .fn()
+        .mockResolvedValueOnce({ docs: [] })
+        .mockResolvedValueOnce({
+          docs: [
+            {
+              _verificationToken: 'native-preview-token',
+              _verified: false,
+              email: 'preview@example.com',
+              id: 'user-preview-1',
+            },
+          ],
+        }),
       logger: {
         error: vi.fn(),
       },
@@ -211,9 +251,9 @@ describe('creator auth flow', () => {
       }),
     )
 
-    expect((payload.create.mock.calls[0]?.[0]?.req?.headers as Headers).get('x-forwarded-host')).toBe(
-      'oddsound-preview.vercel.app',
-    )
+    expect(
+      (payload.create.mock.calls[0]?.[0]?.req?.headers as Headers).get('x-forwarded-host'),
+    ).toBe('oddsound-preview.vercel.app')
     expect(payload.sendEmail).toHaveBeenCalledWith(
       expect.objectContaining({
         html: expect.stringContaining('https://oddsound-preview.vercel.app/creator/verify?'),
@@ -275,10 +315,11 @@ describe('creator auth flow', () => {
     expect(payload.update).toHaveBeenCalledWith(
       expect.objectContaining({
         collection: 'users',
-        data: {
+        data: expect.objectContaining({
           _verificationToken: expect.any(String),
           _verified: false,
-        },
+          verificationExpiresAt: expect.any(String),
+        }),
         id: 'user-artist-3',
       }),
     )
@@ -300,17 +341,30 @@ describe('creator auth flow', () => {
         profile: 'profile-artist-2',
         userType: 'artist',
       }),
-      find: vi.fn().mockResolvedValue({ docs: [] }),
+      find: vi
+        .fn()
+        .mockResolvedValueOnce({ docs: [] })
+        .mockResolvedValueOnce({
+          docs: [
+            {
+              _verificationToken: 'native-profile-failure-token',
+              _verified: false,
+              email: 'artist@example.com',
+              id: 'user-artist-2',
+            },
+          ],
+        }),
       logger: {
         error: vi.fn(),
       },
       sendEmail: vi.fn().mockResolvedValue({}),
-      update: vi
-        .fn()
-        .mockRejectedValueOnce(new Error("Cannot read properties of null (reading 'label')")),
+      update: vi.fn(),
     }
 
     mockGetPayload.mockResolvedValue(payload)
+    mockEnsureCreatorProfile.mockRejectedValue(
+      new Error("Cannot read properties of null (reading 'label')"),
+    )
 
     await expect(
       registerCreatorAccount({
@@ -331,6 +385,92 @@ describe('creator auth flow', () => {
 
     expect(payload.logger.error).toHaveBeenCalled()
     expect(payload.sendEmail).toHaveBeenCalled()
+  })
+
+  it('does not send verification email when the new user was not persisted', async () => {
+    const payload = {
+      create: vi.fn().mockResolvedValue({
+        _verificationToken: 'rolled-back-token',
+        email: 'artist@example.com',
+        id: 'rolled-back-user',
+        role: 'creator',
+        userType: 'artist',
+      }),
+      find: vi.fn().mockResolvedValue({ docs: [] }),
+      logger: {
+        error: vi.fn(),
+      },
+      sendEmail: vi.fn(),
+    }
+
+    mockGetPayload.mockResolvedValue(payload)
+
+    await expect(
+      registerCreatorAccount({
+        acceptedLegal: true,
+        accountType: 'artist',
+        country: 'Colombia',
+        email: 'artist@example.com',
+        genre: 'Indie Rock',
+        name: 'Artist Name',
+        password: 'secure-password',
+      }),
+    ).resolves.toEqual({
+      message: 'No fue posible guardar tu cuenta. Intenta nuevamente.',
+      ok: false,
+    })
+
+    expect(mockEnsureCreatorProfile).not.toHaveBeenCalled()
+    expect(payload.sendEmail).not.toHaveBeenCalled()
+  })
+
+  it('does not email a token that differs from the token persisted for the user', async () => {
+    const payload = {
+      create: vi.fn().mockResolvedValue({
+        _verificationToken: 'in-memory-token',
+        email: 'artist@example.com',
+        id: 'user-artist-4',
+        role: 'creator',
+        userType: 'artist',
+      }),
+      find: vi
+        .fn()
+        .mockResolvedValueOnce({ docs: [] })
+        .mockResolvedValueOnce({
+          docs: [
+            {
+              _verificationToken: 'database-token',
+              _verified: false,
+              email: 'artist@example.com',
+              id: 'user-artist-4',
+            },
+          ],
+        }),
+      logger: {
+        error: vi.fn(),
+      },
+      sendEmail: vi.fn(),
+    }
+
+    mockGetPayload.mockResolvedValue(payload)
+
+    await expect(
+      registerCreatorAccount({
+        acceptedLegal: true,
+        accountType: 'artist',
+        country: 'Colombia',
+        email: 'artist@example.com',
+        genre: 'Indie Rock',
+        name: 'Artist Name',
+        password: 'secure-password',
+      }),
+    ).resolves.toEqual({
+      message: 'No fue posible guardar el enlace de verificación. Intenta nuevamente.',
+      ok: false,
+    })
+
+    expect(mockEnsureCreatorProfile).not.toHaveBeenCalled()
+    expect(payload.sendEmail).not.toHaveBeenCalled()
   })
 
   it('keeps login blocked until the creator confirms the email', async () => {

@@ -323,6 +323,7 @@ export interface User {
   googleSubjectId?: string | null;
   avatar?: string | null;
   isActive?: boolean | null;
+  verificationExpiresAt?: string | null;
   /**
    * Indica si el usuario aceptó los términos legales durante el registro.
    */
@@ -2124,6 +2125,7 @@ export interface UsersSelect<T extends boolean = true> {
   googleSubjectId?: T;
   avatar?: T;
   isActive?: T;
+  verificationExpiresAt?: T;
   legalAccepted?: T;
   legalAcceptedAt?: T;
   legalAcceptedVersion?: T;
