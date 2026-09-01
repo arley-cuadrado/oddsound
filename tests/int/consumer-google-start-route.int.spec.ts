@@ -4,15 +4,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mocks = vi.hoisted(() => ({
   buildGoogleConsumerAuthorizationURLMock: vi.fn(),
-  cookiesMock: vi.fn(),
   getServerSideURLMock: vi.fn(),
   isGoogleConsumerOAuthConfiguredMock: vi.fn(),
   normalizeURLMock: vi.fn((value: string) => value),
   resolveRequestOriginMock: vi.fn(),
-}))
-
-vi.mock('next/headers', () => ({
-  cookies: mocks.cookiesMock,
 }))
 
 vi.mock('@/utilities/consumerAuth', () => ({
@@ -33,10 +28,6 @@ describe('consumer google start route', () => {
   beforeEach(() => {
     vi.clearAllMocks()
 
-    mocks.cookiesMock.mockResolvedValue({
-      delete: vi.fn(),
-      set: vi.fn(),
-    })
     mocks.isGoogleConsumerOAuthConfiguredMock.mockReturnValue(true)
     mocks.getServerSideURLMock.mockReturnValue('https://oddsound.co')
     mocks.resolveRequestOriginMock.mockImplementation((request: Request | string) =>
@@ -46,34 +37,22 @@ describe('consumer google start route', () => {
   })
 
   it('starts oauth on the current preview host and stores the state cookie there', async () => {
-    const cookieStore = {
-      delete: vi.fn(),
-      set: vi.fn(),
-    }
-
-    mocks.cookiesMock.mockResolvedValue(cookieStore)
-
     const response = await GET(
       new Request(
         'https://oddsound-preview.vercel.app/consumer-api/auth/google/start?next=%2Ffan%2Faccount',
       ),
     )
 
-    expect(cookieStore.set).toHaveBeenCalledTimes(2)
     expect(mocks.buildGoogleConsumerAuthorizationURLMock).toHaveBeenCalledWith(
       expect.any(String),
       'https://oddsound-preview.vercel.app',
     )
     expect(response.headers.get('location')).toBe('https://accounts.google.com/mock')
+    expect(response.headers.get('cache-control')).toBe('no-store, max-age=0')
+    expect(response.headers.get('set-cookie')).toContain('consumer-google-oauth-state=')
   })
 
   it('redirects missing Google config back to the current host', async () => {
-    const cookieStore = {
-      delete: vi.fn(),
-      set: vi.fn(),
-    }
-
-    mocks.cookiesMock.mockResolvedValue(cookieStore)
     mocks.isGoogleConsumerOAuthConfiguredMock.mockReturnValue(false)
 
     const response = await GET(

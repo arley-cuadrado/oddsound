@@ -1,5 +1,5 @@
 import crypto from 'crypto'
-import { cookies } from 'next/headers'
+import { NextResponse } from 'next/server'
 
 import {
   buildGoogleConsumerAuthorizationURL,
@@ -20,9 +20,9 @@ export async function GET(request: Request) {
   }
 
   const state = crypto.randomUUID()
-  const cookieStore = await cookies()
+  const response = NextResponse.redirect(buildGoogleConsumerAuthorizationURL(state, requestOrigin))
 
-  cookieStore.set(CONSUMER_GOOGLE_STATE_COOKIE, state, {
+  response.cookies.set(CONSUMER_GOOGLE_STATE_COOKIE, state, {
     httpOnly: true,
     maxAge: 60 * 10,
     path: '/',
@@ -31,7 +31,7 @@ export async function GET(request: Request) {
   })
 
   if (next && next.startsWith('/')) {
-    cookieStore.set(CONSUMER_POST_LOGIN_REDIRECT_COOKIE, next, {
+    response.cookies.set(CONSUMER_POST_LOGIN_REDIRECT_COOKIE, next, {
       httpOnly: true,
       maxAge: 60 * 10,
       path: '/',
@@ -39,8 +39,10 @@ export async function GET(request: Request) {
       secure: process.env.NODE_ENV === 'production',
     })
   } else {
-    cookieStore.delete(CONSUMER_POST_LOGIN_REDIRECT_COOKIE)
+    response.cookies.delete(CONSUMER_POST_LOGIN_REDIRECT_COOKIE)
   }
 
-  return Response.redirect(buildGoogleConsumerAuthorizationURL(state, requestOrigin))
+  response.headers.set('Cache-Control', 'no-store, max-age=0')
+
+  return response
 }

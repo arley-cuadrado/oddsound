@@ -1,16 +1,12 @@
 // @vitest-environment node
 
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { NextRequest } from 'next/server'
 
 const mocks = vi.hoisted(() => ({
-  cookiesMock: vi.fn(),
   getPayloadTokenCookieOptionsMock: vi.fn(),
   loginOrRegisterConsumerWithGoogleMock: vi.fn(),
   resolveRequestOriginMock: vi.fn(),
-}))
-
-vi.mock('next/headers', () => ({
-  cookies: mocks.cookiesMock,
 }))
 
 vi.mock('@/utilities/consumerAuth', () => ({
@@ -41,40 +37,24 @@ describe('consumer google callback route', () => {
   })
 
   it('redirects invalid state errors back to the same preview host', async () => {
-    const cookieStore = {
-      delete: vi.fn(),
-      get: vi.fn((name: string) => {
-        if (name === 'consumer-google-oauth-state') return { value: 'stored-state' }
-        return undefined
-      }),
-      set: vi.fn(),
-    }
-
-    mocks.cookiesMock.mockResolvedValue(cookieStore)
-
     const response = await GET(
-      new Request(
+      new NextRequest(
         'https://oddsound-preview.vercel.app/consumer-api/auth/google/callback?code=test-code&state=other-state',
+        {
+          headers: {
+            cookie: 'consumer-google-oauth-state=stored-state',
+          },
+        },
       ),
     )
 
     expect(response.headers.get('location')).toBe(
       'https://oddsound-preview.vercel.app/fan/login?auth=invalid-state',
     )
+    expect(response.headers.get('cache-control')).toBe('no-store, max-age=0')
   })
 
   it('redirects successful logins back to the same preview host', async () => {
-    const cookieStore = {
-      delete: vi.fn(),
-      get: vi.fn((name: string) => {
-        if (name === 'consumer-google-oauth-state') return { value: 'stored-state' }
-        if (name === 'consumer-post-login-redirect') return { value: '/fan/account' }
-        return undefined
-      }),
-      set: vi.fn(),
-    }
-
-    mocks.cookiesMock.mockResolvedValue(cookieStore)
     mocks.loginOrRegisterConsumerWithGoogleMock.mockResolvedValue({
       token: 'payload-token',
       user: {
@@ -83,8 +63,14 @@ describe('consumer google callback route', () => {
     })
 
     const response = await GET(
-      new Request(
+      new NextRequest(
         'https://oddsound-preview.vercel.app/consumer-api/auth/google/callback?code=test-code&state=stored-state',
+        {
+          headers: {
+            cookie:
+              'consumer-google-oauth-state=stored-state; consumer-post-login-redirect=%2Ffan%2Faccount',
+          },
+        },
       ),
     )
 
@@ -95,5 +81,6 @@ describe('consumer google callback route', () => {
     expect(response.headers.get('location')).toBe(
       'https://oddsound-preview.vercel.app/fan/account',
     )
+    expect(response.headers.get('set-cookie')).toContain('payload-token=payload-token')
   })
 })

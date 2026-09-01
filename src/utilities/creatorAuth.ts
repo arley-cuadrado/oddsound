@@ -165,6 +165,47 @@ async function issueVerificationEmail(args: {
   })
 }
 
+async function sendExistingVerificationEmail(args: {
+  payload: Awaited<ReturnType<typeof getPayload>>
+  req?: VerificationRequestLike
+  token: string
+  user: VerificationUser
+}) {
+  const { payload, req, token, user } = args
+  const userType: 'artist' | 'band' | 'creator' | 'editor' | 'fan' | null =
+    user.userType === 'creator' ||
+    user.userType === 'fan' ||
+    user.userType === 'editor' ||
+    user.userType === 'artist' ||
+    user.userType === 'band'
+      ? user.userType
+      : null
+  const verificationEmailUser = {
+    editorAccess: user.editorAccess,
+    email: user.email,
+    name: user.name || user.email,
+    userType,
+  }
+
+  await payload.sendEmail({
+    html: hasEditorialIdentity(user)
+      ? generateEditorVerificationEmailHTML({
+          req,
+          token,
+          user: verificationEmailUser,
+        })
+      : generateCreatorVerificationEmailHTML({
+          req,
+          token,
+          user: verificationEmailUser,
+        }),
+    subject: hasEditorialIdentity(user)
+      ? generateEditorVerificationEmailSubject()
+      : generateCreatorVerificationEmailSubject(),
+    to: user.email,
+  })
+}
+
 export async function findUserByEmail(
   email: string,
   payloadArg?: Awaited<ReturnType<typeof getPayload>>,
@@ -389,6 +430,7 @@ export async function registerCreatorAccount(input: {
       draft: false,
       overrideAccess: true,
       req: payloadReq,
+      showHiddenFields: true,
     })
 
     const profileId =
@@ -418,17 +460,30 @@ export async function registerCreatorAccount(input: {
       }
     }
 
-    await issueVerificationEmail({
-      payload,
-      req: input.req,
-      user: {
-        editorAccess: createdUser.editorAccess,
-        email: createdUser.email || email,
-        id: createdUser.id,
-        name: createdUser.name || name,
-        userType: createdUser.userType,
-      },
-    })
+    const verificationUser = createdUser as VerificationUser
+
+    if (verificationUser._verificationToken) {
+      await sendExistingVerificationEmail({
+        payload,
+        req: input.req,
+        token: verificationUser._verificationToken,
+        user: verificationUser,
+      })
+    } else {
+      // Payload normally returns its native token when hidden fields are requested.
+      // Keep a fallback for adapters that omit it from the create result.
+      await issueVerificationEmail({
+        payload,
+        req: input.req,
+        user: {
+          editorAccess: createdUser.editorAccess,
+          email: createdUser.email || email,
+          id: createdUser.id,
+          name: createdUser.name || name,
+          userType: createdUser.userType,
+        },
+      })
+    }
 
     return {
       email,

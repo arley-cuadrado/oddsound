@@ -34,6 +34,7 @@ describe('creator auth flow', () => {
   it('registers an artist account and stores profile country and genre', async () => {
     const payload = {
       create: vi.fn().mockResolvedValue({
+        _verificationToken: 'native-artist-token',
         editorAccess: false,
         email: 'artist@example.com',
         id: 'user-artist-1',
@@ -48,16 +49,7 @@ describe('creator auth flow', () => {
         error: vi.fn(),
       },
       sendEmail: vi.fn().mockResolvedValue({}),
-      update: vi
-        .fn()
-        .mockResolvedValueOnce({})
-        .mockResolvedValueOnce({
-          editorAccess: false,
-          email: 'artist@example.com',
-          id: 'user-artist-1',
-          name: 'Artist Name',
-          userType: 'artist',
-        }),
+      update: vi.fn().mockResolvedValueOnce({}),
     }
 
     mockGetPayload.mockResolvedValue(payload)
@@ -100,6 +92,7 @@ describe('creator auth flow', () => {
         req: expect.objectContaining({
           headers: expect.any(Headers),
         }),
+        showHiddenFields: true,
       }),
     )
 
@@ -114,12 +107,17 @@ describe('creator auth flow', () => {
         overrideAccess: true,
       }),
     )
-    expect(payload.sendEmail).toHaveBeenCalled()
+    expect(payload.sendEmail).toHaveBeenCalledWith(
+      expect.objectContaining({
+        html: expect.stringContaining('native-artist-token'),
+      }),
+    )
   })
 
   it('registers a band account with the band account type', async () => {
     const payload = {
       create: vi.fn().mockResolvedValue({
+        _verificationToken: 'native-band-token',
         editorAccess: false,
         email: 'band@example.com',
         id: 'user-band-1',
@@ -131,16 +129,7 @@ describe('creator auth flow', () => {
         error: vi.fn(),
       },
       sendEmail: vi.fn().mockResolvedValue({}),
-      update: vi
-        .fn()
-        .mockResolvedValueOnce({})
-        .mockResolvedValueOnce({
-          editorAccess: false,
-          email: 'band@example.com',
-          id: 'user-band-1',
-          name: 'Band Name',
-          userType: 'band',
-        }),
+      update: vi.fn().mockResolvedValueOnce({}),
     }
 
     mockGetPayload.mockResolvedValue(payload)
@@ -179,6 +168,7 @@ describe('creator auth flow', () => {
   it('passes through request headers so verification emails use the active host', async () => {
     const payload = {
       create: vi.fn().mockResolvedValue({
+        _verificationToken: 'native-preview-token',
         editorAccess: false,
         email: 'preview@example.com',
         id: 'user-preview-1',
@@ -190,16 +180,7 @@ describe('creator auth flow', () => {
         error: vi.fn(),
       },
       sendEmail: vi.fn().mockResolvedValue({}),
-      update: vi
-        .fn()
-        .mockResolvedValueOnce({})
-        .mockResolvedValueOnce({
-          editorAccess: false,
-          email: 'preview@example.com',
-          id: 'user-preview-1',
-          name: 'Preview Artist',
-          userType: 'artist',
-        }),
+      update: vi.fn().mockResolvedValueOnce({}),
     }
 
     const payloadReq = {}
@@ -312,6 +293,7 @@ describe('creator auth flow', () => {
   it('keeps signup successful when the profile sync fails after the user was created', async () => {
     const payload = {
       create: vi.fn().mockResolvedValue({
+        _verificationToken: 'native-profile-failure-token',
         editorAccess: false,
         email: 'artist@example.com',
         id: 'user-artist-2',
@@ -325,14 +307,7 @@ describe('creator auth flow', () => {
       sendEmail: vi.fn().mockResolvedValue({}),
       update: vi
         .fn()
-        .mockRejectedValueOnce(new Error("Cannot read properties of null (reading 'label')"))
-        .mockResolvedValueOnce({
-          editorAccess: false,
-          email: 'artist@example.com',
-          id: 'user-artist-2',
-          name: 'Artist Name',
-          userType: 'artist',
-        }),
+        .mockRejectedValueOnce(new Error("Cannot read properties of null (reading 'label')")),
     }
 
     mockGetPayload.mockResolvedValue(payload)
