@@ -24,6 +24,7 @@ import { RELEASE_PAGE_SELECT } from '../../../home-components/getPublishedReleas
 import { ReleaseCommentsSection } from './ReleaseCommentsSection'
 import SharePostButton from '@/components/SharePostButton'
 import { ConsumerCommentsSection } from '@/components/ConsumerCommentsSection'
+import { getProfileSocialLinks } from '@/utilities/profileSocialLinks'
 
 type Args = {
   params: Promise<{
@@ -162,8 +163,7 @@ export default async function ReleaseDetailPage({ params: paramsPromise }: Args)
   }
 
   const { hero, layout } = page
-  const creatorProfile =
-    typeof page.profile === 'object' && page.profile ? page.profile : profile
+  const creatorProfile = typeof page.profile === 'object' && page.profile ? page.profile : profile
   const hasShop = creatorProfile?.id
     ? await hasPublishedCommerceProducts({
         payload: await getPayload({ config: configPromise }),
@@ -183,6 +183,12 @@ export default async function ReleaseDetailPage({ params: paramsPromise }: Args)
   })
   const releaseShareUrlPath =
     creatorProfile?.slug && page.slug ? `/${creatorProfile.slug}/release/${page.slug}` : url
+  const profileSocialLinks = creatorProfile?.id
+    ? await getProfileSocialLinks({
+        payload: await getPayload({ config: configPromise }),
+        profileID: creatorProfile.id,
+      })
+    : []
 
   return (
     <article className="mx-auto max-w-4xl pb-0 [&_p]:text-[13px]">
@@ -224,9 +230,9 @@ export default async function ReleaseDetailPage({ params: paramsPromise }: Args)
         </div>
       ) : null}
       <RenderBlocks blocks={artistLayout} hiddenBlockTypes={['socialMediaBlock']} />
-      {Array.isArray(page.socialLinks) && page.socialLinks.length > 0 ? (
+      {creatorProfile?.id ? (
         <div className="px-4 pt-4 md:px-0 md:pb-8">
-          <SocialMediaBlock socialLinks={page.socialLinks} />
+          <SocialMediaBlock socialLinks={profileSocialLinks} />
         </div>
       ) : null}
       {typeof page.id === 'string' && creatorProfile?.id ? (

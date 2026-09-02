@@ -40,6 +40,7 @@ describe('revalidateBiography', () => {
       req: {
         context: {},
         payload: {
+          find: vi.fn().mockResolvedValue({ docs: [{ slug: 'first-release' }] }),
           findByID: vi.fn(),
           logger,
         },
@@ -47,6 +48,8 @@ describe('revalidateBiography', () => {
     } as never)
 
     expect(revalidatePathMock).toHaveBeenCalledWith('/fleet-foxes/bio')
+    expect(revalidatePathMock).toHaveBeenCalledWith('/fleet-foxes/releases')
+    expect(revalidatePathMock).toHaveBeenCalledWith('/fleet-foxes/release/first-release')
   })
 
   it('revalidates the previous and next bio paths if the linked profile changes', async () => {

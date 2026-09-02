@@ -45,14 +45,8 @@
   --breakpoint-2xl: 86rem;
   --font-mono: var(--font-geist-mono);
   --font-sans:
-    "SF Pro Display",
-    "SF Pro Text",
-    -apple-system,
-    BlinkMacSystemFont,
-    "Helvetica Neue",
-    Helvetica,
-    Arial,
-    sans-serif;
+    'SF Pro Display', 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica,
+    Arial, sans-serif;
 }
 
 @layer utilities {
@@ -95,6 +89,85 @@
 }
 
 @layer components {
+  .artist-profile-surface {
+    width: 100%;
+    max-width: 64rem;
+    margin-inline: auto;
+    padding: 1rem;
+  }
+
+  .artist-profile-header__eyebrow {
+    margin-bottom: 0.75rem;
+  }
+
+  .artist-profile-header__title {
+    font-size: 2.25rem;
+    font-weight: 600;
+    line-height: 0.95;
+    letter-spacing: -0.04em;
+  }
+
+  .artist-profile-header__description {
+    margin-top: 1.5rem;
+  }
+
+  .artist-profile-header__navigation {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem 1.5rem;
+    margin-top: 1.25rem;
+  }
+
+  .artist-profile-content {
+    margin-top: 1.25rem;
+  }
+
+  .artist-profile-social {
+    margin-top: 2rem;
+    padding-bottom: 3rem;
+  }
+
+  @media (min-width: 976px) {
+    .artist-profile-surface {
+      max-width: 54.3125rem;
+      margin-left: max(10rem, calc((100vw - 57.625rem) / 2));
+      margin-right: 0;
+      padding: 0;
+    }
+
+    .artist-profile-header {
+      padding-top: 3.875rem;
+    }
+
+    .artist-profile-header__eyebrow {
+      margin-bottom: 0.875rem;
+    }
+
+    .artist-profile-header__title {
+      font-size: 4.5rem;
+    }
+
+    .artist-profile-header__description {
+      margin-top: 1.75rem;
+    }
+
+    .artist-profile-header__navigation {
+      min-height: 3.375rem;
+      align-items: center;
+      margin-top: 1.25rem;
+      padding: 1rem 0;
+    }
+
+    .artist-profile-content {
+      margin-top: 1.1875rem;
+    }
+
+    .artist-profile-social {
+      margin-top: 4rem;
+      padding-bottom: 6rem;
+    }
+  }
+
   .share-modal-backdrop {
     position: fixed;
     inset: 0;
@@ -155,7 +228,7 @@
   .post-editorial-prose,
   .share-modal--posts .share-modal__description {
     margin: 0;
-    font-family: Georgia, "Times New Roman", Times, serif;
+    font-family: Georgia, 'Times New Roman', Times, serif;
     line-height: 1.6;
   }
 

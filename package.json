@@ -17,6 +17,7 @@
     "lint": "cross-env NODE_OPTIONS=--no-deprecation eslint .",
     "lint:fix": "cross-env NODE_OPTIONS=--no-deprecation eslint . --fix",
     "migrate:user-identities": "cross-env NODE_OPTIONS=\"--no-deprecation --import=dotenv/config --import=tsx/esm\" node scripts/migrate-user-identities.mts",
+    "migrate:profile-social-links": "cross-env NODE_OPTIONS=\"--no-deprecation --import=dotenv/config --import=tsx/esm\" node scripts/migrate-profile-social-links.mts",
     "payload": "cross-env NODE_OPTIONS=--no-deprecation payload",
     "promote:admin": "cross-env NODE_OPTIONS=\"--no-deprecation --import=dotenv/config --import=tsx/esm\" node scripts/promote-admin.mts",
     "node:reset-password": "cross-env NODE_OPTIONS=\"--no-deprecation --import=dotenv/config --import=tsx/esm\" node scripts/reset-user-password.mts",

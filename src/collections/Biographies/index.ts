@@ -62,7 +62,8 @@ const biographyHero: Field = {
       type: 'upload',
       relationTo: 'media',
       admin: {
-        description: 'Opcional. Si agregas una imagen, la biografía mostrará el encabezado dividido.',
+        description:
+          'Opcional. Si agregas una imagen, la biografía mostrará el encabezado dividido.',
       },
       required: false,
     },
@@ -221,13 +222,11 @@ export const Biographies: CollectionConfig = {
             },
           ],
         },
+        {
+          label: 'Redes sociales',
+          fields: [socialLinksField()],
+        },
       ],
-    },
-    {
-      ...socialLinksField(),
-      admin: {
-        hidden: true,
-      },
     },
   ],
   hooks: {

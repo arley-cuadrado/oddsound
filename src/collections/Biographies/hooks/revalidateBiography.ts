@@ -3,7 +3,7 @@ import type { CollectionAfterChangeHook, CollectionAfterDeleteHook, Payload } fr
 
 import { revalidatePath } from 'next/cache'
 
-type BiographyRevalidationPayload = Pick<Payload, 'findByID' | 'logger'>
+type BiographyRevalidationPayload = Pick<Payload, 'find' | 'findByID' | 'logger'>
 
 async function resolveProfileSlug(args: {
   payload: BiographyRevalidationPayload
@@ -73,12 +73,50 @@ async function revalidateBiographySurface(args: {
   if (!profileSlug) return
 
   const bioPath = `/${profileSlug}/bio`
+  const releasesPath = `/${profileSlug}/releases`
+  const profileID =
+    typeof biography.profile === 'string' || typeof biography.profile === 'number'
+      ? biography.profile
+      : biography.profile && typeof biography.profile === 'object' && 'id' in biography.profile
+        ? biography.profile.id
+        : null
 
   payload.logger.info(`Revalidating biography at path: ${bioPath}`)
   safelyRevalidate({
     path: bioPath,
     payload,
   })
+  safelyRevalidate({
+    path: releasesPath,
+    payload,
+  })
+
+  if (!profileID) return
+
+  try {
+    const releases = await payload.find({
+      collection: 'pages',
+      depth: 0,
+      limit: 1000,
+      overrideAccess: true,
+      pagination: false,
+      select: { slug: true },
+      where: {
+        and: [{ profile: { equals: profileID } }, { _status: { equals: 'published' } }],
+      },
+    })
+
+    for (const release of releases.docs) {
+      if (!release.slug) continue
+      safelyRevalidate({
+        path: `/${profileSlug}/release/${release.slug}`,
+        payload,
+      })
+    }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown release lookup error'
+    payload.logger.warn(`Skipping release revalidation: ${message}`)
+  }
 }
 
 export const revalidateBiography: CollectionAfterChangeHook<Biography> = async ({
