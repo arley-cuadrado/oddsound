@@ -11,7 +11,7 @@ type Props = {
 
 export function ArtistProfileHeader({ description, eyebrow, media, navigation, title }: Props) {
   return (
-    <header className="artist-profile-header">
+    <header className={`artist-profile-header${media ? ' artist-profile-header--with-media' : ''}`}>
       <div className="artist-profile-header__identity">
         {eyebrow ? <div className="artist-profile-header__eyebrow">{eyebrow}</div> : null}
         {media ? <div className="artist-profile-header__media">{media}</div> : null}

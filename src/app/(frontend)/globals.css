@@ -152,6 +152,51 @@
       padding-top: 3.875rem;
     }
 
+    .artist-profile-header--with-media {
+      display: grid;
+      grid-template-areas:
+        'media eyebrow'
+        'media title'
+        'navigation description';
+      grid-template-columns: 23rem minmax(0, 1fr);
+      column-gap: 2.75rem;
+      row-gap: 0;
+    }
+
+    .artist-profile-header--with-media .artist-profile-header__identity {
+      display: contents;
+    }
+
+    .artist-profile-header--with-media .artist-profile-header__eyebrow {
+      grid-area: eyebrow;
+      margin-bottom: 0.875rem;
+    }
+
+    .artist-profile-header--with-media .artist-profile-header__media {
+      grid-area: media;
+      margin: 0;
+    }
+
+    .artist-profile-header--with-media .artist-profile-header__image {
+      height: 18rem;
+    }
+
+    .artist-profile-header--with-media .artist-profile-header__title {
+      grid-area: title;
+    }
+
+    .artist-profile-header--with-media .artist-profile-header__description {
+      grid-area: description;
+      margin-top: 1.25rem;
+    }
+
+    .artist-profile-header--with-media .artist-profile-header__navigation {
+      grid-area: navigation;
+      min-height: 0;
+      margin-top: 1rem;
+      padding: 0;
+    }
+
     .artist-profile-header__eyebrow {
       margin-bottom: 0.875rem;
     }
