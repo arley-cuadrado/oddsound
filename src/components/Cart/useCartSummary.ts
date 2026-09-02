@@ -65,13 +65,14 @@ export function useCartSummary() {
     } finally {
       setIsLoading(false)
     }
-  }, [cart?.id])
+  }, [cart])
 
   useEffect(() => {
-    void refresh()
-    // `cartRevision` and `itemCount` are the change signals; `refresh` reads the
-    // ids straight from storage.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const refreshTimeout = window.setTimeout(() => {
+      void refresh()
+    }, 0)
+
+    return () => window.clearTimeout(refreshTimeout)
   }, [cartRevision, itemCount, refresh])
 
   return { isLoading: isLoading || cartIsLoading, refresh, summary }

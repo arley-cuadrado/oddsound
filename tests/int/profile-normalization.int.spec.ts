@@ -45,10 +45,10 @@ describe('profile normalization', () => {
   it('exposes social links from the biography dashboard rather than the profile', () => {
     const tabs = Biographies.fields?.find((field) => field.type === 'tabs')
 
-    expect(tabs).toBeDefined()
-    expect((tabs as any).tabs.map((tab: { label: string }) => tab.label)).toContain(
-      'Redes sociales',
+    expect(tabs?.type).toBe('tabs')
+    expect(tabs?.type === 'tabs' && tabs.tabs.map((tab) => tab.label)).toContain('Redes sociales')
+    expect(Profiles.fields?.some((field) => 'name' in field && field.name === 'socialLinks')).toBe(
+      false,
     )
-    expect(Profiles.fields?.some((field) => field.name === 'socialLinks')).toBe(false)
   })
 })

@@ -58,17 +58,21 @@ export const CartClient: React.FC = () => {
   // Remembering the buyer's details across the several round trips to Mercado
   // Pago is the difference between one form and one form per artist.
   useEffect(() => {
-    const stored = readCartStorage(CONTACT_STORAGE_KEY)
+    const restoreContact = window.setTimeout(() => {
+      const stored = readCartStorage(CONTACT_STORAGE_KEY)
 
-    if (stored) {
-      try {
-        setContact({ ...emptyContact, ...(JSON.parse(stored) as CheckoutContactForm) })
-      } catch {
-        // A corrupt draft is not worth surfacing; the form just starts empty.
+      if (stored) {
+        try {
+          setContact({ ...emptyContact, ...(JSON.parse(stored) as CheckoutContactForm) })
+        } catch {
+          // A corrupt draft is not worth surfacing; the form just starts empty.
+        }
       }
-    }
 
-    setHydrated(true)
+      setHydrated(true)
+    }, 0)
+
+    return () => window.clearTimeout(restoreContact)
   }, [])
 
   useEffect(() => {
@@ -173,80 +177,77 @@ export const CartClient: React.FC = () => {
     void reconcileReturn()
   }, [reconcileReturn])
 
-  const handlePay = useCallback(
-    async (group: ArtistCartGroup) => {
-      const missing = getMissingContactFields(contact, {
-        requiresShipping: group.totals.shippingCOP > 0,
+  async function handlePay(group: ArtistCartGroup) {
+    const missing = getMissingContactFields(contact, {
+      requiresShipping: group.totals.shippingCOP > 0,
+    })
+
+    if (missing.length > 0) {
+      setShowErrors(true)
+      setNotice('Completa tus datos para continuar con el pago.')
+      document.getElementById('cart-contact')?.scrollIntoView({ behavior: 'smooth' })
+
+      return
+    }
+
+    setNotice(null)
+    setGroupState(group.profileID, 'starting')
+
+    const cartID = readCartStorage(CART_ID_STORAGE_KEY) || (cart?.id ? String(cart.id) : null)
+    const cartSecret = readCartStorage(CART_SECRET_STORAGE_KEY)
+
+    try {
+      const response = await fetch('/creator-api/checkout/group', {
+        body: JSON.stringify({
+          cartID,
+          cartSecret,
+          contact,
+          profileID: group.profileID,
+        }),
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        method: 'POST',
       })
 
-      if (missing.length > 0) {
-        setShowErrors(true)
-        setNotice('Completa tus datos para continuar con el pago.')
-        document.getElementById('cart-contact')?.scrollIntoView({ behavior: 'smooth' })
+      const data = (await response.json()) as {
+        initPoint?: string
+        message?: string
+        orderID?: string
+      }
+
+      if (!response.ok || !data.initPoint || !data.orderID) {
+        setGroupState(group.profileID, 'failed')
+        setNotice(data.message || 'No pudimos iniciar el pago. Inténtalo de nuevo.')
 
         return
       }
 
-      setNotice(null)
-      setGroupState(group.profileID, 'starting')
-
-      const cartID = readCartStorage(CART_ID_STORAGE_KEY) || (cart?.id ? String(cart.id) : null)
-      const cartSecret = readCartStorage(CART_SECRET_STORAGE_KEY)
-
+      // Stashed so the return trip knows which card to mark as paid, even
+      // after its items have left the cart.
       try {
-        const response = await fetch('/creator-api/checkout/group', {
-          body: JSON.stringify({
-            cartID,
-            cartSecret,
-            contact,
-            profileID: group.profileID,
+        window.localStorage.setItem(
+          PENDING_STORAGE_KEY,
+          JSON.stringify({
+            order: {
+              avatarURL: group.avatarURL,
+              profileID: group.profileID,
+              profileName: group.profileName,
+              totalCOP: group.totals.totalCOP,
+            },
+            orderID: data.orderID,
           }),
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
-          method: 'POST',
-        })
-
-        const data = (await response.json()) as {
-          initPoint?: string
-          message?: string
-          orderID?: string
-        }
-
-        if (!response.ok || !data.initPoint || !data.orderID) {
-          setGroupState(group.profileID, 'failed')
-          setNotice(data.message || 'No pudimos iniciar el pago. Inténtalo de nuevo.')
-
-          return
-        }
-
-        // Stashed so the return trip knows which card to mark as paid, even
-        // after its items have left the cart.
-        try {
-          window.localStorage.setItem(
-            PENDING_STORAGE_KEY,
-            JSON.stringify({
-              order: {
-                avatarURL: group.avatarURL,
-                profileID: group.profileID,
-                profileName: group.profileName,
-                totalCOP: group.totals.totalCOP,
-              },
-              orderID: data.orderID,
-            }),
-          )
-        } catch {
-          // Without it the payment still works; the paid card just will not
-          // linger after the items are removed.
-        }
-
-        window.location.assign(data.initPoint)
+        )
       } catch {
-        setGroupState(group.profileID, 'failed')
-        setNotice('No pudimos conectar con Mercado Pago. Inténtalo de nuevo.')
+        // Without it the payment still works; the paid card just will not
+        // linger after the items are removed.
       }
-    },
-    [cart?.id, contact, setGroupState],
-  )
+
+      window.location.assign(data.initPoint)
+    } catch {
+      setGroupState(group.profileID, 'failed')
+      setNotice('No pudimos conectar con Mercado Pago. Inténtalo de nuevo.')
+    }
+  }
 
   const settledIDs = new Set(settled.map((entry) => entry.profileID))
   const visibleGroups = summary.groups.filter((group) => !settledIDs.has(group.profileID))
