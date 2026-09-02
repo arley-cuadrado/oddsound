@@ -1,4 +1,4 @@
-import type { Biography } from '@/payload-types'
+import type { Biography, Media } from '@/payload-types'
 import type { Metadata } from 'next'
 
 import configPromise from '@payload-config'
@@ -9,6 +9,7 @@ import { notFound, permanentRedirect } from 'next/navigation'
 import { RenderBlocks } from '@/blocks/RenderBlocks'
 import { SocialMediaBlock } from '@/blocks/SocialMediaBlock/Component'
 import { ArtistProfileHeader } from '@/components/ArtistProfileHeader'
+import { Media as MediaComponent } from '@/components/Media'
 import { findPublicProfileBySlug } from '@/utilities/publicProfiles'
 import { normalizePublicSlugParam } from '@/utilities/publicSlugs'
 import { hasPublishedCommerceProducts } from '@/utilities/commerceProducts'
@@ -115,6 +116,13 @@ export default async function ArtistBioPage({ params: paramsPromise }: Args) {
     biography && Array.isArray(biography.layout)
       ? (biography.layout as NonNullable<Biography['layout']>)
       : []
+  const biographyHeroMedia =
+    biography?.hero &&
+    typeof biography.hero === 'object' &&
+    biography.hero.media &&
+    typeof biography.hero.media === 'object'
+      ? (biography.hero.media as Media)
+      : null
 
   return (
     <div className="artist-profile-surface">
@@ -123,6 +131,16 @@ export default async function ArtistBioPage({ params: paramsPromise }: Args) {
           <p className="text-xs uppercase tracking-[0.14em] text-[#777] dark:text-[#858c98]">
             {[profile.genre, profile.location].filter(Boolean).join(' · ')}
           </p>
+        }
+        media={
+          biographyHeroMedia ? (
+            <MediaComponent
+              className="artist-profile-header__image"
+              imgClassName="h-full w-full object-cover"
+              priority
+              resource={biographyHeroMedia}
+            />
+          ) : null
         }
         title={profile.displayName || biography?.title || 'Artista'}
         description={
@@ -136,7 +154,7 @@ export default async function ArtistBioPage({ params: paramsPromise }: Args) {
           <>
             <Link
               href={`/${profile.slug}/releases`}
-              className="inline-flex items-center text-[13px] font-medium text-[#777] underline underline-offset-4 dark:text-[#858c98]"
+              className="inline-flex items-center rounded-full bg-[#23c7c9] px-4 py-2 text-[13px] font-medium text-white transition-transform hover:-translate-y-0.5"
             >
               Ver lanzamientos
             </Link>
