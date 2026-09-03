@@ -209,20 +209,20 @@ export default async function ReleaseDetailPage({ params: paramsPromise }: Args)
           <Link
             href={`/${creatorProfile.slug}/releases`}
             prefetch={false}
-            className="inline-flex items-center text-[13px] font-medium text-[#777] underline underline-offset-4 dark:text-[#858c98]"
+            className="artist-profile-nav-link"
           >
             Ver lanzamientos
           </Link>
           <Link
             href={`/${creatorProfile.slug}/bio`}
-            className="inline-flex items-center text-[13px] font-medium text-[#777] underline underline-offset-4 dark:text-[#858c98]"
+            className="artist-profile-nav-link"
           >
             Bio
           </Link>
           {hasShop ? (
             <Link
               href={`/${creatorProfile.slug}/shop`}
-              className="inline-flex items-center text-[13px] font-medium text-[#777] underline underline-offset-4 dark:text-[#858c98]"
+              className="artist-profile-nav-link"
             >
               Shop
             </Link>

@@ -15,7 +15,7 @@ export function ArtistProfileHeader({ description, eyebrow, media, navigation, t
       <div className="artist-profile-header__identity">
         {eyebrow ? <div className="artist-profile-header__eyebrow">{eyebrow}</div> : null}
         {media ? <div className="artist-profile-header__media">{media}</div> : null}
-        <h1 className="artist-profile-header__title">{title}</h1>
+        <h1 className="artist-profile-header__title artist-profile-page-title">{title}</h1>
       </div>
       <div className="artist-profile-header__description">{description}</div>
       <div className="artist-profile-header__navigation">{navigation}</div>

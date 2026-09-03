@@ -100,6 +100,35 @@
     margin-bottom: 0.75rem;
   }
 
+  .artist-profile-meta {
+    font-size: 0.75rem;
+    line-height: 1rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .artist-profile-page-title {
+    font-family: 'SF Pro Display', 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: 2.25rem;
+    font-weight: 900;
+    line-height: 0.95;
+    letter-spacing: -0.025em;
+  }
+
+  .artist-profile-nav-link {
+    display: inline-flex;
+    align-items: center;
+    font-size: 13px;
+    font-weight: 500;
+    color: #777;
+    text-decoration-line: underline;
+    text-underline-offset: 4px;
+  }
+
+  .dark .artist-profile-nav-link {
+    color: #858c98;
+  }
+
   .artist-profile-header__media {
     margin-bottom: 1.5rem;
   }
@@ -110,14 +139,6 @@
     height: 17rem;
     overflow: hidden;
     border-radius: 0.5rem;
-  }
-
-  .artist-profile-header__title {
-    font-family: 'SF Pro Display', 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    font-size: 2.25rem;
-    font-weight: 800;
-    line-height: 0.95;
-    letter-spacing: -0.04em;
   }
 
   .artist-profile-header__description {
@@ -209,7 +230,7 @@
       height: 20rem;
     }
 
-    .artist-profile-header__title {
+    .artist-profile-page-title {
       font-size: 4.5rem;
     }
 

@@ -128,7 +128,7 @@ export default async function ArtistBioPage({ params: paramsPromise }: Args) {
     <div className="artist-profile-surface">
       <ArtistProfileHeader
         eyebrow={
-          <p className="text-xs uppercase tracking-[0.14em] text-[#777] dark:text-[#858c98]">
+          <p className="artist-profile-meta text-[#777] dark:text-[#858c98]">
             {[profile.genre, profile.location].filter(Boolean).join(' · ')}
           </p>
         }
@@ -161,7 +161,7 @@ export default async function ArtistBioPage({ params: paramsPromise }: Args) {
             {hasShop ? (
               <Link
                 href={`/${profile.slug}/shop`}
-                className="inline-flex items-center text-[13px] font-medium text-[#777] underline underline-offset-4 dark:text-[#858c98]"
+                className="artist-profile-nav-link"
               >
                 Shop
               </Link>

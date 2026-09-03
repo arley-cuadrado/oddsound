@@ -39,13 +39,13 @@ export const MediumImpactHero: React.FC<MediumImpactHeroProps> = ({
         <div className="flex flex-col justify-center">
           {creatorMeta && (
             <div className="mb-4 space-y-1">
-              <p className="text-xs uppercase tracking-[0.14em] text-[#777] dark:text-[#858c98]">
+              <p className="artist-profile-meta text-[#777] dark:text-[#858c98]">
                 {creatorMeta}
               </p>
             </div>
           )}
 
-          <h1 className="text-4xl font-black leading-[0.95] tracking-tight text-slate-950 md:text-6xl lg:text-7xl dark:text-white">
+          <h1 className="artist-profile-page-title text-slate-950 dark:text-white">
             {pageTitle}
           </h1>
 
