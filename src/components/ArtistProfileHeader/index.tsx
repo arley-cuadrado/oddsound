@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import React from 'react'
 
 type Props = {
-  description: ReactNode
+  description?: ReactNode
   eyebrow?: ReactNode
   media?: ReactNode
   navigation: ReactNode
@@ -17,7 +17,7 @@ export function ArtistProfileHeader({ description, eyebrow, media, navigation, t
         {media ? <div className="artist-profile-header__media">{media}</div> : null}
         <h1 className="artist-profile-header__title artist-profile-page-title">{title}</h1>
       </div>
-      <div className="artist-profile-header__description">{description}</div>
+      {description ? <div className="artist-profile-header__description">{description}</div> : null}
       <div className="artist-profile-header__navigation">{navigation}</div>
     </header>
   )

@@ -161,26 +161,15 @@
     padding-bottom: 3rem;
   }
 
-  @media (min-width: 976px) {
-    .artist-profile-surface {
-      max-width: 54.3125rem;
-      margin-left: max(10rem, calc((100vw - 57.625rem) / 2));
-      margin-right: 0;
-      padding: 0;
-    }
-
-    .artist-profile-header {
-      padding-top: 3.875rem;
-    }
-
+  @media (min-width: 768px) {
     .artist-profile-header--with-media {
       display: grid;
       grid-template-areas:
         'media eyebrow'
         'media title'
         'navigation description';
-      grid-template-columns: 23rem minmax(0, 1fr);
-      column-gap: 2.75rem;
+      grid-template-columns: minmax(18rem, 23rem) minmax(0, 1fr);
+      column-gap: clamp(2rem, 4vw, 2.75rem);
       row-gap: 0;
     }
 
@@ -216,6 +205,23 @@
       min-height: 0;
       margin-top: 1rem;
       padding: 0;
+    }
+
+    .artist-profile-header--with-media .artist-profile-page-title {
+      font-size: 3.5rem;
+    }
+  }
+
+  @media (min-width: 976px) {
+    .artist-profile-surface {
+      max-width: 54.3125rem;
+      margin-left: max(10rem, calc((100vw - 57.625rem) / 2));
+      margin-right: 0;
+      padding: 0;
+    }
+
+    .artist-profile-header {
+      padding-top: 3.875rem;
     }
 
     .artist-profile-header__eyebrow {

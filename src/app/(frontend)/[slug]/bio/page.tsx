@@ -143,13 +143,6 @@ export default async function ArtistBioPage({ params: paramsPromise }: Args) {
           ) : null
         }
         title={profile.displayName || biography?.title || 'Artista'}
-        description={
-          <p className="text-sm text-[#777] dark:text-[#858c98]">
-            {biography
-              ? 'Conoce más sobre este artista.'
-              : 'Esta biografía aún está en construcción.'}
-          </p>
-        }
         navigation={
           <>
             <Link
