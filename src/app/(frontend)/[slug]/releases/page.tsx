@@ -123,7 +123,7 @@ export default async function ArtistReleasesPage({ params: paramsPromise }: Args
   })
 
   return (
-    <div className="artist-profile-surface [&_p]:text-[13px]">
+    <div className="artist-profile-surface">
       <ArtistProfileHeader
         eyebrow={
           <p className="artist-profile-meta text-[#777] dark:text-[#858c98]">
@@ -156,7 +156,7 @@ export default async function ArtistReleasesPage({ params: paramsPromise }: Args
         }
       />
 
-      <div className="artist-profile-content">
+      <div className="artist-profile-content [&_p]:text-[13px]">
         {releases.length > 0 ? (
           <div className="grid grid-cols-2 gap-4 md:gap-6 xl:grid-cols-4">
             {releases.map((release) => (
