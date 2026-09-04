@@ -10,6 +10,10 @@ import {
   generateEditorVerificationEmailSubject,
 } from '@/utilities/emailVerification'
 import { hasEditorialIdentity } from '@/utilities/isEditorialUser'
+import {
+  isRetryableMongoTransactionError,
+  withMongoTransactionRetry,
+} from '@/utilities/mongoTransactionRetry'
 
 export type AccountType = 'artist' | 'band'
 export type LegacyAccountType = AccountType | 'label'
@@ -129,21 +133,23 @@ async function issueVerificationEmail(args: {
   const payloadReq = await createPayloadReqWithHeaders(req, payload)
   const token = crypto.randomBytes(20).toString('hex')
 
-  const updatedUser = await payload.update({
-    id: user.id,
-    collection: 'users',
-    data: {
-      verificationExpiresAt: new Date(
-        Date.now() + CREATOR_VERIFICATION_EXPIRATION_MS,
-      ).toISOString(),
-      _verificationToken: token,
-      _verified: false,
-    } as never,
-    depth: 0,
-    overrideAccess: true,
-    req: payloadReq,
-    showHiddenFields: true,
-  })
+  const updatedUser = await withMongoTransactionRetry(() =>
+    payload.update({
+      id: user.id,
+      collection: 'users',
+      data: {
+        verificationExpiresAt: new Date(
+          Date.now() + CREATOR_VERIFICATION_EXPIRATION_MS,
+        ).toISOString(),
+        _verificationToken: token,
+        _verified: false,
+      } as never,
+      depth: 0,
+      overrideAccess: true,
+      req: payloadReq,
+      showHiddenFields: true,
+    }),
+  )
 
   await payload.sendEmail({
     html: hasEditorialIdentity(updatedUser)
@@ -332,20 +338,24 @@ export async function confirmCreatorVerification(input: {
       }
     }
 
-    await payload.verifyEmail({
-      collection: 'users',
-      token,
-    })
+    await withMongoTransactionRetry(() =>
+      payload.verifyEmail({
+        collection: 'users',
+        token,
+      }),
+    )
 
-    await payload.update({
-      collection: 'users',
-      data: {
-        verificationExpiresAt: null,
-      },
-      depth: 0,
-      id: matchedUser.id,
-      overrideAccess: true,
-    })
+    await withMongoTransactionRetry(() =>
+      payload.update({
+        collection: 'users',
+        data: {
+          verificationExpiresAt: null,
+        },
+        depth: 0,
+        id: matchedUser.id,
+        overrideAccess: true,
+      }),
+    )
 
     return {
       email,
@@ -373,7 +383,11 @@ export async function confirmCreatorVerification(input: {
     return {
       email,
       message:
-        error instanceof Error ? error.message : 'No fue posible confirmar el correo electrónico.',
+        isRetryableMongoTransactionError(error)
+          ? 'No pudimos confirmar el correo por una demora temporal. Intenta nuevamente.'
+          : error instanceof Error
+            ? error.message
+            : 'No fue posible confirmar el correo electrónico.',
       ok: false,
       status: 'verification_token_invalid',
     }
@@ -391,11 +405,12 @@ export async function registerCreatorAccount(input: {
   req?: VerificationRequestLike
 }): Promise<CreatorAuthResult> {
   try {
-    const payload = await getPayload({ config: await getPayloadConfig() })
     const country = input.country.trim()
     const email = input.email.trim().toLowerCase()
     const genre = input.genre.trim()
     const name = input.name.trim()
+
+    const payload = await getPayload({ config: await getPayloadConfig() })
 
     if (!input.acceptedLegal) {
       return {
@@ -443,32 +458,34 @@ export async function registerCreatorAccount(input: {
     }
 
     const payloadReq = await createPayloadReqWithHeaders(input.req, payload)
-    const createdUser = await payload.create({
-      collection: 'users',
-      context: {
-        deferProfileCreation: true,
-      },
-      data: {
-        accountType: input.accountType,
-        email,
-        legalAccepted: true,
-        legalAcceptedAt: new Date().toISOString(),
-        legalAcceptedVersion: CREATOR_LEGAL_VERSION,
-        name,
-        password: input.password,
-        role: 'creator',
-        userType: input.accountType,
-        username: buildUsernameSeed({ email, name }),
-        verificationExpiresAt: new Date(
-          Date.now() + CREATOR_VERIFICATION_EXPIRATION_MS,
-        ).toISOString(),
-      },
-      disableVerificationEmail: true,
-      draft: false,
-      overrideAccess: true,
-      req: payloadReq,
-      showHiddenFields: true,
-    })
+    const createdUser = await withMongoTransactionRetry(() =>
+      payload.create({
+        collection: 'users',
+        context: {
+          deferProfileCreation: true,
+        },
+        data: {
+          accountType: input.accountType,
+          email,
+          legalAccepted: true,
+          legalAcceptedAt: new Date().toISOString(),
+          legalAcceptedVersion: CREATOR_LEGAL_VERSION,
+          name,
+          password: input.password,
+          role: 'creator',
+          userType: input.accountType,
+          username: buildUsernameSeed({ email, name }),
+          verificationExpiresAt: new Date(
+            Date.now() + CREATOR_VERIFICATION_EXPIRATION_MS,
+          ).toISOString(),
+        },
+        disableVerificationEmail: true,
+        draft: false,
+        overrideAccess: true,
+        req: payloadReq,
+        showHiddenFields: true,
+      }),
+    )
 
     const persistedUser = await findUserByEmail(email, payload)
 
@@ -573,8 +590,43 @@ export async function registerCreatorAccount(input: {
       status: 'pending_verification',
     }
   } catch (error) {
+    if (isRetryableMongoTransactionError(error)) {
+      const email = input.email.trim().toLowerCase()
+
+      try {
+        const payload = await getPayload({ config: await getPayloadConfig() })
+        const existingUser = await findUserByEmail(email, payload)
+
+        if (existingUser && !existingUser._verified && !isConsumerIdentity(existingUser)) {
+          if (existingUser._verificationToken) {
+            await sendExistingVerificationEmail({
+              payload,
+              req: input.req,
+              token: existingUser._verificationToken,
+              user: existingUser,
+            })
+          } else {
+            await issueVerificationEmail({ payload, req: input.req, user: existingUser })
+          }
+
+          return {
+            email,
+            message: 'Tu cuenta fue creada. Revisa tu correo para activarla.',
+            ok: true,
+            status: 'pending_verification',
+          }
+        }
+      } catch {
+        // Return the safe retry message below when the recovery lookup fails.
+      }
+    }
+
     return {
-      message: error instanceof Error ? error.message : 'No fue posible crear tu cuenta.',
+      message: isRetryableMongoTransactionError(error)
+        ? 'No pudimos crear tu cuenta por una demora temporal. Intenta nuevamente.'
+        : error instanceof Error
+          ? error.message
+          : 'No fue posible crear tu cuenta.',
       ok: false,
     }
   }

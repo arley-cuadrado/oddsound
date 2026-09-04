@@ -130,6 +130,60 @@ describe('creator auth flow', () => {
     )
   })
 
+  it('retries a transient MongoDB transaction abort while creating an artist account', async () => {
+    const createdUser = {
+      _verificationToken: 'native-retry-token',
+      editorAccess: false,
+      email: 'artist@example.com',
+      id: 'user-artist-retry',
+      profile: 'profile-artist-retry',
+      userType: 'artist',
+    }
+    const payload = {
+      create: vi
+        .fn()
+        .mockRejectedValueOnce(new Error('Transaction with { txnNumber: 1 } has been aborted.'))
+        .mockResolvedValueOnce(createdUser),
+      find: vi
+        .fn()
+        .mockResolvedValueOnce({ docs: [] })
+        .mockResolvedValueOnce({
+          docs: [
+            {
+              _verificationToken: 'native-retry-token',
+              _verified: false,
+              email: 'artist@example.com',
+              id: 'user-artist-retry',
+            },
+          ],
+        }),
+      logger: {
+        error: vi.fn(),
+      },
+      sendEmail: vi.fn().mockResolvedValue({}),
+      update: vi.fn().mockResolvedValue({}),
+    }
+
+    mockGetPayload.mockResolvedValue(payload)
+
+    await expect(
+      registerCreatorAccount({
+        acceptedLegal: true,
+        accountType: 'artist',
+        country: 'Colombia',
+        email: 'artist@example.com',
+        genre: 'Indie Rock',
+        name: 'Artist Name',
+        password: 'secure-password',
+      }),
+    ).resolves.toMatchObject({
+      ok: true,
+      status: 'pending_verification',
+    })
+
+    expect(payload.create).toHaveBeenCalledTimes(2)
+  })
+
   it('registers a band account with the band account type', async () => {
     const payload = {
       create: vi.fn().mockResolvedValue({

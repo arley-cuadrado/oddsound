@@ -105,6 +105,52 @@ describe('creator verification confirmation', () => {
     })
   })
 
+  it('retries a transient MongoDB transaction abort before confirming the email', async () => {
+    const find = vi
+      .fn()
+      .mockResolvedValueOnce({
+        docs: [
+          {
+            _verified: false,
+            email: 'artist@example.com',
+            id: 'user-1',
+          },
+        ],
+      })
+      .mockResolvedValueOnce({
+        docs: [
+          {
+            _verificationToken: 'valid-token',
+            _verified: false,
+            email: 'artist@example.com',
+            id: 'user-1',
+          },
+        ],
+      })
+    const verifyEmail = vi
+      .fn()
+      .mockRejectedValueOnce(new Error('Transaction with { txnNumber: 1 } has been aborted.'))
+      .mockResolvedValueOnce(true)
+
+    mockGetPayload.mockResolvedValue({
+      find,
+      update: vi.fn().mockResolvedValue({}),
+      verifyEmail,
+    })
+
+    await expect(
+      confirmCreatorVerification({
+        email: 'artist@example.com',
+        token: 'valid-token',
+      }),
+    ).resolves.toMatchObject({
+      ok: true,
+      status: 'verification_completed',
+    })
+
+    expect(verifyEmail).toHaveBeenCalledTimes(2)
+  })
+
   it('rejects tokens that do not belong to the supplied email', async () => {
     const find = vi
       .fn()

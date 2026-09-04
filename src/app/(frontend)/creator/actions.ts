@@ -16,6 +16,10 @@ import {
 } from '@/utilities/emailVerification'
 import { hasEditorialIdentity } from '@/utilities/isEditorialUser'
 import {
+  isRetryableMongoTransactionError,
+  withMongoTransactionRetry,
+} from '@/utilities/mongoTransactionRetry'
+import {
   getExpiredPayloadTokenCookieOptions,
   getPayloadTokenCookieOptions,
 } from '@/utilities/payloadAuthCookie'
@@ -140,18 +144,20 @@ export async function resendVerificationEmail(input: { email: string }): Promise
     const payloadReq = await createPayloadReqWithHeaders(verificationReq, payload)
     const token = crypto.randomBytes(20).toString('hex')
 
-    const updatedUser = await payload.update({
-      id: user.id,
-      collection: 'users',
-      data: {
-        _verificationToken: token,
-        _verified: false,
-      } as never,
-      depth: 0,
-      overrideAccess: true,
-      req: payloadReq,
-      showHiddenFields: true,
-    })
+    const updatedUser = await withMongoTransactionRetry(() =>
+      payload.update({
+        id: user.id,
+        collection: 'users',
+        data: {
+          _verificationToken: token,
+          _verified: false,
+        } as never,
+        depth: 0,
+        overrideAccess: true,
+        req: payloadReq,
+        showHiddenFields: true,
+      }),
+    )
 
     await payload.sendEmail({
       html: hasEditorialIdentity(updatedUser)
@@ -190,7 +196,11 @@ export async function resendVerificationEmail(input: { email: string }): Promise
   } catch (error) {
     return {
       email,
-      message: error instanceof Error ? error.message : 'No fue posible reenviar el correo.',
+      message: isRetryableMongoTransactionError(error)
+        ? 'No pudimos reenviar el correo por una demora temporal. Intenta nuevamente.'
+        : error instanceof Error
+          ? error.message
+          : 'No fue posible reenviar el correo.',
       ok: false,
     }
   }
