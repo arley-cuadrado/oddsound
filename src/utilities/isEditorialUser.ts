@@ -49,7 +49,7 @@ export function getUserLoginPath(user: UserLike) {
   const candidate = readUserFields(user)
 
   if (isFanUser(user)) return '/fan/login'
-  if (candidate.role === 'creator') return '/creator/login'
+  if (candidate.role === 'creator') return '/dashboard/login'
 
   return '/dashboard/login'
 }

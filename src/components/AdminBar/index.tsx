@@ -96,7 +96,7 @@ const LocalizedPayloadAdminBar: React.FC<LocalizedPayloadAdminBarProps> = (props
         method: 'POST',
       })
     } finally {
-      window.location.href = '/creator/login'
+      window.location.href = '/dashboard/login'
     }
   }
 

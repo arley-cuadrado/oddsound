@@ -21,7 +21,7 @@ export default async function CreatorRegisterView() {
             ¿Ya estás registrad@?{' '}
             <Link
               className="text-[13px] text-foreground underline underline-offset-2"
-              href="/creator/login"
+              href="/dashboard/login"
             >
               Inicia sesión
             </Link>

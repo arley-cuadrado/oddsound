@@ -19,7 +19,7 @@ import {
 
 export default async function CreatorDashboardPage() {
   const { user } = await getMeUser({
-    nullUserRedirect: '/creator/login',
+    nullUserRedirect: '/dashboard/login',
   })
 
   if (isFanUser(user)) {

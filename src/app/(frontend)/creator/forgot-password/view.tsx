@@ -20,7 +20,7 @@ export default async function CreatorForgotPasswordView() {
           ¿Ya recuerdas tu contraseña?{' '}
           <Link
             className="text-[13px] text-foreground underline underline-offset-2"
-            href="/creator/login"
+            href="/dashboard/login"
           >
             Vuelve a iniciar sesión
           </Link>

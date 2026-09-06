@@ -124,7 +124,7 @@ describe('editor identity migration compatibility', () => {
         role: 'creator',
         userType: 'editor',
       }),
-    ).toBe('/creator/login')
+    ).toBe('/dashboard/login')
 
     expect(
       getUserLoginPath({

@@ -17,7 +17,7 @@ export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
   const pathname = usePathname()
   const fallbackLoginLink = {
     label: 'Iniciar sesión',
-    url: '/creator/login',
+    url: '/dashboard/login',
   }
 
   useEffect(() => {
@@ -71,7 +71,7 @@ export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
         method: 'POST',
       })
     } finally {
-      window.location.href = isFanAuthenticated ? '/fan/login' : '/creator/login'
+      window.location.href = isFanAuthenticated ? '/fan/login' : '/dashboard/login'
     }
   }
 
@@ -92,7 +92,7 @@ export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
     return {
       ...link,
       label: 'Iniciar sesión',
-      url: '/creator/login',
+      url: '/dashboard/login',
     }
   }
 

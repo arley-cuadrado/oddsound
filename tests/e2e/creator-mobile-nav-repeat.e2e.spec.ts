@@ -122,7 +122,7 @@ async function cleanupCreatorUser() {
 }
 
 async function loginToDashboard(page: Page) {
-  await page.goto('http://localhost:3000/creator/login')
+  await page.goto('http://localhost:3000/dashboard/login')
   await page.fill('#email', creatorUser.email)
   await page.fill('#password', creatorUser.password)
   await page.click('button[type="submit"]')

@@ -20,7 +20,6 @@ export const STATIC_SITEMAP_PATHS = [
   '/about-us',
   '/search',
   '/posts',
-  '/creator/login',
   '/creator/register',
   '/fan/login',
 ]

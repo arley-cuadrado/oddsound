@@ -112,7 +112,7 @@ describe('CreatorVerifyView', () => {
       screen.getByText('Tu correo ya había sido confirmado. Ya puedes iniciar sesión.'),
     ).toBeTruthy()
     expect(screen.getByRole('link', { name: 'Ir a iniciar sesión' }).getAttribute('href')).toBe(
-      '/creator/login',
+      '/dashboard/login',
     )
   })
 })
