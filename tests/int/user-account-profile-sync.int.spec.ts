@@ -9,6 +9,7 @@ import {
 
 describe('creator account profile synchronization', () => {
   it('loads existing public profile fields into the creator account', async () => {
+    const find = vi.fn().mockResolvedValue({ docs: [{ id: 'profile-1' }] })
     const findByID = vi.fn().mockResolvedValue({
       avatar: 'media-1',
       genre: 'Reggae',
@@ -19,12 +20,11 @@ describe('creator account profile synchronization', () => {
       doc: {
         accountType: 'artist',
         id: 'creator-1',
-        profile: 'profile-1',
         role: 'creator',
         userType: 'artist',
       },
       req: {
-        payload: { findByID },
+        payload: { find, findByID },
         user: { id: 'creator-1' },
       },
     } as any)
@@ -34,6 +34,12 @@ describe('creator account profile synchronization', () => {
       genre: 'Reggae',
       location: 'Colombia',
     })
+    expect(find).toHaveBeenCalledWith(
+      expect.objectContaining({
+        collection: 'profiles',
+        where: { owner: { equals: 'creator-1' } },
+      }),
+    )
   })
 
   it('synchronizes account edits to the linked public profile', async () => {

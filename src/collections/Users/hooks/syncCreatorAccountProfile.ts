@@ -17,6 +17,34 @@ function getRelationID(value: Relation | undefined) {
   return null
 }
 
+async function resolveProfileID({
+  payload,
+  profile,
+  userID,
+}: {
+  payload: any
+  profile: Relation | undefined
+  userID: number | string
+}) {
+  const linkedProfileID = getRelationID(profile)
+  if (linkedProfileID) return linkedProfileID
+
+  const result = await payload.find({
+    collection: 'profiles',
+    depth: 0,
+    limit: 1,
+    overrideAccess: true,
+    pagination: false,
+    where: {
+      owner: {
+        equals: userID,
+      },
+    },
+  })
+
+  return result.docs[0]?.id ? String(result.docs[0].id) : null
+}
+
 export const populateCreatorAccountProfile: CollectionAfterReadHook<User> = async ({
   doc,
   req,
@@ -25,7 +53,11 @@ export const populateCreatorAccountProfile: CollectionAfterReadHook<User> = asyn
 
   const account = doc as typeof doc & CreatorAccountFields
 
-  const profileID = getRelationID(account.profile as Relation)
+  const profileID = await resolveProfileID({
+    payload: req.payload,
+    profile: account.profile as Relation,
+    userID: account.id,
+  })
   if (!profileID) return doc
 
   const profile = await req.payload.findByID({
@@ -53,7 +85,11 @@ export const syncCreatorAccountProfile: CollectionAfterChangeHook<User> = async 
 
   const account = doc as typeof doc & CreatorAccountFields
 
-  const profileID = getRelationID(account.profile as Relation)
+  const profileID = await resolveProfileID({
+    payload: req.payload,
+    profile: account.profile as Relation,
+    userID: account.id,
+  })
   if (!profileID) return doc
 
   const profileData: Record<string, unknown> = {}
