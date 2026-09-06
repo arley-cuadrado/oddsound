@@ -1,13 +1,22 @@
 import type { CollectionAfterChangeHook, CollectionAfterReadHook } from 'payload'
 
-import { isMusicalCreatorUser } from '@/utilities/isEditorialUser'
+import { hasEditorialIdentity, isMusicalCreatorUser } from '@/utilities/isEditorialUser'
 import type { User } from '@/payload-types'
 
 type Relation = null | number | string | { id?: null | number | string }
 type CreatorAccountFields = {
   accountAvatar?: Relation
+  editorBio?: null | string
+  editorSocialLink?: {
+    label?: null | string
+    url?: null | string
+  } | null
   genre?: null | string
   location?: null | string
+}
+
+function isProfileAccountUser(user: unknown) {
+  return isMusicalCreatorUser(user) || hasEditorialIdentity(user)
 }
 
 function getRelationID(value: Relation | undefined) {
@@ -49,7 +58,7 @@ export const populateCreatorAccountProfile: CollectionAfterReadHook<User> = asyn
   doc,
   req,
 }) => {
-  if (!doc || String(req.user?.id) !== String(doc.id) || !isMusicalCreatorUser(doc)) return doc
+  if (!doc || String(req.user?.id) !== String(doc.id) || !isProfileAccountUser(doc)) return doc
 
   const account = doc as typeof doc & CreatorAccountFields
 
@@ -67,9 +76,21 @@ export const populateCreatorAccountProfile: CollectionAfterReadHook<User> = asyn
     overrideAccess: true,
   })
 
-  return {
+  const accountData = {
     ...doc,
     accountAvatar: account.accountAvatar ?? profile.avatar ?? null,
+  }
+
+  if (hasEditorialIdentity(doc)) {
+    return {
+      ...accountData,
+      editorBio: account.editorBio ?? profile.bio ?? null,
+      editorSocialLink: account.editorSocialLink ?? profile.editorSocialLink ?? {},
+    }
+  }
+
+  return {
+    ...accountData,
     genre: account.genre ?? profile.genre ?? null,
     location: account.location ?? profile.location ?? null,
   }
@@ -81,7 +102,7 @@ export const syncCreatorAccountProfile: CollectionAfterChangeHook<User> = async 
   operation,
   req,
 }) => {
-  if (operation !== 'update' || !isMusicalCreatorUser(doc)) return doc
+  if (operation !== 'update' || !isProfileAccountUser(doc)) return doc
 
   const account = doc as typeof doc & CreatorAccountFields
 
@@ -95,13 +116,17 @@ export const syncCreatorAccountProfile: CollectionAfterChangeHook<User> = async 
   const profileData: Record<string, unknown> = {}
 
   if ('name' in data) profileData.displayName = doc.name
-  if ('accountType' in data) {
+  if (isMusicalCreatorUser(doc) && 'accountType' in data) {
     profileData.accountType = doc.accountType
     profileData.profileType = doc.accountType
   }
   if ('accountAvatar' in data) profileData.avatar = account.accountAvatar || null
-  if ('location' in data) profileData.location = account.location || null
-  if ('genre' in data) profileData.genre = account.genre || null
+  if (isMusicalCreatorUser(doc) && 'location' in data) profileData.location = account.location || null
+  if (isMusicalCreatorUser(doc) && 'genre' in data) profileData.genre = account.genre || null
+  if (hasEditorialIdentity(doc) && 'editorBio' in data) profileData.bio = account.editorBio || null
+  if (hasEditorialIdentity(doc) && 'editorSocialLink' in data) {
+    profileData.editorSocialLink = account.editorSocialLink || {}
+  }
   if ('email' in data) profileData.contactEmail = doc.email
 
   if (Object.keys(profileData).length === 0) return doc

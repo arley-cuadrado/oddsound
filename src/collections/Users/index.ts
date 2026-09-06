@@ -32,10 +32,21 @@ const canUpdateOwnMusicalAccount = async ({ req }: { req: any }) => {
   return isMusicalCreatorUser(req.user)
 }
 
+const canUpdateOwnProfileAccount = async ({ req }: { req: any }) => {
+  if (await hasFreshAdminAccess(req)) return true
+
+  return isMusicalCreatorUser(req.user) || hasEditorialIdentity(req.user)
+}
+
 const isMusicalAccountForm = (
   siblingData: Record<string, unknown> | undefined,
   user: unknown,
 ) => isMusicalCreatorUser(siblingData || user)
+
+const isEditorialAccountForm = (
+  siblingData: Record<string, unknown> | undefined,
+  user: unknown,
+) => hasEditorialIdentity(siblingData || user)
 
 export const Users: CollectionConfig = {
   slug: 'users',
@@ -368,10 +379,11 @@ export const Users: CollectionConfig = {
       relationTo: 'media',
       label: 'Avatar',
       access: {
-        update: canUpdateOwnMusicalAccount,
+        update: canUpdateOwnProfileAccount,
       },
       admin: {
-        condition: (_data, siblingData, { user }) => isMusicalAccountForm(siblingData, user),
+        condition: (_data, siblingData, { user }) =>
+          isMusicalAccountForm(siblingData, user) || isEditorialAccountForm(siblingData, user),
       },
     },
     {
@@ -395,6 +407,50 @@ export const Users: CollectionConfig = {
       admin: {
         condition: (_data, siblingData, { user }) => isMusicalAccountForm(siblingData, user),
       },
+    },
+    {
+      name: 'editorBio',
+      type: 'textarea',
+      label: 'Bio',
+      access: {
+        update: canUpdateOwnProfileAccount,
+      },
+      admin: {
+        condition: (_data, siblingData, { user }) => isEditorialAccountForm(siblingData, user),
+      },
+    },
+    {
+      name: 'editorSocialLink',
+      type: 'group',
+      label: 'Red social',
+      access: {
+        update: canUpdateOwnProfileAccount,
+      },
+      admin: {
+        condition: (_data, siblingData, { user }) => isEditorialAccountForm(siblingData, user),
+      },
+      fields: [
+        {
+          name: 'label',
+          type: 'text',
+          label: 'Nombre / máscara',
+        },
+        {
+          name: 'url',
+          type: 'text',
+          label: 'Enlace',
+          validate: (value: null | string | undefined) => {
+            if (typeof value !== 'string' || !value.trim()) return true
+
+            try {
+              new URL(value)
+              return true
+            } catch {
+              return 'Ingresa una URL válida.'
+            }
+          },
+        },
+      ],
     },
     {
       name: 'isActive',

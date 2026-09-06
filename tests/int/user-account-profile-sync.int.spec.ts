@@ -85,6 +85,63 @@ describe('creator account profile synchronization', () => {
     )
   })
 
+  it('loads and synchronizes editorial account fields', async () => {
+    const findByID = vi.fn().mockResolvedValue({
+      avatar: 'media-editor',
+      bio: 'Escritor musical.',
+      editorSocialLink: { label: 'Instagram', url: 'https://instagram.com/editor' },
+    })
+    const update = vi.fn().mockResolvedValue({})
+
+    const result = await populateCreatorAccountProfile({
+      doc: {
+        editorAccess: true,
+        id: 'editor-1',
+        profile: 'profile-editor',
+        role: 'creator',
+        userType: 'editor',
+      },
+      req: { payload: { findByID }, user: { id: 'editor-1' } },
+    } as any)
+
+    expect(result).toMatchObject({
+      accountAvatar: 'media-editor',
+      editorBio: 'Escritor musical.',
+      editorSocialLink: { label: 'Instagram', url: 'https://instagram.com/editor' },
+    })
+
+    await syncCreatorAccountProfile({
+      data: {
+        accountAvatar: 'media-editor-next',
+        editorBio: 'Nueva bio.',
+        editorSocialLink: { label: 'X', url: 'https://x.com/editor' },
+      },
+      doc: {
+        accountAvatar: 'media-editor-next',
+        editorAccess: true,
+        editorBio: 'Nueva bio.',
+        editorSocialLink: { label: 'X', url: 'https://x.com/editor' },
+        id: 'editor-1',
+        profile: 'profile-editor',
+        role: 'creator',
+        userType: 'editor',
+      },
+      operation: 'update',
+      req: { payload: { update } },
+    } as any)
+
+    expect(update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: {
+          avatar: 'media-editor-next',
+          bio: 'Nueva bio.',
+          editorSocialLink: { label: 'X', url: 'https://x.com/editor' },
+        },
+        id: 'profile-editor',
+      }),
+    )
+  })
+
   it('hides the redundant profile collection and editorial switch for artists', () => {
     const editorAccessField = Users.fields.find(
       (field) => 'name' in field && field.name === 'editorAccess',
