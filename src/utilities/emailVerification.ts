@@ -570,7 +570,7 @@ export const generateCreatorVerificationEmailHTML = ({
   return buildEmailTemplate({
     actionLabel: 'Confirmar correo',
     actionURL: verificationURL,
-    body: 'Ya casi activas tu cuenta de artista en oddsound, para hacerlo solo debes confirmar este correo. Luego podrás acceder al panel de usuario y comenzar a crear lanzamientos.',
+    body: 'Ya casi activas tu cuenta en oddsound, confirma dando click en el botón, luego inicia sesión con correo y contraseña para acceder al panel de artista o banda y comenzar a crear lanzamientos. ;)',
     fallbackPrefix: 'PD: Si el botón no abre, copia y pega este enlace en tu navegador:',
     heroPhotographerName: EMAIL_VERIFICATION_HERO_PHOTOGRAPHER_NAME,
     heroPhotographerPhotoURL: EMAIL_VERIFICATION_HERO_PHOTOGRAPHER_PHOTO_URL,
@@ -578,11 +578,12 @@ export const generateCreatorVerificationEmailHTML = ({
     outlookHeroImageURL: EMAIL_VERIFICATION_OUTLOOK_HERO_IMAGE_URL,
     preheader: 'Confirma tu correo para activar tu cuenta en oddsound y comenzar a publicar.',
     recipientName: user.name,
-    title: 'Confirma tu correo en oddsound',
+    title: 'Confirma tu cuenta de artista o banda en oddsound',
   })
 }
 
-export const generateCreatorVerificationEmailSubject = () => 'Confirma tu correo en oddsound'
+export const generateCreatorVerificationEmailSubject = () =>
+  'Confirma tu cuenta de artista o banda en oddsound'
 
 export const generateEditorVerificationEmailHTML = ({
   req,
@@ -602,7 +603,7 @@ export const generateEditorVerificationEmailHTML = ({
   return buildEmailTemplate({
     actionLabel: 'Confirmar cuenta editor',
     actionURL: verificationURL,
-    body: 'Tu cuenta de redactor en oddsound ya está lista. Confirma dando click en el botón, luego inicia sesión con tu correo y contraseña para comenzar a escribir en la plataforma. ;)',
+    body: 'Tu cuenta de redactor en oddsound está casi lista, confirma dando click en el botón, luego inicia sesión con correo y contraseña para comenzar a escribir en la plataforma. ;)',
     fallbackPrefix: 'Si el boton no abre, copia y pega este enlace en tu navegador:',
     heroPhotographerName: EMAIL_VERIFICATION_HERO_PHOTOGRAPHER_NAME,
     heroPhotographerPhotoURL: EMAIL_VERIFICATION_HERO_PHOTOGRAPHER_PHOTO_URL,
