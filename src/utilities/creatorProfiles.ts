@@ -5,7 +5,9 @@ type CreatorLike = {
   accountType?: null | 'artist' | 'band' | 'label'
   editorAccess?: boolean | null
   email?: null | string
+  genre?: null | string
   id: string
+  location?: null | string
   name?: null | string
   profile?: null | string | { id?: null | string }
   role?: null | string
@@ -176,6 +178,8 @@ export async function ensureCreatorProfile({
         : {}),
       contactEmail: user.email || undefined,
       displayName,
+      genre: user.genre || undefined,
+      location: user.location || undefined,
       owner: user.id,
       slug: profileSlug,
     },

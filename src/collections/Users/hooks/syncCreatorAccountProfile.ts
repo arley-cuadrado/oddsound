@@ -1,0 +1,83 @@
+import type { CollectionAfterChangeHook, CollectionAfterReadHook } from 'payload'
+
+import { isMusicalCreatorUser } from '@/utilities/isEditorialUser'
+import type { User } from '@/payload-types'
+
+type Relation = null | number | string | { id?: null | number | string }
+type CreatorAccountFields = {
+  accountAvatar?: Relation
+  genre?: null | string
+  location?: null | string
+}
+
+function getRelationID(value: Relation | undefined) {
+  if (typeof value === 'string' || typeof value === 'number') return String(value)
+  if (value && typeof value === 'object' && value.id) return String(value.id)
+
+  return null
+}
+
+export const populateCreatorAccountProfile: CollectionAfterReadHook<User> = async ({
+  doc,
+  req,
+}) => {
+  if (!doc || String(req.user?.id) !== String(doc.id) || !isMusicalCreatorUser(doc)) return doc
+
+  const account = doc as typeof doc & CreatorAccountFields
+
+  const profileID = getRelationID(account.profile as Relation)
+  if (!profileID) return doc
+
+  const profile = await req.payload.findByID({
+    collection: 'profiles',
+    depth: 0,
+    id: profileID,
+    overrideAccess: true,
+  })
+
+  return {
+    ...doc,
+    accountAvatar: account.accountAvatar ?? profile.avatar ?? null,
+    genre: account.genre ?? profile.genre ?? null,
+    location: account.location ?? profile.location ?? null,
+  }
+}
+
+export const syncCreatorAccountProfile: CollectionAfterChangeHook<User> = async ({
+  data,
+  doc,
+  operation,
+  req,
+}) => {
+  if (operation !== 'update' || !isMusicalCreatorUser(doc)) return doc
+
+  const account = doc as typeof doc & CreatorAccountFields
+
+  const profileID = getRelationID(account.profile as Relation)
+  if (!profileID) return doc
+
+  const profileData: Record<string, unknown> = {}
+
+  if ('name' in data) profileData.displayName = doc.name
+  if ('accountType' in data) {
+    profileData.accountType = doc.accountType
+    profileData.profileType = doc.accountType
+  }
+  if ('accountAvatar' in data) profileData.avatar = account.accountAvatar || null
+  if ('location' in data) profileData.location = account.location || null
+  if ('genre' in data) profileData.genre = account.genre || null
+  if ('email' in data) profileData.contactEmail = doc.email
+
+  if (Object.keys(profileData).length === 0) return doc
+
+  await req.payload.update({
+    collection: 'profiles',
+    data: profileData,
+    depth: 0,
+    id: profileID,
+    overrideAccess: true,
+    req,
+  })
+
+  return doc
+}

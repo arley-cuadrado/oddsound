@@ -327,8 +327,8 @@ export const Profiles: CollectionConfig = {
     },
   },
   admin: {
+    hidden: true,
     components: {
-      beforeList: ['@/components/CreatorProfileListRedirect'],
       views: {
         edit: {
           api: {
