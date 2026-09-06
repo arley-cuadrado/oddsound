@@ -29,11 +29,13 @@ describe('revalidateBiography', () => {
     await revalidateBiography({
       doc: {
         profile: {
+          id: 'profile-fleet-foxes',
           slug: 'fleet-foxes',
         },
       },
       previousDoc: {
         profile: {
+          id: 'profile-fleet-foxes',
           slug: 'fleet-foxes',
         },
       },
