@@ -8,7 +8,11 @@ import { VideoBlock } from '@/blocks/VideoBlock/config'
 import { Biographies } from '@/collections/Biographies'
 import { Media } from '@/collections/Media'
 import { Pages } from '@/collections/Pages'
-import { MEDIA_UPLOAD_MAX_FILE_SIZE_BYTES, payloadUploadOptions } from '@/config/uploadLimits'
+import {
+  exceedsMediaUploadLimit,
+  MEDIA_UPLOAD_MAX_FILE_SIZE_BYTES,
+  payloadUploadOptions,
+} from '@/config/uploadLimits'
 import { linkGroup } from '@/fields/linkGroup'
 import { hero } from '@/heros/config'
 import { payloadSpanish } from '@/i18n/payloadSpanish'
@@ -74,6 +78,8 @@ describe('release editor localization config', () => {
     expect(payloadUploadOptions.responseOnLimit).toBe(
       'El peso máximo de la imagen debe ser de 1MB (1.024 KB), optimiza e intenta nuevamente',
     )
+    expect(exceedsMediaUploadLimit(MEDIA_UPLOAD_MAX_FILE_SIZE_BYTES)).toBe(false)
+    expect(exceedsMediaUploadLimit(MEDIA_UPLOAD_MAX_FILE_SIZE_BYTES + 1)).toBe(true)
   })
 
   it('localizes hero image upload labels and required validation', () => {

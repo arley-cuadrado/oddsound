@@ -10,10 +10,16 @@ import {
 describe('creator account profile synchronization', () => {
   it('loads existing public profile fields into the creator account', async () => {
     const find = vi.fn().mockResolvedValue({ docs: [{ id: 'profile-1' }] })
-    const findByID = vi.fn().mockResolvedValue({
-      avatar: 'media-1',
-      genre: 'Reggae',
-      location: 'Colombia',
+    const findByID = vi.fn().mockImplementation(({ collection }) => {
+      if (collection === 'media') {
+        return Promise.resolve({ id: 'media-1', thumbnailURL: '/media/avatar-thumb.jpg' })
+      }
+
+      return Promise.resolve({
+        avatar: 'media-1',
+        genre: 'Reggae',
+        location: 'Colombia',
+      })
     })
 
     const result = await populateCreatorAccountProfile({
@@ -30,7 +36,7 @@ describe('creator account profile synchronization', () => {
     } as any)
 
     expect(result).toMatchObject({
-      accountAvatar: 'media-1',
+      accountAvatar: { id: 'media-1', thumbnailURL: '/media/avatar-thumb.jpg' },
       genre: 'Reggae',
       location: 'Colombia',
     })
@@ -86,10 +92,16 @@ describe('creator account profile synchronization', () => {
   })
 
   it('loads and synchronizes editorial account fields', async () => {
-    const findByID = vi.fn().mockResolvedValue({
-      avatar: 'media-editor',
-      bio: 'Escritor musical.',
-      editorSocialLink: { label: 'Instagram', url: 'https://instagram.com/editor' },
+    const findByID = vi.fn().mockImplementation(({ collection }) => {
+      if (collection === 'media') {
+        return Promise.resolve({ id: 'media-editor', url: '/media/editor-avatar.jpg' })
+      }
+
+      return Promise.resolve({
+        avatar: 'media-editor',
+        bio: 'Escritor musical.',
+        editorSocialLink: { label: 'Instagram', url: 'https://instagram.com/editor' },
+      })
     })
     const update = vi.fn().mockResolvedValue({})
 
@@ -105,7 +117,7 @@ describe('creator account profile synchronization', () => {
     } as any)
 
     expect(result).toMatchObject({
-      accountAvatar: 'media-editor',
+      accountAvatar: { id: 'media-editor', url: '/media/editor-avatar.jpg' },
       editorBio: 'Escritor musical.',
       editorSocialLink: { label: 'Instagram', url: 'https://instagram.com/editor' },
     })

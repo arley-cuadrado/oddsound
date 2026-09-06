@@ -26,6 +26,20 @@ function getRelationID(value: Relation | undefined) {
   return null
 }
 
+async function resolveMedia(avatar: Relation | undefined, payload: any) {
+  const avatarID = getRelationID(avatar)
+  if (!avatarID || (avatar && typeof avatar === 'object' && ('url' in avatar || 'thumbnailURL' in avatar))) {
+    return avatar || null
+  }
+
+  return payload.findByID({
+    collection: 'media',
+    depth: 0,
+    id: avatarID,
+    overrideAccess: true,
+  })
+}
+
 async function resolveProfileID({
   payload,
   profile,
@@ -76,9 +90,11 @@ export const populateCreatorAccountProfile: CollectionAfterReadHook<User> = asyn
     overrideAccess: true,
   })
 
+  const accountAvatar = await resolveMedia(account.accountAvatar ?? profile.avatar, req.payload)
+
   const accountData = {
     ...doc,
-    accountAvatar: account.accountAvatar ?? profile.avatar ?? null,
+    accountAvatar,
   }
 
   if (hasEditorialIdentity(doc)) {
