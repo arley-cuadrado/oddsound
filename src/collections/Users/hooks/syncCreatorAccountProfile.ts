@@ -252,7 +252,7 @@ export const syncCreatorAccountProfile: CollectionAfterChangeHook<User> = async 
         owner: account.id,
         profile: profileID,
         title: doc.name,
-      },
+      } as any,
       depth: 0,
       overrideAccess: true,
       req,
