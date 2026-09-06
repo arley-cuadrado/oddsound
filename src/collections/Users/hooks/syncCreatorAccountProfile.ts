@@ -1,11 +1,25 @@
-import type { CollectionAfterChangeHook, CollectionAfterReadHook } from 'payload'
+import type {
+  CollectionAfterChangeHook,
+  CollectionAfterReadHook,
+  CollectionBeforeChangeHook,
+} from 'payload'
 
 import { hasEditorialIdentity, isMusicalCreatorUser } from '@/utilities/isEditorialUser'
 import type { User } from '@/payload-types'
 
 type Relation = null | number | string | { id?: null | number | string }
 type CreatorAccountFields = {
+  advancedAccountAvatar?: Relation
+  advancedAccountType?: null | 'artist' | 'band'
+  advancedGenre?: null | string
+  advancedLocation?: null | string
   accountAvatar?: Relation
+  biographyHero?: {
+    media?: Relation
+    type?: null | string
+  } | null
+  biographyLayout?: unknown
+  biographySocialLinks?: unknown
   editorBio?: null | string
   editorSocialLink?: {
     label?: null | string
@@ -68,6 +82,41 @@ async function resolveProfileID({
   return result.docs[0]?.id ? String(result.docs[0].id) : null
 }
 
+async function resolveBiography({ payload, userID }: { payload: any; userID: number | string }) {
+  const result = await payload.find({
+    collection: 'biographies',
+    depth: 0,
+    limit: 1,
+    overrideAccess: true,
+    pagination: false,
+    where: {
+      owner: {
+        equals: userID,
+      },
+    },
+  })
+
+  return result.docs[0] || null
+}
+
+// Virtual Account fields make the artist dashboard a single editing surface.
+// Persist their values in the existing user fields before profile synchronization.
+export const applyCreatorAccountAdvancedFields: CollectionBeforeChangeHook<User> = ({
+  data,
+  originalDoc,
+}) => {
+  if (!isMusicalCreatorUser({ ...originalDoc, ...data })) return data
+
+  const nextData = { ...(data || {}) } as CreatorAccountFields
+
+  if ('advancedAccountType' in nextData) nextData.accountType = nextData.advancedAccountType
+  if ('advancedAccountAvatar' in nextData) nextData.accountAvatar = nextData.advancedAccountAvatar
+  if ('advancedLocation' in nextData) nextData.location = nextData.advancedLocation
+  if ('advancedGenre' in nextData) nextData.genre = nextData.advancedGenre
+
+  return nextData
+}
+
 export const populateCreatorAccountProfile: CollectionAfterReadHook<User> = async ({
   doc,
   req,
@@ -105,8 +154,20 @@ export const populateCreatorAccountProfile: CollectionAfterReadHook<User> = asyn
     }
   }
 
+  const biography = await resolveBiography({
+    payload: req.payload,
+    userID: account.id,
+  })
+
   return {
     ...accountData,
+    advancedAccountAvatar: accountData.accountAvatar,
+    advancedAccountType: account.accountType ?? profile.accountType ?? profile.profileType ?? 'artist',
+    advancedGenre: account.genre ?? profile.genre ?? null,
+    advancedLocation: account.location ?? profile.location ?? null,
+    biographyHero: biography?.hero ?? { type: 'mediumImpact' },
+    biographyLayout: biography?.layout ?? [],
+    biographySocialLinks: biography?.socialLinks ?? [],
     genre: account.genre ?? profile.genre ?? null,
     location: account.location ?? profile.location ?? null,
   }
@@ -145,16 +206,57 @@ export const syncCreatorAccountProfile: CollectionAfterChangeHook<User> = async 
   }
   if ('email' in data) profileData.contactEmail = doc.email
 
-  if (Object.keys(profileData).length === 0) return doc
+  if (Object.keys(profileData).length > 0) {
+    await req.payload.update({
+      collection: 'profiles',
+      data: profileData,
+      depth: 0,
+      id: profileID,
+      overrideAccess: true,
+      req,
+    })
+  }
 
-  await req.payload.update({
-    collection: 'profiles',
-    data: profileData,
-    depth: 0,
-    id: profileID,
-    overrideAccess: true,
-    req,
-  })
+  if (!isMusicalCreatorUser(doc)) return doc
+
+  const accountInput = data as CreatorAccountFields
+  const biographyData: Record<string, unknown> = {}
+
+  if ('biographyHero' in accountInput) {
+    biographyData.hero = accountInput.biographyHero || { type: 'mediumImpact' }
+  }
+  if ('biographyLayout' in accountInput) biographyData.layout = accountInput.biographyLayout || []
+  if ('biographySocialLinks' in accountInput) {
+    biographyData.socialLinks = accountInput.biographySocialLinks || []
+  }
+
+  if (Object.keys(biographyData).length === 0) return doc
+
+  const biography = await resolveBiography({ payload: req.payload, userID: account.id })
+
+  if (biography) {
+    await req.payload.update({
+      collection: 'biographies',
+      data: biographyData,
+      depth: 0,
+      id: biography.id,
+      overrideAccess: true,
+      req,
+    })
+  } else {
+    await req.payload.create({
+      collection: 'biographies',
+      data: {
+        ...biographyData,
+        owner: account.id,
+        profile: profileID,
+        title: doc.name,
+      },
+      depth: 0,
+      overrideAccess: true,
+      req,
+    })
+  }
 
   return doc
 }

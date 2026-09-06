@@ -1,4 +1,4 @@
-import type { CollectionConfig } from 'payload'
+import type { CollectionConfig, Field } from 'payload'
 
 import { authenticated } from '@/access/authenticated'
 import { hasFreshAdminAccess } from '@/access/hasFreshAdminAccess'
@@ -22,9 +22,12 @@ import { createProfile } from './hooks/createProfile'
 import { deleteCreatorData } from './hooks/deleteCreatorData'
 import { ensureCreatorDefaults } from './hooks/ensureCreatorDefaults'
 import {
+  applyCreatorAccountAdvancedFields,
   populateCreatorAccountProfile,
   syncCreatorAccountProfile,
 } from './hooks/syncCreatorAccountProfile'
+import { BiographyContent } from '@/blocks/Content/config'
+import { socialLinksField } from '@/fields/socialLinks'
 
 const canUpdateOwnMusicalAccount = async ({ req }: { req: any }) => {
   if (await hasFreshAdminAccess(req)) return true
@@ -47,6 +50,44 @@ const isEditorialAccountForm = (
   siblingData: Record<string, unknown> | undefined,
   user: unknown,
 ) => hasEditorialIdentity(siblingData || user)
+
+const musicalAccountTabCondition = (_data: unknown, siblingData: any, { user }: any) =>
+  isMusicalAccountForm(siblingData, user) && !isAdminUser(user)
+
+const creatorBiographyFields: Field[] = [
+  {
+    name: 'biographyHero',
+    type: 'group',
+    label: false,
+    virtual: true,
+    fields: [
+      { name: 'type', type: 'select', defaultValue: 'mediumImpact', label: 'Tipo', options: [{ label: 'Dividido', value: 'mediumImpact' }], admin: { hidden: true, readOnly: true } },
+      { name: 'media', type: 'upload', relationTo: 'media', required: false, admin: { description: 'Opcional. Si agregas una imagen, la biografía mostrará el encabezado dividido.' } },
+    ],
+  },
+  {
+    name: 'biographyLayout',
+    type: 'blocks',
+    virtual: true,
+    label: 'Contenido',
+    labels: { plural: 'Secciones', singular: 'Sección' },
+    blocks: [BiographyContent],
+    maxRows: 1,
+    required: false,
+  },
+  {
+    ...(socialLinksField() as Field),
+    name: 'biographySocialLinks',
+    virtual: true,
+  },
+]
+
+const creatorAdvancedFields: Field[] = [
+  { name: 'advancedAccountType', type: 'select', virtual: true, label: 'Tipo de cuenta', options: [{ label: 'Artista', value: 'artist' }, { label: 'Banda', value: 'band' }] },
+  { name: 'advancedAccountAvatar', type: 'upload', virtual: true, relationTo: 'media', label: 'Avatar' },
+  { name: 'advancedLocation', type: 'text', virtual: true, label: 'Ubicación' },
+  { name: 'advancedGenre', type: 'text', virtual: true, label: 'Género' },
+]
 
 export const Users: CollectionConfig = {
   slug: 'users',
@@ -293,6 +334,7 @@ export const Users: CollectionConfig = {
         },
         condition: (_data, siblingData, { user }) => {
           if (siblingData?.role === 'admin') return false
+          if (isMusicalCreatorUser(user)) return false
 
           return isMusicalAccountForm(siblingData, user)
         },
@@ -383,7 +425,8 @@ export const Users: CollectionConfig = {
       },
       admin: {
         condition: (_data, siblingData, { user }) =>
-          isMusicalAccountForm(siblingData, user) || isEditorialAccountForm(siblingData, user),
+          (!isMusicalCreatorUser(user) && isMusicalAccountForm(siblingData, user)) ||
+          isEditorialAccountForm(siblingData, user),
       },
     },
     {
@@ -394,7 +437,8 @@ export const Users: CollectionConfig = {
         update: canUpdateOwnMusicalAccount,
       },
       admin: {
-        condition: (_data, siblingData, { user }) => isMusicalAccountForm(siblingData, user),
+        condition: (_data, siblingData, { user }) =>
+          !isMusicalCreatorUser(user) && isMusicalAccountForm(siblingData, user),
       },
     },
     {
@@ -405,7 +449,8 @@ export const Users: CollectionConfig = {
         update: canUpdateOwnMusicalAccount,
       },
       admin: {
-        condition: (_data, siblingData, { user }) => isMusicalAccountForm(siblingData, user),
+        condition: (_data, siblingData, { user }) =>
+          !isMusicalCreatorUser(user) && isMusicalAccountForm(siblingData, user),
       },
     },
     {
@@ -449,6 +494,31 @@ export const Users: CollectionConfig = {
               return 'Ingresa una URL válida.'
             }
           },
+        },
+      ],
+    },
+    {
+      type: 'tabs',
+      tabs: [
+        {
+          label: 'Encabezado',
+          admin: { condition: musicalAccountTabCondition },
+          fields: [creatorBiographyFields[0]],
+        },
+        {
+          label: 'Bio',
+          admin: { condition: musicalAccountTabCondition },
+          fields: [creatorBiographyFields[1]],
+        },
+        {
+          label: 'Redes sociales',
+          admin: { condition: musicalAccountTabCondition },
+          fields: [creatorBiographyFields[2]],
+        },
+        {
+          label: 'Opciones avanzadas',
+          admin: { condition: musicalAccountTabCondition },
+          fields: creatorAdvancedFields,
         },
       ],
     },
@@ -514,7 +584,7 @@ export const Users: CollectionConfig = {
     afterOperation: [createProfile],
     afterChange: [syncCreatorAccountProfile],
     afterRead: [populateCreatorAccountProfile],
-    beforeChange: [ensureCreatorDefaults],
+    beforeChange: [ensureCreatorDefaults, applyCreatorAccountAdvancedFields],
   },
   timestamps: true,
 }

@@ -3,13 +3,29 @@ import { describe, expect, it, vi } from 'vitest'
 import { Profiles } from '@/collections/Profiles'
 import { Users } from '@/collections/Users'
 import {
+  applyCreatorAccountAdvancedFields,
   populateCreatorAccountProfile,
   syncCreatorAccountProfile,
 } from '@/collections/Users/hooks/syncCreatorAccountProfile'
 
 describe('creator account profile synchronization', () => {
   it('loads existing public profile fields into the creator account', async () => {
-    const find = vi.fn().mockResolvedValue({ docs: [{ id: 'profile-1' }] })
+    const find = vi.fn().mockImplementation(({ collection }) => {
+      if (collection === 'biographies') {
+        return Promise.resolve({
+          docs: [
+            {
+              hero: { media: 'hero-1', type: 'mediumImpact' },
+              id: 'biography-1',
+              layout: [{ blockType: 'content', columns: [] }],
+              socialLinks: [{ label: 'Instagram', url: 'https://instagram.com/artist' }],
+            },
+          ],
+        })
+      }
+
+      return Promise.resolve({ docs: [{ id: 'profile-1' }] })
+    })
     const findByID = vi.fn().mockImplementation(({ collection }) => {
       if (collection === 'media') {
         return Promise.resolve({ id: 'media-1', thumbnailURL: '/media/avatar-thumb.jpg' })
@@ -37,6 +53,10 @@ describe('creator account profile synchronization', () => {
 
     expect(result).toMatchObject({
       accountAvatar: { id: 'media-1', thumbnailURL: '/media/avatar-thumb.jpg' },
+      advancedAccountType: 'artist',
+      biographyHero: { media: 'hero-1', type: 'mediumImpact' },
+      biographyLayout: [{ blockType: 'content', columns: [] }],
+      biographySocialLinks: [{ label: 'Instagram', url: 'https://instagram.com/artist' }],
       genre: 'Reggae',
       location: 'Colombia',
     })
@@ -46,6 +66,63 @@ describe('creator account profile synchronization', () => {
         where: { owner: { equals: 'creator-1' } },
       }),
     )
+  })
+
+  it('persists the artist biography edited from the account tabs', async () => {
+    const update = vi.fn().mockResolvedValue({})
+
+    await syncCreatorAccountProfile({
+      data: {
+        biographyHero: { media: 'hero-next', type: 'mediumImpact' },
+        biographyLayout: [{ blockType: 'content', columns: [] }],
+        biographySocialLinks: [{ label: 'Spotify', url: 'https://spotify.com/artist' }],
+      },
+      doc: {
+        id: 'creator-1',
+        name: 'Nueva Banda',
+        profile: 'profile-1',
+        role: 'creator',
+        userType: 'band',
+      },
+      operation: 'update',
+      req: {
+        payload: {
+          find: vi.fn().mockResolvedValue({ docs: [{ id: 'biography-1' }] }),
+          update,
+        },
+      },
+    } as any)
+
+    expect(update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        collection: 'biographies',
+        data: {
+          hero: { media: 'hero-next', type: 'mediumImpact' },
+          layout: [{ blockType: 'content', columns: [] }],
+          socialLinks: [{ label: 'Spotify', url: 'https://spotify.com/artist' }],
+        },
+        id: 'biography-1',
+      }),
+    )
+  })
+
+  it('maps advanced artist account fields to their persisted counterparts', async () => {
+    const result = await applyCreatorAccountAdvancedFields({
+      data: {
+        advancedAccountAvatar: 'avatar-1',
+        advancedAccountType: 'band',
+        advancedGenre: 'Rock',
+        advancedLocation: 'Bogotá',
+      },
+      originalDoc: { role: 'creator', userType: 'artist' },
+    } as any)
+
+    expect(result).toMatchObject({
+      accountAvatar: 'avatar-1',
+      accountType: 'band',
+      genre: 'Rock',
+      location: 'Bogotá',
+    })
   })
 
   it('synchronizes account edits to the linked public profile', async () => {
@@ -163,5 +240,13 @@ describe('creator account profile synchronization', () => {
     expect(
       editorAccessField.admin.condition({}, {}, { user: { role: 'creator', userType: 'artist' } }),
     ).toBe(false)
+
+    const accountTabs = Users.fields.find((field) => field.type === 'tabs') as any
+    expect(accountTabs.tabs.map((tab: { label: string }) => tab.label)).toEqual([
+      'Encabezado',
+      'Bio',
+      'Redes sociales',
+      'Opciones avanzadas',
+    ])
   })
 })

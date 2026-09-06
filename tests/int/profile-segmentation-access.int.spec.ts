@@ -76,9 +76,9 @@ describe('profile segmentation access', () => {
     )
   })
 
-  it('shows biographies only to admins and musical creators', async () => {
+  it('keeps biographies in the dashboard only for admins', async () => {
     expect(biographiesHidden({ user: editorUser })).toBe(true)
-    expect(biographiesHidden({ user: artistUser })).toBe(false)
+    expect(biographiesHidden({ user: artistUser })).toBe(true)
     expect(biographiesHidden({ user: fanUser })).toBe(true)
     expect(biographiesHidden({ user: adminUser })).toBe(false)
 

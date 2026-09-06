@@ -123,7 +123,9 @@ export const Biographies: CollectionConfig = {
     },
   },
   admin: {
-    hidden: ({ user }) => !isAdminUser(user) && !isMusicalCreatorUser(user),
+    // Artist and band settings now live in Dashboard > Cuenta. Admins retain the
+    // collection for support and editorial oversight.
+    hidden: ({ user }) => !isAdminUser(user),
     components: {
       beforeList: ['@/components/CreatorBiographyListRedirect'],
       views: {
