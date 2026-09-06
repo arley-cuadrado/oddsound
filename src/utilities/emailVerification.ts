@@ -570,7 +570,7 @@ export const generateCreatorVerificationEmailHTML = ({
   return buildEmailTemplate({
     actionLabel: 'Confirmar correo',
     actionURL: verificationURL,
-    body: 'Ya casi activas tu cuenta en oddsound. Solo confirma tu correo para poder entrar. Una vez lo hagas podrás acceder a tu panel de usuario y comenzar a crear tus lanzamientos y publicaciones.',
+    body: 'Ya casi activas tu cuenta de artista en oddsound, para hacerlo solo debes confirmar este correo. Luego podrás acceder al panel de usuario y comenzar a crear lanzamientos.',
     fallbackPrefix: 'PD: Si el botón no abre, copia y pega este enlace en tu navegador:',
     heroPhotographerName: EMAIL_VERIFICATION_HERO_PHOTOGRAPHER_NAME,
     heroPhotographerPhotoURL: EMAIL_VERIFICATION_HERO_PHOTOGRAPHER_PHOTO_URL,

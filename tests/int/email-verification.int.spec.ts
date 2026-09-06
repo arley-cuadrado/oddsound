@@ -40,4 +40,18 @@ describe('verification email hero styles', () => {
       'https://oddsound-preview.vercel.app/creator/verify?email=preview%40oddsound.co&amp;token=preview-token',
     )
   })
+
+  it('uses the artist account confirmation copy', () => {
+    const html = generateCreatorVerificationEmailHTML({
+      token: 'test-token',
+      user: {
+        email: 'artist@oddsound.co',
+        name: 'Artista',
+      },
+    })
+
+    expect(html).toContain(
+      'Ya casi activas tu cuenta de artista en oddsound, para hacerlo solo debes confirmar este correo. Luego podrás acceder al panel de usuario y comenzar a crear lanzamientos.',
+    )
+  })
 })
