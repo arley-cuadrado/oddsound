@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest'
 
-import { generateCreatorVerificationEmailHTML } from '@/utilities/emailVerification'
+import {
+  generateCreatorVerificationEmailHTML,
+  generateCreatorVerificationEmailSubject,
+  generateEditorVerificationEmailHTML,
+} from '@/utilities/emailVerification'
 
 describe('verification email hero styles', () => {
   it('keeps hero copy and photographer credits white for mobile and dark mode clients', () => {
@@ -38,6 +42,38 @@ describe('verification email hero styles', () => {
 
     expect(html).toContain(
       'https://oddsound-preview.vercel.app/creator/verify?email=preview%40oddsound.co&amp;token=preview-token',
+    )
+  })
+
+  it('uses the artist and band account confirmation copy and title', () => {
+    const html = generateCreatorVerificationEmailHTML({
+      token: 'test-token',
+      user: {
+        email: 'artist@oddsound.co',
+        name: 'Artista',
+      },
+    })
+
+    expect(html).toContain(
+      'Ya casi activas tu cuenta en oddsound, confirma dando click en el botón, luego inicia sesión con correo y contraseña para acceder al panel de artista o banda y comenzar a crear lanzamientos. ;)',
+    )
+    expect(html).toContain('Confirma tu cuenta de artista o banda en oddsound')
+    expect(generateCreatorVerificationEmailSubject()).toBe(
+      'Confirma tu cuenta de artista o banda en oddsound',
+    )
+  })
+
+  it('uses the editor account confirmation copy', () => {
+    const html = generateEditorVerificationEmailHTML({
+      token: 'test-token',
+      user: {
+        email: 'editor@oddsound.co',
+        name: 'Editor',
+      },
+    })
+
+    expect(html).toContain(
+      'Tu cuenta de redactor en oddsound está casi lista, confirma dando click en el botón, luego inicia sesión con correo y contraseña para comenzar a escribir en la plataforma. ;)',
     )
   })
 })
