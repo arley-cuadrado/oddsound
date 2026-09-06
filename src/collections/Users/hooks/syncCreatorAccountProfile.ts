@@ -14,6 +14,7 @@ type CreatorAccountFields = {
   advancedGenre?: null | string
   advancedLocation?: null | string
   accountAvatar?: Relation
+  accountType?: null | 'artist' | 'band'
   biographyHero?: {
     media?: Relation
     type?: null | string
