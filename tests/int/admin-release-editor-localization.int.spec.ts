@@ -16,6 +16,7 @@ import {
 import { linkGroup } from '@/fields/linkGroup'
 import { hero } from '@/heros/config'
 import { payloadSpanish } from '@/i18n/payloadSpanish'
+import { formatEditorialSocialHandle } from '@/utilities/editorialSocialLink'
 
 function findFieldByName(fields: any[], name: string) {
   return fields.find((field) => field && typeof field === 'object' && field.name === name)
@@ -80,6 +81,11 @@ describe('release editor localization config', () => {
     )
     expect(exceedsMediaUploadLimit(MEDIA_UPLOAD_MAX_FILE_SIZE_BYTES)).toBe(false)
     expect(exceedsMediaUploadLimit(MEDIA_UPLOAD_MAX_FILE_SIZE_BYTES + 1)).toBe(true)
+  })
+
+  it('formats editorial social handles with one visible at sign', () => {
+    expect(formatEditorialSocialHandle('oddsound')).toBe('@oddsound')
+    expect(formatEditorialSocialHandle('@oddsound')).toBe('@oddsound')
   })
 
   it('localizes hero image upload labels and required validation', () => {

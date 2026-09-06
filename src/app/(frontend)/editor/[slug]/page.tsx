@@ -8,6 +8,7 @@ import Link from 'next/link'
 import { notFound, permanentRedirect } from 'next/navigation'
 
 import type { Post, Profile } from '@/payload-types'
+import { formatEditorialSocialHandle } from '@/utilities/editorialSocialLink'
 import { findPublicProfileBySlug } from '@/utilities/publicProfiles'
 import { normalizePublicSlugParam } from '@/utilities/publicSlugs'
 
@@ -32,7 +33,7 @@ function getEditorialSocialLink(profile: Profile) {
 
   if (!label || !url) return null
 
-  return { label, url }
+  return { label: formatEditorialSocialHandle(label), url }
 }
 
 function isPublicEditorialAuthorProfile(profile: null | Profile) {

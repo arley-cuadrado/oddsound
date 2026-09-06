@@ -4,16 +4,36 @@ import { useEffect, useRef, useState } from 'react'
 
 import { exceedsMediaUploadLimit, mediaUploadLimitMessage } from '@/config/uploadLimits'
 
+type UploadLimitAlert = {
+  left: number
+  message: string
+  top: number
+}
+
+function getAlertPosition(target: EventTarget | null) {
+  const element = target instanceof HTMLElement ? target : null
+  const anchor = element?.parentElement || element
+  const bounds = anchor?.getBoundingClientRect()
+  const alertWidth = 360
+
+  if (!bounds || bounds.width === 0) return { left: 24, top: 24 }
+
+  return {
+    left: Math.max(16, Math.min(bounds.right + 12, window.innerWidth - alertWidth - 16)),
+    top: Math.max(16, Math.min(bounds.top, window.innerHeight - 100)),
+  }
+}
+
 export default function AdminUploadSizeGuard() {
-  const [message, setMessage] = useState<string | null>(null)
+  const [alert, setAlert] = useState<UploadLimitAlert | null>(null)
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
-    const showUploadLimitMessage = () => {
-      setMessage(mediaUploadLimitMessage)
+    const showUploadLimitMessage = (target: EventTarget | null) => {
+      setAlert({ message: mediaUploadLimitMessage, ...getAlertPosition(target) })
 
       if (timeoutRef.current) clearTimeout(timeoutRef.current)
-      timeoutRef.current = setTimeout(() => setMessage(null), 6000)
+      timeoutRef.current = setTimeout(() => setAlert(null), 6000)
     }
 
     const preventOversizedUpload = (event: Event, files: File[]) => {
@@ -22,7 +42,7 @@ export default function AdminUploadSizeGuard() {
       // Stop Payload before it sends a request that a proxy could reject with a generic 413 error.
       event.preventDefault()
       event.stopImmediatePropagation()
-      showUploadLimitMessage()
+      showUploadLimitMessage(event.target)
       return true
     }
 
@@ -47,7 +67,7 @@ export default function AdminUploadSizeGuard() {
     }
   }, [])
 
-  if (!message) return null
+  if (!alert) return null
 
   return (
     <div
@@ -55,16 +75,16 @@ export default function AdminUploadSizeGuard() {
       style={{
         background: 'var(--theme-error-100)',
         border: '1px solid var(--theme-error-500)',
-        bottom: 24,
+        left: alert.left,
         color: 'var(--theme-error-750)',
         maxWidth: 360,
         padding: '16px',
         position: 'fixed',
-        right: 24,
+        top: alert.top,
         zIndex: 10000,
       }}
     >
-      {message}
+      {alert.message}
     </div>
   )
 }
