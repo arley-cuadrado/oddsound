@@ -10,6 +10,32 @@ type UploadLimitAlert = {
   top: number
 }
 
+const uploadButtonLabels = new Set(['Selecciona un archivo', 'Seleccionar archivo'])
+
+function addUploadLimitNotices() {
+  document.querySelectorAll('button').forEach((button) => {
+    if (!uploadButtonLabels.has(button.textContent?.trim() || '')) return
+
+    const container = button.parentElement
+    if (!container || container.querySelector('[data-upload-limit-notice]')) return
+
+    const notice = document.createElement('span')
+    notice.dataset.uploadLimitNotice = 'true'
+    notice.textContent = mediaUploadLimitMessage
+    Object.assign(notice.style, {
+      color: 'var(--theme-error-750)',
+      display: 'inline-block',
+      fontSize: '0.8125rem',
+      lineHeight: '1.35',
+      marginLeft: '12px',
+      maxWidth: '360px',
+      verticalAlign: 'middle',
+    })
+
+    button.insertAdjacentElement('afterend', notice)
+  })
+}
+
 function getAlertPosition(target: EventTarget | null) {
   const element = target instanceof HTMLElement ? target : null
   const anchor = element?.parentElement || element
@@ -29,6 +55,11 @@ export default function AdminUploadSizeGuard() {
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
+    addUploadLimitNotices()
+
+    const observer = new MutationObserver(addUploadLimitNotices)
+    observer.observe(document.body, { childList: true, subtree: true })
+
     const showUploadLimitMessage = (target: EventTarget | null) => {
       setAlert({ message: mediaUploadLimitMessage, ...getAlertPosition(target) })
 
@@ -61,6 +92,8 @@ export default function AdminUploadSizeGuard() {
     document.addEventListener('drop', handleDrop, true)
 
     return () => {
+      observer.disconnect()
+      document.querySelectorAll('[data-upload-limit-notice]').forEach((notice) => notice.remove())
       document.removeEventListener('change', handleFileInputChange, true)
       document.removeEventListener('drop', handleDrop, true)
       if (timeoutRef.current) clearTimeout(timeoutRef.current)
