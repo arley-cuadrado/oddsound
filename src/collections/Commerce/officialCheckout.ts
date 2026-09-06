@@ -10,6 +10,7 @@ export function extendEcommerceCartsCollection({ defaultCollection }: OverrideAr
     admin: {
       ...(defaultCollection.admin || {}),
       defaultColumns: ['customer', 'status', 'subtotal', 'updatedAt'],
+      hidden: ({ user }) => user?.role !== 'admin',
       useAsTitle: 'customer',
     },
   }
@@ -23,14 +24,42 @@ export function extendEcommerceOrdersCollection({ defaultCollection }: OverrideA
     admin: {
       ...(defaultCollection.admin || {}),
       defaultColumns: ['customerEmail', 'status', 'amount', 'updatedAt'],
+      hidden: ({ user }) => user?.role !== 'admin',
       useAsTitle: 'customerEmail',
     },
     fields: [
       ...defaultFields,
       {
+        name: 'consumerProfile',
+        type: 'relationship',
+        relationTo: 'consumerProfiles',
+        admin: {
+          position: 'sidebar',
+        },
+      },
+      {
         name: 'artistProfile',
         type: 'relationship',
         relationTo: 'profiles',
+        admin: {
+          position: 'sidebar',
+        },
+      },
+      {
+        name: 'release',
+        type: 'relationship',
+        relationTo: 'pages',
+        admin: {
+          position: 'sidebar',
+        },
+      },
+      {
+        // One cart can produce several orders — one per artist — because
+        // Mercado Pago's split pays a single seller per transaction. This is
+        // what ties them back together.
+        name: 'cart',
+        type: 'relationship',
+        relationTo: 'carts',
         admin: {
           position: 'sidebar',
         },
@@ -101,6 +130,15 @@ export function extendEcommerceOrdersCollection({ defaultCollection }: OverrideA
         name: 'trackingNumber',
         type: 'text',
       },
+      {
+        // Claimed atomically the first time a payment is approved, so Mercado
+        // Pago's retries cannot decrement stock more than once.
+        name: 'inventoryAdjustedAt',
+        type: 'date',
+        admin: {
+          readOnly: true,
+        },
+      },
     ],
   }
 }
@@ -113,14 +151,31 @@ export function extendEcommerceTransactionsCollection({ defaultCollection }: Ove
     admin: {
       ...(defaultCollection.admin || {}),
       defaultColumns: ['customerEmail', 'status', 'amount', 'updatedAt'],
+      hidden: ({ user }) => user?.role !== 'admin',
       useAsTitle: 'customerEmail',
     },
     fields: [
       ...defaultFields,
       {
+        name: 'consumerProfile',
+        type: 'relationship',
+        relationTo: 'consumerProfiles',
+        admin: {
+          position: 'sidebar',
+        },
+      },
+      {
         name: 'artistProfile',
         type: 'relationship',
         relationTo: 'profiles',
+        admin: {
+          position: 'sidebar',
+        },
+      },
+      {
+        name: 'release',
+        type: 'relationship',
+        relationTo: 'pages',
         admin: {
           position: 'sidebar',
         },

@@ -1,104 +1,178 @@
 import Link from 'next/link'
+import React from 'react'
+
+import type { SanitizedMercadoPagoConnection } from '@/utilities/mercadoPagoOAuth'
+import type { MerchOnboarding } from '@/utilities/merchOnboarding'
+import { getPlatformFeePercent } from '@/utilities/money'
+import { cn } from '@/utilities/ui'
+import { panelBody, panelCard, panelEyebrow, panelTitle, primaryButton, secondaryButton, tone } from './ui'
 
 type MercadoPagoConnectionCardProps = {
-  connection: {
-    accessTokenExpiresAt?: null | string
-    lastConnectedAt?: null | string
-    lastError?: null | string
-    sellerEmail?: null | string
-    sellerNickname?: null | string
-    status: string
-  }
+  connection: SanitizedMercadoPagoConnection
+  merch: MerchOnboarding
+  profileSlug?: null | string
 }
-
-const statusCopy = {
-  action_required: {
-    badge: 'Action required',
-    helper:
-      'Necesitamos que completes o repitas la autorizacion en Mercado Pago para que Oddsound pueda cobrar su fee automaticamente en cada venta.',
-    label: 'Reconectar Mercado Pago',
-  },
-  connected: {
-    badge: 'Connected',
-    helper:
-      'Tu cuenta ya esta vinculada. Cuando activemos el checkout de Mercado Pago, el split oficial podra cobrar el fee de Oddsound automaticamente.',
-    label: 'Reconectar Mercado Pago',
-  },
-  connecting: {
-    badge: 'Connecting',
-    helper:
-      'Tu autorizacion esta en curso. Si abriste Mercado Pago en otra pestana, vuelve aqui cuando completes el flujo.',
-    label: 'Continuar conexion',
-  },
-  not_connected: {
-    badge: 'Not connected',
-    helper:
-      'Conecta tu cuenta con un solo paso. Si ya tienes Mercado Pago, solo autorizas; si no, podras registrarte y volver listo.',
-    label: 'Conectar Mercado Pago',
-  },
-} as const
 
 function formatDate(value: null | string | undefined) {
   if (!value) return null
 
-  return new Intl.DateTimeFormat('es-CO', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(new Date(value))
+  return new Intl.DateTimeFormat('es-CO', { dateStyle: 'medium' }).format(new Date(value))
 }
 
-export function MercadoPagoConnectionCard({ connection }: MercadoPagoConnectionCardProps) {
-  const copy = statusCopy[connection.status as keyof typeof statusCopy] || statusCopy.not_connected
-  const connectedAt = formatDate(connection.lastConnectedAt)
-  const expiresAt = formatDate(connection.accessTokenExpiresAt)
+/**
+ * The artist's path to selling, drawn as a rail rather than described.
+ *
+ * Only the step that is actually next carries a filled button; the ones behind
+ * it collapse to a tick. "What do I do now" is answered by looking, which
+ * matters because connecting Mercado Pago, setting shipping and publishing a
+ * product live on three unrelated screens.
+ */
+export function MercadoPagoConnectionCard({
+  connection,
+  merch,
+  profileSlug,
+}: MercadoPagoConnectionCardProps) {
+  const { needsReconnect, steps } = merch
+  const activeIndex = steps.findIndex((step) => !step.done)
 
   return (
-    <section className="space-y-5 rounded-[28px] border border-border/70 bg-white/70 p-6 shadow-[0_18px_60px_rgba(49,46,46,0.08)] backdrop-blur">
-      <div className="space-y-2">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-foreground/55">
-          Mercado Pago
-        </p>
-        <div className="flex flex-wrap items-center gap-3">
-          <h2 className="text-xl font-medium text-foreground">Conexion de cobros del artista</h2>
-          <span className="rounded-full bg-[#f4efe6] px-3 py-1 text-[11px] font-medium text-foreground/75">
-            {copy.badge}
-          </span>
+    <section className={cn(panelCard, 'space-y-5')}>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="space-y-1">
+          <p className={panelEyebrow}>Cobros</p>
+          <h2 className={panelTitle}>
+            {merch.ready ? 'Tu tienda está lista' : 'Tres pasos para empezar a vender'}
+          </h2>
+          {profileSlug ? (
+            <p className="text-[12px] text-muted-foreground">
+              Tu merch se vende en /{profileSlug}/shop
+            </p>
+          ) : null}
         </div>
-        <p className="max-w-[48rem] text-[13px] leading-6 text-foreground/75">{copy.helper}</p>
+
+        <span
+          className={cn(
+            'rounded-full border px-3 py-1 text-[11px] font-medium',
+            merch.ready
+              ? cn(tone.ok, tone.okText)
+              : needsReconnect
+                ? cn(tone.alert, tone.alertText)
+                : 'border-border bg-muted text-muted-foreground',
+          )}
+        >
+          {merch.ready ? 'Listo para vender' : needsReconnect ? 'Requiere acción' : 'Pendiente'}
+        </span>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <article className="rounded-2xl border border-border/70 bg-background px-4 py-4 text-[12px] text-foreground/75">
-          <p className="text-[11px] uppercase tracking-[0.18em] text-foreground/55">Cuenta</p>
-          <p className="mt-2 font-medium text-foreground">
-            {connection.sellerEmail || 'Aun no conectada'}
-          </p>
-          {connection.sellerNickname ? <p className="mt-1">{connection.sellerNickname}</p> : null}
-        </article>
-        <article className="rounded-2xl border border-border/70 bg-background px-4 py-4 text-[12px] text-foreground/75">
-          <p className="text-[11px] uppercase tracking-[0.18em] text-foreground/55">Ultima conexion</p>
-          <p className="mt-2 font-medium text-foreground">{connectedAt || 'Sin registro'}</p>
-        </article>
-        <article className="rounded-2xl border border-border/70 bg-background px-4 py-4 text-[12px] text-foreground/75">
-          <p className="text-[11px] uppercase tracking-[0.18em] text-foreground/55">Expiracion token</p>
-          <p className="mt-2 font-medium text-foreground">{expiresAt || 'Pendiente'}</p>
-        </article>
-      </div>
+      <ol className="grid gap-3 md:grid-cols-3">
+        {steps.map((step, index) => {
+          const active = index === activeIndex
 
-      {connection.lastError ? (
-        <div className="rounded-2xl border border-[#d8b9b9] bg-[#fff5f5] px-4 py-4 text-[12px] leading-5 text-[#7b3d3d]">
+          return (
+            <li
+              className={cn(
+                'flex flex-col gap-3 rounded-xl border p-4 transition',
+                step.done
+                  ? cn(tone.ok)
+                  : active
+                    ? 'border-foreground/30 bg-background'
+                    : 'border-border bg-background opacity-60',
+              )}
+              key={step.key}
+            >
+              <div className="flex items-center gap-2.5">
+                <span
+                  className={cn(
+                    'grid size-6 shrink-0 place-items-center rounded-full text-[11px] font-semibold',
+                    step.done
+                      ? 'bg-emerald-600 text-white'
+                      : 'bg-muted text-muted-foreground',
+                  )}
+                >
+                  {step.done ? <CheckIcon /> : index + 1}
+                </span>
+                <p className="text-[14px] font-medium text-foreground">{step.title}</p>
+              </div>
+
+              <p className="flex-1 text-[12px] leading-5 text-muted-foreground">{step.detail}</p>
+
+              {step.action && !step.done ? (
+                <Link
+                  className={cn(
+                    'h-10 rounded-lg px-4 text-[12px]',
+                    active ? primaryButton : secondaryButton,
+                  )}
+                  href={step.action}
+                >
+                  {step.actionLabel}
+                </Link>
+              ) : null}
+            </li>
+          )
+        })}
+      </ol>
+
+      {connection.status === 'connected' ? <TokenMeter connection={connection} /> : null}
+
+      {connection.lastError && needsReconnect ? (
+        <p className={cn('rounded-xl border px-4 py-3 text-[12px] leading-5', tone.alert, tone.alertText)}>
           {connection.lastError}
-        </div>
+        </p>
       ) : null}
 
-      <div className="flex flex-wrap gap-3">
-        <Link
-          className="inline-flex h-12 items-center justify-center rounded-[18px] bg-[#312e2e] px-5 text-[13px] font-medium text-white"
-          href="/creator-api/payments/connect/start"
-        >
-          {copy.label}
-        </Link>
-      </div>
+      <p className={panelBody}>
+        Cobras directo a tu cuenta. oddsound se queda el {getPlatformFeePercent()}%.
+      </p>
     </section>
+  )
+}
+
+/**
+ * How much life the Mercado Pago authorisation has left.
+ *
+ * It renews itself long before this runs out, so the meter is mostly
+ * reassurance — but when renewal has genuinely failed, an artist needs to see it
+ * here rather than find out through a buyer who could not pay.
+ */
+function TokenMeter({ connection }: { connection: SanitizedMercadoPagoConnection }) {
+  const { daysRemaining, lifetimeRatio, state } = connection.health
+  const lastRefreshedAt = formatDate(connection.lastRefreshedAt || connection.lastConnectedAt)
+
+  const meter =
+    state === 'expired'
+      ? { bar: 'bg-rose-600', label: 'La autorización expiró.' }
+      : state === 'expiring'
+        ? { bar: 'bg-amber-500', label: `Se renueva sola. Quedan ${daysRemaining} días.` }
+        : { bar: 'bg-emerald-600', label: `Autorización vigente por ${daysRemaining} días más.` }
+
+  return (
+    <div className="space-y-2 rounded-xl border border-border bg-background px-4 py-4">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <p className="text-[12px] text-foreground">{meter.label}</p>
+        {lastRefreshedAt ? (
+          <p className="text-[11px] text-muted-foreground">Última renovación: {lastRefreshedAt}</p>
+        ) : null}
+      </div>
+      <div aria-hidden="true" className="h-1.5 overflow-hidden rounded-full bg-muted">
+        <span
+          className={cn('block h-full rounded-full', meter.bar)}
+          style={{ width: `${Math.max(4, Math.round(lifetimeRatio * 100))}%` }}
+        />
+      </div>
+    </div>
+  )
+}
+
+function CheckIcon() {
+  return (
+    <svg aria-hidden="true" fill="none" height="12" viewBox="0 0 16 16" width="12">
+      <path
+        d="M3 8.5 6.2 12 13 4.5"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+      />
+    </svg>
   )
 }

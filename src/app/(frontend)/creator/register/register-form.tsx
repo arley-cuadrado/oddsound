@@ -1,6 +1,5 @@
 'use client'
 
-import { registerCreator } from '@/app/(frontend)/creator/actions'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { FormEvent, useState } from 'react'
@@ -48,21 +47,38 @@ export function RegisterForm() {
     const genre = String(formData.get('genre') || '')
 
     try {
-      const result = await registerCreator({
-        acceptedLegal,
-        accountType,
-        country,
-        email,
-        genre,
-        name,
-        password,
+      const response = await fetch('/creator-api/register', {
+        body: JSON.stringify({
+          acceptedLegal,
+          accountType,
+          country,
+          email,
+          genre,
+          name,
+          password,
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        method: 'POST',
       })
+      const result = (await response.json().catch(() => null)) as unknown
 
-      if (!result.ok) {
+      if (!response.ok) {
         throw new Error(parseErrorMessage(result, 'No fue posible crear tu cuenta.'))
       }
 
-      const nextEmail = encodeURIComponent(result.email || email.trim().toLowerCase())
+      let registeredEmail: string | undefined
+
+      if (result && typeof result === 'object' && 'user' in result) {
+        const user = (result as { user?: { email?: unknown } }).user
+
+        if (typeof user?.email === 'string') {
+          registeredEmail = user.email
+        }
+      }
+
+      const nextEmail = encodeURIComponent(registeredEmail || email.trim().toLowerCase())
 
       router.push(`/creator/register/check-email?email=${nextEmail}`)
     } catch (caughtError) {
@@ -79,7 +95,7 @@ export function RegisterForm() {
           ¿Cuál es tu nombre?
         </label>
         <input
-          className="h-12 w-full border border-border bg-background px-4 text-[13px] text-foreground outline-none placeholder:text-[13px]"
+          className="h-12 w-full border border-border bg-background px-4 text-base text-foreground outline-none placeholder:text-base md:text-[13px] md:placeholder:text-[13px]"
           id="name"
           name="name"
           placeholder="Artista o Banda"
@@ -93,7 +109,7 @@ export function RegisterForm() {
           Elige tu tipo de cuenta
         </label>
         <select
-          className="h-12 w-full border border-border bg-background px-4 text-[13px] text-foreground outline-none"
+          className="h-12 w-full border border-border bg-background px-4 text-base text-foreground outline-none md:text-[13px]"
           defaultValue="artist"
           id="accountType"
           name="accountType"
@@ -110,7 +126,7 @@ export function RegisterForm() {
           Ingresa tu país
         </label>
         <input
-          className="h-12 w-full border border-border bg-background px-4 text-[13px] text-foreground outline-none placeholder:text-[13px]"
+          className="h-12 w-full border border-border bg-background px-4 text-base text-foreground outline-none placeholder:text-base md:text-[13px] md:placeholder:text-[13px]"
           id="country"
           name="country"
           placeholder="Colombia, México, EE. UU., etc..."
@@ -124,7 +140,7 @@ export function RegisterForm() {
           Ahora tu género musical
         </label>
         <input
-          className="h-12 w-full border border-border bg-background px-4 text-[13px] text-foreground outline-none placeholder:text-[13px]"
+          className="h-12 w-full border border-border bg-background px-4 text-base text-foreground outline-none placeholder:text-base md:text-[13px] md:placeholder:text-[13px]"
           id="genre"
           name="genre"
           placeholder="Indie Rock, Afrobeats, Champeta, Reggaetón, etc..."
@@ -138,7 +154,7 @@ export function RegisterForm() {
           Tu correo electrónico
         </label>
         <input
-          className="h-12 w-full border border-border bg-background px-4 text-[13px] text-foreground outline-none placeholder:text-[13px]"
+          className="h-12 w-full border border-border bg-background px-4 text-base text-foreground outline-none placeholder:text-base md:text-[13px] md:placeholder:text-[13px]"
           id="email"
           name="email"
           placeholder="name@mail.com"
@@ -153,7 +169,7 @@ export function RegisterForm() {
         </label>
         <div className="relative">
           <input
-            className="h-12 w-full border border-border bg-background px-4 pr-20 text-[13px] text-foreground outline-none placeholder:text-[13px]"
+            className="h-12 w-full border border-border bg-background px-4 pr-20 text-base text-foreground outline-none placeholder:text-base md:text-[13px] md:placeholder:text-[13px]"
             id="password"
             minLength={8}
             name="password"

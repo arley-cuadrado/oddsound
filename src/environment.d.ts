@@ -3,6 +3,7 @@ declare global {
     interface ProcessEnv {
       PAYLOAD_SECRET: string
       DATABASE_URL: string
+      MONGODB_MAX_POOL_SIZE?: string
       NEXT_PUBLIC_SERVER_URL?: string
       VERCEL_ENV?: 'development' | 'preview' | 'production'
       VERCEL_URL?: string

@@ -47,6 +47,9 @@
     ".next/dev/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    ".vercel",
+    "**/* 2.ts",
+    "**/* 2.tsx"
   ]
 }

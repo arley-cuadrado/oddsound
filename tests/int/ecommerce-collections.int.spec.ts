@@ -8,6 +8,22 @@ import {
 import { extendEcommerceProductsCollection } from '@/collections/Commerce/officialProducts'
 import { Pages } from '@/collections/Pages'
 
+const adminUser = {
+  role: 'admin' as const,
+}
+
+const creatorUser = {
+  role: 'creator' as const,
+}
+
+function getHiddenHandler(collection: { admin?: { hidden?: boolean | ((args: { user: unknown }) => boolean) } }) {
+  if (typeof collection.admin?.hidden !== 'function') {
+    throw new Error('Expected collection admin.hidden to be a function.')
+  }
+
+  return collection.admin.hidden
+}
+
 describe('official ecommerce collection overrides', () => {
   it('extends products with creator ownership and storefront-ready fields', () => {
     const defaultCollection = {
@@ -52,6 +68,9 @@ describe('official ecommerce collection overrides', () => {
       ]),
     )
     expect(collection.hooks?.beforeChange).toHaveLength(2)
+    const hidden = getHiddenHandler(collection as any)
+    expect(hidden({ user: adminUser })).toBe(false)
+    expect(hidden({ user: creatorUser })).toBe(true)
   })
 
   it('keeps carts focused on authenticated operator visibility', () => {
@@ -63,6 +82,9 @@ describe('official ecommerce collection overrides', () => {
 
     expect(collection.admin?.defaultColumns).toEqual(['customer', 'status', 'subtotal', 'updatedAt'])
     expect(collection.admin?.useAsTitle).toBe('customer')
+    const hidden = getHiddenHandler(collection as any)
+    expect(hidden({ user: adminUser })).toBe(false)
+    expect(hidden({ user: creatorUser })).toBe(true)
   })
 
   it('surfaces the most relevant columns for orders and transactions', () => {
@@ -82,6 +104,22 @@ describe('official ecommerce collection overrides', () => {
     expect(orders.admin?.useAsTitle).toBe('customerEmail')
     expect(transactions.admin?.defaultColumns).toEqual(['customerEmail', 'status', 'amount', 'updatedAt'])
     expect(transactions.admin?.useAsTitle).toBe('customerEmail')
+    const ordersHidden = getHiddenHandler(orders as any)
+    const transactionsHidden = getHiddenHandler(transactions as any)
+    expect(ordersHidden({ user: adminUser })).toBe(false)
+    expect(ordersHidden({ user: creatorUser })).toBe(true)
+    expect(transactionsHidden({ user: adminUser })).toBe(false)
+    expect(transactionsHidden({ user: creatorUser })).toBe(true)
+
+    const orderFieldNames = orders.fields?.map((field: any) => field.name).filter(Boolean)
+    const transactionFieldNames = transactions.fields?.map((field: any) => field.name).filter(Boolean)
+
+    expect(orderFieldNames).toEqual(
+      expect.arrayContaining(['artistProfile', 'consumerProfile', 'release', 'paymentProviderOrderId', 'trackingNumber']),
+    )
+    expect(transactionFieldNames).toEqual(
+      expect.arrayContaining(['artistProfile', 'consumerProfile', 'release', 'providerEventId', 'paymentProviderPaymentId']),
+    )
   })
 
   it('exposes joined shop products from releases without duplicating relationships', () => {

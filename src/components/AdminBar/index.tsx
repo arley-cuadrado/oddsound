@@ -83,7 +83,11 @@ const LocalizedPayloadAdminBar: React.FC<LocalizedPayloadAdminBarProps> = (props
   if (!user) return null
 
   const { id: userID } = user
-  const isCreatorUser = (user as PayloadMeUser & { role?: null | string })?.role === 'creator'
+  const typedUser = user as PayloadMeUser & { role?: null | string; userType?: null | string }
+  const isCreatorUser = typedUser?.role === 'creator'
+  const isFanUser = typedUser?.userType === 'consumer' || typedUser?.userType === 'fan'
+
+  if (isFanUser) return null
 
   const handleCreatorLogout = async () => {
     try {
@@ -92,7 +96,7 @@ const LocalizedPayloadAdminBar: React.FC<LocalizedPayloadAdminBarProps> = (props
         method: 'POST',
       })
     } finally {
-      window.location.href = '/creator/login'
+      window.location.href = '/dashboard/login'
     }
   }
 
@@ -171,7 +175,9 @@ export const AdminBar: React.FC<{
   const router = useRouter()
 
   const onAuthChange = React.useCallback((user: PayloadMeUser) => {
-    setShow(Boolean(user?.id))
+    const typedUser = user as PayloadMeUser & { userType?: null | string }
+    const isFanUser = typedUser?.userType === 'consumer' || typedUser?.userType === 'fan'
+    setShow(Boolean(user?.id) && !isFanUser)
   }, [])
 
   useEffect(() => {
@@ -186,7 +192,10 @@ export const AdminBar: React.FC<{
 
   return (
     <div
-      className={cn(baseClass, 'fixed inset-x-0 top-0 z-50 bg-black py-2 text-white', {
+      className={cn(
+        baseClass,
+        'fixed inset-x-0 top-0 z-50 bg-background py-2 text-foreground transition-colors',
+        {
         block: show,
         hidden: !show,
       })}
@@ -195,15 +204,15 @@ export const AdminBar: React.FC<{
       <div className="container">
         <LocalizedPayloadAdminBar
           {...adminBarProps}
-          className="py-2 text-white"
+          className="py-2 text-inherit"
           classNames={{
-            controls: 'font-medium text-white',
-            create: 'text-white',
-            edit: 'text-white',
-            logout: 'text-white',
-            logo: 'text-white',
-            preview: 'text-white',
-            user: 'text-white',
+            controls: 'font-medium text-inherit',
+            create: 'text-inherit',
+            edit: 'text-inherit',
+            logout: 'text-inherit',
+            logo: 'text-inherit',
+            preview: 'text-inherit',
+            user: 'text-inherit',
           }}
           cmsURL={getClientSideURL()}
           collectionSlug={collection}
@@ -256,7 +265,7 @@ export const AdminBar: React.FC<{
           }}
           style={{
             backgroundColor: 'transparent',
-            color: '#fff',
+            color: 'inherit',
             display: 'flex',
             alignItems: 'center',
             padding: 0,

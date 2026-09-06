@@ -1,135 +1,146 @@
-## 📋 Business Requirements & Features
+# Spec: flujo de verificacion para editor
 
-### 1. Objetivo del Perfil de Editor
+Fecha: 2026-08-28
 
-**Se creará un módulo de perfil para usuarios tipo editor dentro de Oddsound.**
+## Objetivo
 
-- El perfil debe permitir que cada editor vea y actualice su propia información personal sin exponer controles administrativos.
-- El módulo debe funcionar como una extensión nativa del admin de Payload, respetando la estructura visual y de permisos ya definida en el proyecto.
-- El admin mantiene visibilidad total sobre los perfiles de editores cuando sea necesario para soporte o moderación.
+Hacer confiable el flujo completo de editor:
 
----
+1. Admin crea editor desde `Users`.
+2. Editor recibe correo de confirmacion.
+3. Editor hace click en el enlace.
+4. El token se valida correctamente.
+5. El editor puede iniciar sesion sin ver `Verification token is invalid.`
 
-### 2. Acceso y Alcance
+## Problema actual
 
-**Cada editor solo podrá acceder a su propio perfil.**
+Hoy el flujo aparenta completarse parcialmente:
 
-- Un editor puede abrir, revisar y editar únicamente su información personal.
-- Un editor no puede acceder ni editar el perfil de otros editores.
-- El admin puede ver y editar cualquier perfil de editor.
+- La cuenta de editor se crea.
+- El correo se envia.
+- La pagina `/creator/verify` intenta validar el token.
+- La validacion falla y muestra `Verification token is invalid.`
 
-**El perfil del editor debe convivir con los accesos ya definidos para redactores:**
+## Diagnostico actual
 
-- `Posts`
-- `Profiles`
-- `Media`
+### Flujo detectado en el codigo
 
----
+- La creacion de editor desde admin ocurre en [src/components/CreateRedactorButton/index.tsx](/Users/arlo_cuadrado/Documents/dev/strapi_projects/hearMeOutProject/ODDSOUND_PROJECT/oddsound/src/components/CreateRedactorButton/index.tsx).
+- Ese formulario hace `POST /api/users` con `editorAccess: true`.
+- La configuracion auth de `users` define `auth.verify` en [src/collections/Users/index.ts](/Users/arlo_cuadrado/Documents/dev/strapi_projects/hearMeOutProject/ODDSOUND_PROJECT/oddsound/src/collections/Users/index.ts).
+- La vista que consume el link del correo esta en [src/app/(frontend)/creator/verify/view.tsx](/Users/arlo_cuadrado/Documents/dev/strapi_projects/hearMeOutProject/ODDSOUND_PROJECT/oddsound/src/app/(frontend)/creator/verify/view.tsx).
+- El reenvio manual esta en [src/app/(frontend)/creator/actions.ts](/Users/arlo_cuadrado/Documents/dev/strapi_projects/hearMeOutProject/ODDSOUND_PROJECT/oddsound/src/app/(frontend)/creator/actions.ts).
 
-### 3. Campos Editables por el Editor
+### Hipotesis principal
 
-**Campos que el editor SÍ puede modificar:**
+El sistema mezcla dos mecanismos:
 
-- Nombre completo
-- Nombre de usuario
-- Contraseña
-- Avatar o imagen de perfil
-- Género con opciones controladas: `Hombre`, `Mujer` o `Indeterminado`
-- Información biográfica o descriptiva del perfil
-- Campo de Instagram
-- Campo de X
-- Campo de Threads
-- Campo de Facebook
-- Enlaces públicos del perfil, si existen en la colección correspondiente
+- El flujo nativo de verificacion de Payload al crear usuario.
+- Un flujo manual de reenvio que escribe `_verificationToken` directamente.
 
-**Campos que el editor NO puede modificar:**
+Riesgo:
 
-- Rol
-- Tipo de cuenta
-- Estado de activación
-- Permisos administrativos
-- Relaciones o configuraciones reservadas al admin
-- `Account Type` y cualquier selector asociado a esa categoría
+- `payload.verifyEmail()` puede depender de como Payload genera, guarda o normaliza internamente el token.
+- Si el reenvio o la creacion editorial usan un formato distinto, el link llega bien construido pero el token no coincide con lo que `verifyEmail` espera.
 
----
+## Requerimientos funcionales
 
-### 4. Reglas de Negocio
+### 1. Creacion de editor por admin
 
-- Todo cambio realizado por el editor debe persistirse únicamente sobre su propio registro.
-- El sistema no debe permitir escalación de privilegios desde el perfil.
-- Si existe un campo que afecta permisos, publicación o visibilidad administrativa, ese campo debe permanecer oculto o bloqueado para editores.
-- El perfil debe seguir siendo editable aunque el editor no tenga acceso al resto de colecciones administrativas.
-- Cualquier validación requerida en nombre, username, email o avatar debe respetar las reglas ya existentes del proyecto.
-- Los campos de redes sociales del perfil deben estar definidos como inputs claros y etiquetados dentro del perfil del editor para que luego puedan reutilizarse en el frontend del artículo.
-- La información social cargada en el perfil debe servir como fuente única para los enlaces públicos mostrados en artículos escritos por ese editor.
-- El campo de género debe usarse únicamente para resolver correctamente el subtítulo editorial visible en el frontend.
-- Los perfiles de editor pertenecen a una categoría separada de los perfiles artísticos o de banda, por lo que no deben exponer controles de clasificación pensados para esos otros perfiles.
+- Un admin puede crear un editor desde la vista filtrada de `Users`.
+- La creacion no debe requerir `accountType`.
+- La cuenta debe quedar como `role: creator` y `editorAccess: true`.
+- El perfil editorial debe persistir `editorGender` y `editorSocials`.
 
----
+### 2. Envio de correo de verificacion
 
-### 5. Reglas para `Account Type`
+- Todo editor nuevo debe recibir un correo de verificacion valido.
+- El correo editorial debe seguir usando el template de editor.
+- El link debe apuntar a `/creator/verify`.
+- El link debe incluir `token` y `email`.
 
-**El campo `Account Type` no debe formar parte del flujo de perfiles editoriales.**
+### 3. Confirmacion del enlace
 
-- El label `Account Type` no debe mostrarse dentro del perfil de un editor.
-- El input, dropdown o selector asociado a `Account Type` no debe mostrarse dentro del perfil de un editor.
-- El admin tampoco debe ver `Account Type` al momento de crear un nuevo editor.
-- El admin tampoco debe necesitar seleccionar categorías como artista, banda u otras equivalentes para completar la creación de un editor.
-- Si internamente existe una clasificación técnica para estos perfiles, esta debe resolverse por configuración del sistema y no mediante una elección manual visible en el formulario editorial.
+- Cuando el editor abre el link, `payload.verifyEmail()` debe confirmar la cuenta sin error.
+- Si el token es valido, la UI debe mostrar exito y CTA a `/creator/login`.
+- Si el token es invalido o expiro, la UI debe ofrecer reenviar el correo.
 
----
+### 4. Reenvio de correo
 
-### 6. Firma Editorial en el Pie del Artículo
+- El reenvio debe generar un token compatible con `payload.verifyEmail()`.
+- El reenvio no debe depender de escribir campos internos de auth manualmente si Payload ofrece una API nativa para esto.
+- El reenvio debe conservar cooldown para evitar abuso.
 
-**Cada artículo escrito por un editor debe mostrar una firma editorial en su pie de página.**
+### 5. Inicio de sesion posterior
 
-La firma debe incluir:
+- Un editor verificado puede iniciar sesion normalmente.
+- Un editor no verificado debe seguir bloqueado hasta confirmar el correo.
 
-- Foto o avatar del editor
-- Nombre del editor
-- Subtítulo editorial dinámico
-- Enlaces a redes sociales disponibles
+## Requerimientos tecnicos
 
-**Redes sociales contempladas para esta firma:**
+### Fuente unica de verdad
 
-- Instagram
-- X
-- Threads
-- Facebook
+- El proyecto debe usar un solo mecanismo oficial para generar y validar tokens de verificacion.
+- Debemos evitar mantener logica paralela para `_verificationToken` si eso se desvincula del comportamiento interno de Payload.
 
-**Regla para el subtítulo editorial:**
+### Compatibilidad editorial
 
-- Si el perfil indica `Hombre`, el subtítulo visible será `Editor`.
-- Si el perfil indica `Mujer`, el subtítulo visible será `Editora`.
-- Si el perfil indica `Indeterminado`, el subtítulo visible será `Equipo editorial`.
+- El flujo de editor no debe romper el flujo actual de creador normal.
+- El template editorial y el template de creator pueden seguir separados, pero la generacion del token debe ser compartida y consistente.
 
-**Regla de renderizado:**
+### Observabilidad minima
 
-- Solo deben mostrarse las redes sociales que realmente tengan un valor cargado en el perfil del editor.
-- La firma editorial debe tomar estos datos directamente del perfil vinculado al autor del artículo.
-- El bloque no debe depender de contenido manual cargado por artículo si la información ya existe en el perfil del editor.
+- Si la verificacion falla, debemos poder distinguir entre:
+  - token ausente
+  - token expirado
+  - token no encontrado
+  - cuenta ya verificada
 
----
+## Propuesta de implementacion
 
-### 7. Requisitos de Interfaz
+### Fase 1. Auditar y unificar token de verificacion
 
-- La interfaz debe usar los componentes y estilos base de Payload.
-- No se deben agregar tarjetas decorativas, sombras, gradientes ni variantes visuales nuevas para este módulo.
-- La edición del perfil debe priorizar campos claros, flujo vertical simple y acciones nativas de guardar/cancelar.
-- Si se muestran mensajes de estado, deben resolverse con el lenguaje visual existente del admin.
-- El formulario de editor debe excluir por completo controles que pertenezcan a categorías de perfil no editoriales, especialmente `Account Type`.
+- Revisar si `POST /api/users` ya dispara correctamente el flujo verify nativo para cuentas editoriales.
+- Reemplazar la generacion manual de `_verificationToken` en `resendVerificationEmail()` por una llamada soportada por Payload o por el mismo flujo interno que usa la creacion original.
+- No depender de asignar `_verificationToken` por `payload.update()` salvo que Payload documente expresamente ese camino.
 
----
+### Fase 2. Endurecer la vista de verificacion
 
-### 8. Criterios de Aceptación
+- Mantener `payload.verifyEmail()` como punto final de validacion.
+- Mejorar el manejo de mensajes para no mostrar solo el error crudo cuando sea recuperable.
+- Conservar el formulario de reenvio cuando exista `email`.
 
-- Un editor autenticado puede abrir su perfil y editar sus datos permitidos.
-- Un editor autenticado no puede cambiar su rol, tipo de cuenta ni estado de activación.
-- Un editor no puede editar perfiles ajenos mediante la UI ni mediante acceso directo por URL.
-- El admin conserva control total sobre los perfiles de editor.
-- El módulo mantiene consistencia visual con el resto del admin de Payload y Oddsound.
-- El perfil del editor permite cargar avatar, género y enlaces sociales reutilizables.
-- El pie de cada artículo escrito por un editor muestra avatar, nombre y subtítulo editorial según el género configurado.
-- El pie del artículo solo muestra enlaces de redes sociales que existan realmente en el perfil del editor.
-- Ni el editor ni el admin ven el campo `Account Type` dentro del flujo de perfil o creación de editores.
-- La creación de un editor no requiere seleccionar categorías como artista o banda.
+### Fase 3. Cubrir el flujo editorial con pruebas
+
+- Agregar prueba para editor creado por admin con correo/template editorial.
+- Agregar prueba para verificacion exitosa de editor.
+- Agregar prueba para reenvio editorial usando el mecanismo unificado.
+- Agregar prueba que garantice que un token reenviado si puede validarse luego en `/creator/verify`.
+
+## Criterios de aceptacion
+
+- Crear un editor desde admin envia un enlace funcional.
+- El primer click en el enlace confirma la cuenta.
+- La ruta `/creator/verify` no muestra `Verification token is invalid.` para tokens recien emitidos.
+- El reenvio genera un segundo enlace tambien funcional.
+- El editor ya verificado puede iniciar sesion.
+- El flujo de creator no editorial sigue funcionando igual.
+
+## Casos de prueba sugeridos
+
+1. Crear editor desde admin y verificar que se envia correo editorial.
+2. Abrir el enlace recibido y verificar que la cuenta queda `_verified: true`.
+3. Intentar login antes de verificar y confirmar bloqueo.
+4. Reenviar correo a editor pendiente y validar el nuevo enlace.
+5. Confirmar que `accountType` sigue oculto para editor.
+
+## Fuera de alcance en este spec
+
+- Rediseño visual del formulario de editor.
+- Cambios de copy amplios en correos o auth.
+- Firma editorial en posts.
+- Permisos avanzados de edicion de perfil fuera del flujo de autenticacion/verificacion.
+
+## Nota de implementacion
+
+La sospecha tecnica mas fuerte hoy esta en [src/app/(frontend)/creator/actions.ts](/Users/arlo_cuadrado/Documents/dev/strapi_projects/hearMeOutProject/ODDSOUND_PROJECT/oddsound/src/app/(frontend)/creator/actions.ts), donde el reenvio manual actualiza `_verificationToken` directamente. Ese punto debe validarse primero porque puede producir enlaces incompatibles con `payload.verifyEmail()`.

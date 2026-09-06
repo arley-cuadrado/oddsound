@@ -4,6 +4,7 @@ import { authenticated } from '@/access/authenticated'
 import { hasFreshAdminAccess } from '@/access/hasFreshAdminAccess'
 import { isAdmin } from '@/access/isAdmin'
 import { isAdminOrSelf } from '@/access/isAdminOrSelf'
+import { payloadDashboardAccess } from '@/access/payloadDashboardAccess'
 import { USERS_LOGIN_LOCK_TIME_MS, USERS_MAX_LOGIN_ATTEMPTS } from '@/utilities/authLocking'
 import { isAdminUser } from '@/utilities/isAdminUser'
 import { isConfiguredSuperAdminEmail, isSuperAdminUser } from '@/utilities/isSuperAdminUser'
@@ -16,7 +17,7 @@ import {
   generateCreatorVerificationEmailHTML,
   generateCreatorVerificationEmailSubject,
 } from '@/utilities/emailVerification'
-import { isCreatorOrAdmin } from '@/access/isCreatorOrAdmin'
+import { hasEditorialIdentity } from '@/utilities/isEditorialUser'
 import { createProfile } from './hooks/createProfile'
 import { deleteCreatorData } from './hooks/deleteCreatorData'
 import { ensureCreatorDefaults } from './hooks/ensureCreatorDefaults'
@@ -24,7 +25,7 @@ import { ensureCreatorDefaults } from './hooks/ensureCreatorDefaults'
 export const Users: CollectionConfig = {
   slug: 'users',
   access: {
-    admin: authenticated,
+    admin: payloadDashboardAccess,
     create: isAdmin,
     delete: async ({ req }) => {
       const user = req.user
@@ -55,7 +56,7 @@ export const Users: CollectionConfig = {
     components: {
       beforeList: ['@/components/UsersListSelectionGuard', '@/components/CreateRedactorButton'],
     },
-    defaultColumns: ['name', 'username', 'email', 'role', 'editorAccess'],
+    defaultColumns: ['name', 'username', 'email', 'userType', 'role'],
     hidden: ({ user }) => !isAdminUser(user as { role?: null | string } | null | undefined),
     useAsTitle: 'name',
   },
@@ -66,6 +67,7 @@ export const Users: CollectionConfig = {
       expiration: CREATOR_RESET_PASSWORD_EXPIRATION_MS,
       generateEmailHTML: (args) =>
         generateCreatorResetPasswordEmailHTML({
+          req: args?.req,
           token: args?.token || '',
           user: {
             email: args?.user?.email || '',
@@ -75,18 +77,20 @@ export const Users: CollectionConfig = {
       generateEmailSubject: generateCreatorResetPasswordEmailSubject,
     },
     verify: {
-      generateEmailHTML: ({ token, user }) =>
-        user?.editorAccess
+      generateEmailHTML: ({ req, token, user }) =>
+        hasEditorialIdentity(user)
           ? generateEditorVerificationEmailHTML({
+              req,
               token,
               user,
             })
           : generateCreatorVerificationEmailHTML({
+              req,
               token,
               user,
             }),
       generateEmailSubject: ({ user }) =>
-        user?.editorAccess
+        hasEditorialIdentity(user)
           ? generateEditorVerificationEmailSubject()
           : generateCreatorVerificationEmailSubject(),
     },
@@ -100,10 +104,10 @@ export const Users: CollectionConfig = {
       access: {
         update: async ({ req, data, siblingData }) => {
           const user = req.user
-          
+
           if (!user) return false
           if (await hasFreshAdminAccess(req as any)) return true
-          
+
           // Creators can only update their own name
           return data?.id === user.id || siblingData?.id === user.id
         },
@@ -133,8 +137,10 @@ export const Users: CollectionConfig = {
       defaultValue: 'creator',
       admin: {
         condition: (_data, siblingData, { user }) => {
-          const isSuperAdmin = isSuperAdminUser(user as { email?: null | string; role?: null | string } | null | undefined)
-          
+          const isSuperAdmin = isSuperAdminUser(
+            user as { email?: null | string; role?: null | string } | null | undefined,
+          )
+
           // Only superadmin can see role field
           return isSuperAdmin && siblingData?.role !== 'admin'
         },
@@ -143,7 +149,9 @@ export const Users: CollectionConfig = {
       access: {
         update: async ({ req }) => {
           // Only superadmin can update roles
-          return isSuperAdminUser(req.user as { email?: null | string; role?: null | string } | null | undefined)
+          return isSuperAdminUser(
+            req.user as { email?: null | string; role?: null | string } | null | undefined,
+          )
         },
       },
       options: [
@@ -183,7 +191,8 @@ export const Users: CollectionConfig = {
           isAdminUser(user as { role?: null | string } | null | undefined) &&
           isConfiguredSuperAdminEmail(data?.email) &&
           siblingData?.role === 'admin',
-        description: 'Esta cuenta es la única superadministradora y puede crear otras cuentas administrativas.',
+        description:
+          'Esta cuenta es la única superadministradora y puede crear otras cuentas administrativas.',
         readOnly: true,
       },
       label: 'Rol',
@@ -197,9 +206,51 @@ export const Users: CollectionConfig = {
         components: {
           Field: '@/components/UsersEditorAccessField',
         },
-        description:
-          'Identifica cuentas editoriales creadas por admin para publicar articulos.',
+        description: 'Identifica cuentas editoriales creadas por admin para publicar articulos.',
       },
+    },
+    {
+      name: 'userType',
+      type: 'select',
+      defaultValue: 'creator',
+      label: 'Tipo de usuario',
+      admin: {
+        condition: (_data, siblingData, { user }) => {
+          const isAdmin = isAdminUser(user as { role?: null | string } | null | undefined)
+          if (!isAdmin) return false
+          if (siblingData?.role === 'admin') return false
+
+          return true
+        },
+      },
+      access: {
+        update: async ({ req }) => {
+          return await hasFreshAdminAccess(req as any)
+        },
+      },
+      options: [
+        {
+          label: 'Creador',
+          value: 'creator',
+        },
+        {
+          label: 'Editor',
+          value: 'editor',
+        },
+        {
+          label: 'Artista',
+          value: 'artist',
+        },
+        {
+          label: 'Banda',
+          value: 'band',
+        },
+        {
+          label: 'Fan',
+          value: 'fan',
+        },
+      ],
+      required: true,
     },
     {
       name: 'accountType',
@@ -213,7 +264,8 @@ export const Users: CollectionConfig = {
         condition: (_data, siblingData, { user }) => {
           const isAdmin = isAdminUser(user as { role?: null | string } | null | undefined)
           if (!isAdmin || siblingData?.role === 'admin') return false
-          if (siblingData?.editorAccess) return false
+          if (siblingData?.editorAccess || siblingData?.userType === 'editor') return false
+          if (siblingData?.userType === 'consumer' || siblingData?.userType === 'fan') return false
 
           return true
         },
@@ -235,7 +287,8 @@ export const Users: CollectionConfig = {
         },
       ],
       validate: ((value: string | null | undefined, { siblingData }: any) => {
-        if (siblingData?.editorAccess) return true
+        if (siblingData?.editorAccess || siblingData?.userType === 'editor') return true
+        if (siblingData?.userType === 'consumer' || siblingData?.userType === 'fan') return true
 
         return value ? true : 'El tipo de cuenta es obligatorio para cuentas de artista o banda.'
       }) as any,
@@ -254,6 +307,62 @@ export const Users: CollectionConfig = {
       },
     },
     {
+      name: 'consumerProfile',
+      type: 'relationship',
+      relationTo: 'consumerProfiles',
+      access: {
+        create: ({ req: { user } }) => isAdminUser(user),
+        read: ({ req: { user } }) => isAdminUser(user),
+        update: ({ req: { user } }) => isAdminUser(user),
+      },
+      admin: {
+        hidden: true,
+      },
+    },
+    {
+      name: 'authProvider',
+      type: 'select',
+      access: {
+        create: ({ req: { user } }) => isAdminUser(user),
+        read: ({ req: { user } }) => isAdminUser(user),
+        update: ({ req: { user } }) => isAdminUser(user),
+      },
+      admin: {
+        hidden: true,
+      },
+      options: [
+        {
+          label: 'Google',
+          value: 'google',
+        },
+      ],
+    },
+    {
+      name: 'googleSubjectId',
+      type: 'text',
+      access: {
+        create: ({ req: { user } }) => isAdminUser(user),
+        read: ({ req: { user } }) => isAdminUser(user),
+        update: ({ req: { user } }) => isAdminUser(user),
+      },
+      admin: {
+        hidden: true,
+      },
+    },
+    {
+      name: 'avatar',
+      type: 'text',
+      access: {
+        create: ({ req: { user } }) => isAdminUser(user),
+        read: ({ req: { user } }) => isAdminUser(user),
+        update: ({ req: { user } }) => isAdminUser(user),
+      },
+      admin: {
+        hidden: true,
+      },
+      label: 'Avatar URL',
+    },
+    {
       name: 'isActive',
       type: 'checkbox',
       defaultValue: true,
@@ -268,6 +377,11 @@ export const Users: CollectionConfig = {
           return await hasFreshAdminAccess(req as any)
         },
       },
+    },
+    {
+      name: 'verificationExpiresAt',
+      type: 'date',
+      hidden: true,
     },
     {
       name: 'legalAccepted',
