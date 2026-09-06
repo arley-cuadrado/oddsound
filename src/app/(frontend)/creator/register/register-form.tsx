@@ -1,6 +1,5 @@
 'use client'
 
-import { registerCreator } from '@/app/(frontend)/creator/actions'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { FormEvent, useState } from 'react'
@@ -48,21 +47,38 @@ export function RegisterForm() {
     const genre = String(formData.get('genre') || '')
 
     try {
-      const result = await registerCreator({
-        acceptedLegal,
-        accountType,
-        country,
-        email,
-        genre,
-        name,
-        password,
+      const response = await fetch('/creator-api/register', {
+        body: JSON.stringify({
+          acceptedLegal,
+          accountType,
+          country,
+          email,
+          genre,
+          name,
+          password,
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        method: 'POST',
       })
+      const result = (await response.json().catch(() => null)) as unknown
 
-      if (!result.ok) {
+      if (!response.ok) {
         throw new Error(parseErrorMessage(result, 'No fue posible crear tu cuenta.'))
       }
 
-      const nextEmail = encodeURIComponent(result.email || email.trim().toLowerCase())
+      let registeredEmail: string | undefined
+
+      if (result && typeof result === 'object' && 'user' in result) {
+        const user = (result as { user?: { email?: unknown } }).user
+
+        if (typeof user?.email === 'string') {
+          registeredEmail = user.email
+        }
+      }
+
+      const nextEmail = encodeURIComponent(registeredEmail || email.trim().toLowerCase())
 
       router.push(`/creator/register/check-email?email=${nextEmail}`)
     } catch (caughtError) {

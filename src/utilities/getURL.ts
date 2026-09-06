@@ -50,6 +50,23 @@ export function resolvePublicServerURL() {
   return 'http://localhost:3000'
 }
 
+export function resolveRequestOrigin(
+  input: Request | string | URL,
+  fallback = resolvePublicServerURL(),
+) {
+  try {
+    const url =
+      input instanceof URL ? input : typeof input === 'string' ? new URL(input) : new URL(input.url)
+    const normalizedOrigin = normalizeURL(url.origin)
+
+    if (normalizedOrigin) return normalizedOrigin
+  } catch {
+    // Fall back to the canonical public URL when the request URL is missing or malformed.
+  }
+
+  return fallback
+}
+
 export const getServerSideURL = () => {
   return resolvePublicServerURL()
 }

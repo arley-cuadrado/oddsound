@@ -1,27 +1,28 @@
 import crypto from 'crypto'
-import { cookies } from 'next/headers'
+import { NextResponse } from 'next/server'
 
 import {
   buildGoogleConsumerAuthorizationURL,
   CONSUMER_GOOGLE_STATE_COOKIE,
   isGoogleConsumerOAuthConfigured,
 } from '@/utilities/consumerAuth'
-import { getServerSideURL } from '@/utilities/getURL'
+import { getServerSideURL, resolveRequestOrigin } from '@/utilities/getURL'
 
 const CONSUMER_POST_LOGIN_REDIRECT_COOKIE = 'consumer-post-login-redirect'
 
 export async function GET(request: Request) {
   const url = new URL(request.url || `${getServerSideURL()}/consumer-api/auth/google/start`)
   const next = url.searchParams.get('next')
+  const requestOrigin = resolveRequestOrigin(request)
 
   if (!isGoogleConsumerOAuthConfigured()) {
-    return Response.redirect(`${getServerSideURL()}/fan/login?auth=missing-config`)
+    return Response.redirect(`${requestOrigin}/fan/login?auth=missing-config`)
   }
 
   const state = crypto.randomUUID()
-  const cookieStore = await cookies()
+  const response = NextResponse.redirect(buildGoogleConsumerAuthorizationURL(state, requestOrigin))
 
-  cookieStore.set(CONSUMER_GOOGLE_STATE_COOKIE, state, {
+  response.cookies.set(CONSUMER_GOOGLE_STATE_COOKIE, state, {
     httpOnly: true,
     maxAge: 60 * 10,
     path: '/',
@@ -30,7 +31,7 @@ export async function GET(request: Request) {
   })
 
   if (next && next.startsWith('/')) {
-    cookieStore.set(CONSUMER_POST_LOGIN_REDIRECT_COOKIE, next, {
+    response.cookies.set(CONSUMER_POST_LOGIN_REDIRECT_COOKIE, next, {
       httpOnly: true,
       maxAge: 60 * 10,
       path: '/',
@@ -38,8 +39,10 @@ export async function GET(request: Request) {
       secure: process.env.NODE_ENV === 'production',
     })
   } else {
-    cookieStore.delete(CONSUMER_POST_LOGIN_REDIRECT_COOKIE)
+    response.cookies.delete(CONSUMER_POST_LOGIN_REDIRECT_COOKIE)
   }
 
-  return Response.redirect(buildGoogleConsumerAuthorizationURL(state))
+  response.headers.set('Cache-Control', 'no-store, max-age=0')
+
+  return response
 }

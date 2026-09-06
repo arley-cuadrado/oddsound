@@ -7,6 +7,11 @@ export const CREATOR_RESET_PASSWORD_EXPIRATION_MS = 60 * 60 * 1000
 
 type VerificationUser = Pick<User, 'email' | 'name'> & {
   editorAccess?: boolean | null
+  userType?: User['userType']
+}
+
+type VerificationRequestLike = Request | {
+  headers?: Headers | Record<string, string> | Record<string, string | undefined>
 }
 
 type EmailTemplateOptions = {
@@ -494,8 +499,52 @@ export const getVerificationCooldownMessage = (msRemaining: number) => {
   return `Espera ${minutes} minuto${minutes === 1 ? '' : 's'} antes de pedir otro enlace.`
 }
 
-export const getCreatorVerificationURL = ({ email, token }: { email: string; token: string }) => {
-  const url = new URL('/creator/verify', SITE_URL)
+function readHeaderValue(
+  headers: Headers | Record<string, string> | Record<string, string | undefined>,
+  name: string,
+) {
+  if (headers instanceof Headers) {
+    return headers.get(name) || undefined
+  }
+
+  const directValue = headers[name]
+
+  if (typeof directValue === 'string' && directValue) return directValue
+
+  const matchedEntry = Object.entries(headers).find(([key]) => key.toLowerCase() === name.toLowerCase())
+
+  return typeof matchedEntry?.[1] === 'string' && matchedEntry[1] ? matchedEntry[1] : undefined
+}
+
+function resolveVerificationServerURL(req?: VerificationRequestLike) {
+  const sourceHeaders =
+    typeof Request !== 'undefined' && req instanceof Request ? req.headers : req?.headers
+
+  if (!sourceHeaders) return SITE_URL
+
+  const origin = readHeaderValue(sourceHeaders, 'origin')
+
+  if (origin) return origin
+
+  const forwardedHost = readHeaderValue(sourceHeaders, 'x-forwarded-host')
+  const host = forwardedHost || readHeaderValue(sourceHeaders, 'host')
+  const protocol = readHeaderValue(sourceHeaders, 'x-forwarded-proto') || 'https'
+
+  if (!host) return SITE_URL
+
+  return `${protocol}://${host}`
+}
+
+export const getCreatorVerificationURL = ({
+  email,
+  serverURL = SITE_URL,
+  token,
+}: {
+  email: string
+  serverURL?: string
+  token: string
+}) => {
+  const url = new URL('/creator/verify', serverURL)
 
   url.searchParams.set('email', email)
   url.searchParams.set('token', token)
@@ -504,14 +553,17 @@ export const getCreatorVerificationURL = ({ email, token }: { email: string; tok
 }
 
 export const generateCreatorVerificationEmailHTML = ({
+  req,
   token,
   user,
 }: {
+  req?: VerificationRequestLike
   token: string
   user: VerificationUser
 }) => {
   const verificationURL = getCreatorVerificationURL({
     email: user.email,
+    serverURL: resolveVerificationServerURL(req),
     token,
   })
 
@@ -533,21 +585,24 @@ export const generateCreatorVerificationEmailHTML = ({
 export const generateCreatorVerificationEmailSubject = () => 'Confirma tu correo en oddsound'
 
 export const generateEditorVerificationEmailHTML = ({
+  req,
   token,
   user,
 }: {
+  req?: VerificationRequestLike
   token: string
   user: VerificationUser
 }) => {
   const verificationURL = getCreatorVerificationURL({
     email: user.email,
+    serverURL: resolveVerificationServerURL(req),
     token,
   })
 
   return buildEmailTemplate({
     actionLabel: 'Confirmar cuenta editor',
     actionURL: verificationURL,
-    body: 'Tu cuenta de redactor en oddsound ya esta lista. Confirma tu correo y luego inicia sesion con tu correo y contrasena para comenzar a escribir en la plataforma.',
+    body: 'Tu cuenta de redactor en oddsound ya está lista. Confirma dando click en el botón, luego inicia sesión con tu correo y contraseña para comenzar a escribir en la plataforma. ;)',
     fallbackPrefix: 'Si el boton no abre, copia y pega este enlace en tu navegador:',
     heroPhotographerName: EMAIL_VERIFICATION_HERO_PHOTOGRAPHER_NAME,
     heroPhotographerPhotoURL: EMAIL_VERIFICATION_HERO_PHOTOGRAPHER_PHOTO_URL,
@@ -563,8 +618,14 @@ export const generateEditorVerificationEmailHTML = ({
 export const generateEditorVerificationEmailSubject = () =>
   'Confirma tu cuenta de editor en oddsound'
 
-export const getCreatorResetPasswordURL = (token: string) => {
-  const url = new URL('/creator/reset-password', SITE_URL)
+export const getCreatorResetPasswordURL = ({
+  serverURL = SITE_URL,
+  token,
+}: {
+  serverURL?: string
+  token: string
+}) => {
+  const url = new URL('/creator/reset-password', serverURL)
 
   url.searchParams.set('token', token)
 
@@ -572,13 +633,18 @@ export const getCreatorResetPasswordURL = (token: string) => {
 }
 
 export const generateCreatorResetPasswordEmailHTML = ({
+  req,
   token,
   user,
 }: {
+  req?: VerificationRequestLike
   token: string
   user: VerificationUser
 }) => {
-  const resetURL = getCreatorResetPasswordURL(token)
+  const resetURL = getCreatorResetPasswordURL({
+    serverURL: resolveVerificationServerURL(req),
+    token,
+  })
 
   return buildEmailTemplate({
     actionLabel: 'Crear nueva contraseña',

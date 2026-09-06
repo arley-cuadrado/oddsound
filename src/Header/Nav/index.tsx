@@ -5,6 +5,7 @@ import { ThemeSelector } from '@/providers/Theme/ThemeSelector'
 
 import type { Header as HeaderType } from '@/payload-types'
 
+import { CartBadge } from '@/components/Cart/CartBadge'
 import { CMSLink } from '@/components/Link'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -16,7 +17,7 @@ export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
   const pathname = usePathname()
   const fallbackLoginLink = {
     label: 'Iniciar sesión',
-    url: '/creator/login',
+    url: '/dashboard/login',
   }
 
   useEffect(() => {
@@ -70,7 +71,7 @@ export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
         method: 'POST',
       })
     } finally {
-      window.location.href = isFanAuthenticated ? '/fan/login' : '/creator/login'
+      window.location.href = isFanAuthenticated ? '/fan/login' : '/dashboard/login'
     }
   }
 
@@ -91,7 +92,7 @@ export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
     return {
       ...link,
       label: 'Iniciar sesión',
-      url: '/creator/login',
+      url: '/dashboard/login',
     }
   }
 
@@ -147,6 +148,7 @@ export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
               <span className="block">Mi cuenta</span>
             </Link>
           ) : null}
+          <CartBadge className="self-start max-[975px]:self-auto" />
           {/* dynamic routes, registered artists */}
           {navItems.map(({ link }, i) => {
             return (

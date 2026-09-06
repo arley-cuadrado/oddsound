@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import configPromise from '@payload-config'
 import type { Page, Profile } from '@/payload-types'
 import { getPayload } from 'payload'
+import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 
@@ -13,6 +14,9 @@ import {
 import { buildProfilesByOwnerId, mapRelease } from '../../home-components/releaseData'
 import type { ReleaseItem } from '../../home-components/types'
 import { hasPublishedCommerceProducts } from '@/utilities/commerceProducts'
+import { ArtistProfileHeader } from '@/components/ArtistProfileHeader'
+import { SocialMediaBlock } from '@/blocks/SocialMediaBlock/Component'
+import { getProfileSocialLinks } from '@/utilities/profileSocialLinks'
 
 export const dynamic = 'force-dynamic'
 
@@ -65,8 +69,8 @@ export async function generateMetadata({ params: paramsPromise }: Args): Promise
   const bandName = profile?.displayName || 'Artista'
 
   return {
-    description: `Explora todos los lanzamientos publicados por ${bandName}.`,
-    title: `Lanzamientos de ${bandName}`,
+    description: `Explora los álbumes/singles de ${bandName}.`,
+    title: 'Lanzamientos',
   }
 }
 
@@ -80,29 +84,32 @@ export default async function ArtistReleasesPage({ params: paramsPromise }: Args
   }
 
   const payload = await getPayload({ config: configPromise })
-  const pagesResult = await payload.find({
-    collection: 'pages',
-    depth: 1,
-    limit: 100,
-    overrideAccess: true,
-    pagination: false,
-    select: RELEASE_PAGE_SELECT,
-    sort: '-publishedAt',
-    where: {
-      and: [
-        {
-          _status: {
-            equals: 'published',
+  const [pagesResult, socialLinks] = await Promise.all([
+    payload.find({
+      collection: 'pages',
+      depth: 1,
+      limit: 100,
+      overrideAccess: true,
+      pagination: false,
+      select: RELEASE_PAGE_SELECT,
+      sort: '-publishedAt',
+      where: {
+        and: [
+          {
+            _status: {
+              equals: 'published',
+            },
           },
-        },
-        {
-          profile: {
-            equals: profile.id,
+          {
+            profile: {
+              equals: profile.id,
+            },
           },
-        },
-      ],
-    },
-  })
+        ],
+      },
+    }),
+    getProfileSocialLinks({ payload, profileID: profile.id }),
+  ])
 
   const profilesByOwnerId = buildProfilesByOwnerId([profile as Profile])
   const releases = (pagesResult.docs as Page[])
@@ -116,77 +123,85 @@ export default async function ArtistReleasesPage({ params: paramsPromise }: Args
   })
 
   return (
-    <div className="mx-auto max-w-4xl pb-4 pt-4 md:pb-12 md:pt-16 [&_p]:text-[13px]">
-      <div className="container">
-        <header className="mb-4 text-center">
-          <h1 className="text-4xl font-semibold tracking-tight text-slate-900 dark:text-white">
-            Lanzamientos de {bandName}
-          </h1>
-          <p className="mt-4 text-sm text-[#777] dark:text-[#858c98]">
-            Explora todos los lanzamientos publicados por {bandName}.
+    <div className="artist-profile-surface">
+      <ArtistProfileHeader
+        eyebrow={
+          <p className="artist-profile-meta text-[#777] dark:text-[#858c98]">
+            {[profile.genre, profile.location].filter(Boolean).join(' · ')}
           </p>
-          <div className="mt-5 flex flex-wrap items-center justify-center gap-4 text-[13px]">
+        }
+        title="Lanzamientos"
+        description={
+          <p className="text-sm text-[#777] dark:text-[#858c98]">
+            Explora los álbumes/singles de {bandName}.
+          </p>
+        }
+        navigation={
+          <>
             <Link
               href={`/${profile.slug}/bio`}
-              className="inline-flex items-center font-medium text-[#777] underline underline-offset-4 dark:text-[#858c98]"
+              className="artist-profile-nav-link"
             >
               Bio
             </Link>
             {hasShop ? (
               <Link
                 href={`/${profile.slug}/shop`}
-                className="inline-flex items-center font-medium text-[#777] underline underline-offset-4 dark:text-[#858c98]"
+                className="artist-profile-nav-link"
               >
                 Shop
               </Link>
             ) : null}
-          </div>
-        </header>
+          </>
+        }
+      />
 
-        <div className="mx-auto max-w-[50rem]">
-          {releases.length > 0 ? (
-            <div className="grid grid-cols-2 gap-4 md:gap-6 xl:grid-cols-4">
-              {releases.map((release) => (
-                <article className="w-full" key={release.id}>
-                  <Link href={release.releaseHref}>
-                    <div>
-                      <div className="relative aspect-square w-full overflow-hidden bg-slate-100 dark:bg-slate-900 rounded-lg">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        {release.imageUrl ? (
-                          <img
-                            alt={release.releaseTitle}
-                            className="h-full w-full object-cover"
-                            src={release.imageUrl}
-                          />
-                        ) : null}
-                        <div className="absolute inset-x-0 bottom-0 flex flex-col items-start gap-1 bg-gradient-to-t from-black/75 via-black/25 to-transparent px-3 py-3 text-white md:px-4">
-                          <h2 className="text-[10px] font-semibold leading-snug text-white">
-                            {release.releaseTitle}
-                          </h2>
-                          <div className="flex w-full flex-col items-start gap-1 sm:flex-row sm:items-end sm:justify-between sm:gap-3">
-                            <p className="max-w-full text-[10px] leading-snug text-white">
-                              {release.creatorName}
-                              {release.genre ? (
-                                <span className="text-white/85"> · {release.genre}</span>
-                              ) : null}
-                            </p>
-                            <p className="text-[10px] text-white sm:shrink-0">
-                              {release.country || 'Country'}
-                            </p>
-                          </div>
+      <div className="artist-profile-content [&_p]:text-[13px]">
+        {releases.length > 0 ? (
+          <div className="grid grid-cols-2 gap-4 md:gap-6 xl:grid-cols-4">
+            {releases.map((release) => (
+              <article className="w-full" key={release.id}>
+                <Link href={release.releaseHref}>
+                  <div>
+                    <div className="relative aspect-square w-full overflow-hidden bg-slate-100 dark:bg-slate-900 rounded-lg">
+                      {release.imageUrl ? (
+                        <Image
+                          alt={release.releaseTitle}
+                          className="object-cover"
+                          fill
+                          src={release.imageUrl}
+                        />
+                      ) : null}
+                      <div className="absolute inset-x-0 bottom-0 flex flex-col items-start gap-1 bg-gradient-to-t from-black/75 via-black/25 to-transparent px-3 py-3 text-white md:px-4">
+                        <h2 className="text-[10px] font-semibold leading-snug text-white">
+                          {release.releaseTitle}
+                        </h2>
+                        <div className="flex w-full flex-col items-start gap-1 sm:flex-row sm:items-end sm:justify-between sm:gap-3">
+                          <p className="max-w-full text-[10px] leading-snug text-white">
+                            {release.creatorName}
+                            {release.genre ? (
+                              <span className="text-white/85"> · {release.genre}</span>
+                            ) : null}
+                          </p>
+                          <p className="text-[10px] text-white sm:shrink-0">
+                            {release.country || 'Country'}
+                          </p>
                         </div>
                       </div>
                     </div>
-                  </Link>
-                </article>
-              ))}
-            </div>
-          ) : (
-            <p className="py-8 text-center text-sm text-[#777] dark:text-[#858c98]">
-              Aún no hay lanzamientos publicados.
-            </p>
-          )}
-        </div>
+                  </div>
+                </Link>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <p className="py-8 text-center text-sm text-[#777] dark:text-[#858c98]">
+            Aún no hay lanzamientos publicados.
+          </p>
+        )}
+      </div>
+      <div className="artist-profile-social">
+        <SocialMediaBlock socialLinks={socialLinks} />
       </div>
     </div>
   )

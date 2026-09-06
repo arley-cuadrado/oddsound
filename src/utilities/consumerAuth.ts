@@ -44,12 +44,13 @@ function buildConsumerInternalPassword(googleSubjectId: string) {
     .digest('hex')
 }
 
-export function getGoogleConsumerOAuthConfig() {
+export function getGoogleConsumerOAuthConfig(serverURL?: string) {
   const clientID = process.env.GOOGLE_OAUTH_CLIENT_ID
   const clientSecret = process.env.GOOGLE_OAUTH_CLIENT_SECRET
-  const redirectURI =
-    process.env.GOOGLE_OAUTH_REDIRECT_URI ||
-    `${getServerSideURL()}/consumer-api/auth/google/callback`
+  const redirectURI = serverURL
+    ? `${serverURL.replace(/\/+$/, '')}/consumer-api/auth/google/callback`
+    : process.env.GOOGLE_OAUTH_REDIRECT_URI ||
+      `${getServerSideURL()}/consumer-api/auth/google/callback`
 
   if (!clientID || !clientSecret) {
     throw new Error('Google consumer auth is not configured yet.')
@@ -66,8 +67,8 @@ export function isGoogleConsumerOAuthConfigured() {
   return Boolean(process.env.GOOGLE_OAUTH_CLIENT_ID && process.env.GOOGLE_OAUTH_CLIENT_SECRET)
 }
 
-export function buildGoogleConsumerAuthorizationURL(state: string) {
-  const { clientID, redirectURI } = getGoogleConsumerOAuthConfig()
+export function buildGoogleConsumerAuthorizationURL(state: string, serverURL?: string) {
+  const { clientID, redirectURI } = getGoogleConsumerOAuthConfig(serverURL)
   const url = new URL(GOOGLE_AUTH_URL)
 
   url.searchParams.set('client_id', clientID)
@@ -80,8 +81,8 @@ export function buildGoogleConsumerAuthorizationURL(state: string) {
   return url.toString()
 }
 
-async function exchangeGoogleCode(code: string) {
-  const { clientID, clientSecret, redirectURI } = getGoogleConsumerOAuthConfig()
+async function exchangeGoogleCode(code: string, serverURL?: string) {
+  const { clientID, clientSecret, redirectURI } = getGoogleConsumerOAuthConfig(serverURL)
 
   const response = await fetch(GOOGLE_TOKEN_URL, {
     body: new URLSearchParams({
@@ -147,10 +148,11 @@ async function findUserByGoogleSubject({
 export async function loginOrRegisterConsumerWithGoogle(args: {
   code: string
   req?: PayloadRequest
+  serverURL?: string
 }) {
   const payload = await getPayload({ config })
   const payloadReq = args.req || (await createLocalReq({}, payload))
-  const tokenResult = await exchangeGoogleCode(args.code)
+  const tokenResult = await exchangeGoogleCode(args.code, args.serverURL)
 
   if (!tokenResult.access_token) {
     throw new Error('Google did not return an access token.')
@@ -207,6 +209,9 @@ export async function loginOrRegisterConsumerWithGoogle(args: {
         })
       : await payload.create({
           collection: 'users',
+          context: {
+            deferProfileCreation: true,
+          },
           data: {
             accountType: null,
             authProvider: 'google',
@@ -231,7 +236,6 @@ export async function loginOrRegisterConsumerWithGoogle(args: {
 
   await ensureConsumerProfile({
     payload,
-    req: payloadReq,
     user: {
       avatar: user.avatar || googleUser.picture || undefined,
       consumerProfile: user.consumerProfile,

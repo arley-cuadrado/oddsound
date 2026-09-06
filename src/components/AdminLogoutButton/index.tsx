@@ -2,6 +2,7 @@
 
 import { LogOutIcon, useAuth, useTranslation } from '@payloadcms/ui'
 import React, { useState } from 'react'
+import { getUserLoginPath } from '@/utilities/isEditorialUser'
 
 type AuthUser = {
   role?: null | string
@@ -27,8 +28,7 @@ const AdminLogoutButton: React.FC<Props> = ({ tabIndex = 0 }) => {
     try {
       await logOut()
     } finally {
-      const isFanUser = user?.userType === 'consumer' || user?.userType === 'fan'
-      window.location.href = isFanUser ? '/fan/login' : user?.role === 'creator' ? '/creator/login' : '/dashboard/login'
+      window.location.href = getUserLoginPath(user)
     }
   }
 

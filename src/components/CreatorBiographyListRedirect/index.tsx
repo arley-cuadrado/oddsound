@@ -2,6 +2,7 @@ import type { BeforeListServerProps } from 'payload'
 import { redirect } from 'next/navigation'
 
 import { findCreatorProfileByOwner } from '@/utilities/creatorProfiles'
+import { isMusicalCreatorUser } from '@/utilities/isEditorialUser'
 
 type CreatorUser = {
   editorAccess?: boolean | null
@@ -17,7 +18,7 @@ export default async function CreatorBiographyListRedirect({
 }: BeforeListServerProps) {
   const creatorUser = user as CreatorUser | null
 
-  if (creatorUser?.role !== 'creator' || creatorUser?.editorAccess || !creatorUser.id) {
+  if (!isMusicalCreatorUser(creatorUser) || !creatorUser?.id) {
     return null
   }
 

@@ -106,6 +106,13 @@ export const Comments: CollectionConfig = {
     update: canModerateComment,
   },
   admin: {
+    components: {
+      views: {
+        list: {
+          Component: '@/components/CreatorCommentsListView',
+        },
+      },
+    },
     defaultColumns: ['source', 'release', 'post', 'status', 'purchaseVerified', 'createdAt'],
     hidden: ({ user }) => !user || isFanUser(user),
     useAsTitle: 'content',

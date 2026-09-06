@@ -20,4 +20,24 @@ describe('verification email hero styles', () => {
     expect(html).toContain('@media (prefers-color-scheme: dark)')
     expect(html).toContain('[data-ogsc] .hero-title')
   })
+
+  it('uses the current request origin for verification links when available', () => {
+    const html = generateCreatorVerificationEmailHTML({
+      req: {
+        headers: new Headers({
+          'x-forwarded-host': 'oddsound-preview.vercel.app',
+          'x-forwarded-proto': 'https',
+        }),
+      },
+      token: 'preview-token',
+      user: {
+        email: 'preview@oddsound.co',
+        name: 'Preview Artist',
+      },
+    })
+
+    expect(html).toContain(
+      'https://oddsound-preview.vercel.app/creator/verify?email=preview%40oddsound.co&amp;token=preview-token',
+    )
+  })
 })

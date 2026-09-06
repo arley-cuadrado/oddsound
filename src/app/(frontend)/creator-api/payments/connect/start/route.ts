@@ -18,7 +18,7 @@ export async function GET() {
   const { user } = await payload.auth({ headers: requestHeaders })
 
   if (!user) {
-    return Response.redirect(`${getServerSideURL()}/creator/login`)
+    return Response.redirect(`${getServerSideURL()}/dashboard/login`)
   }
 
   try {

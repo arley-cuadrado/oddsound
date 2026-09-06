@@ -96,7 +96,7 @@ const LocalizedPayloadAdminBar: React.FC<LocalizedPayloadAdminBarProps> = (props
         method: 'POST',
       })
     } finally {
-      window.location.href = '/creator/login'
+      window.location.href = '/dashboard/login'
     }
   }
 
@@ -192,7 +192,10 @@ export const AdminBar: React.FC<{
 
   return (
     <div
-      className={cn(baseClass, 'fixed inset-x-0 top-0 z-50 bg-black py-2 text-white', {
+      className={cn(
+        baseClass,
+        'fixed inset-x-0 top-0 z-50 bg-background py-2 text-foreground transition-colors',
+        {
         block: show,
         hidden: !show,
       })}
@@ -201,15 +204,15 @@ export const AdminBar: React.FC<{
       <div className="container">
         <LocalizedPayloadAdminBar
           {...adminBarProps}
-          className="py-2 text-white"
+          className="py-2 text-inherit"
           classNames={{
-            controls: 'font-medium text-white',
-            create: 'text-white',
-            edit: 'text-white',
-            logout: 'text-white',
-            logo: 'text-white',
-            preview: 'text-white',
-            user: 'text-white',
+            controls: 'font-medium text-inherit',
+            create: 'text-inherit',
+            edit: 'text-inherit',
+            logout: 'text-inherit',
+            logo: 'text-inherit',
+            preview: 'text-inherit',
+            user: 'text-inherit',
           }}
           cmsURL={getClientSideURL()}
           collectionSlug={collection}
@@ -262,7 +265,7 @@ export const AdminBar: React.FC<{
           }}
           style={{
             backgroundColor: 'transparent',
-            color: '#fff',
+            color: 'inherit',
             display: 'flex',
             alignItems: 'center',
             padding: 0,

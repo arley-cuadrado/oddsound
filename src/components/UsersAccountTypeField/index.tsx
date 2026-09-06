@@ -10,8 +10,11 @@ export default function UsersAccountTypeField(props: SelectFieldClientProps) {
   const accountTypeField = useField<string | string[] | null>({
     path: props.path,
   })
-  const editorAccessValue = useFormFields(([fields]) => {
-    return Boolean(fields?.editorAccess?.value)
+  const editorialState = useFormFields(([fields]) => {
+    return {
+      editorAccess: Boolean(fields?.editorAccess?.value),
+      userType: typeof fields?.userType?.value === 'string' ? fields.userType.value : null,
+    }
   })
 
   const isEditorialRoute = useMemo(() => {
@@ -23,7 +26,8 @@ export default function UsersAccountTypeField(props: SelectFieldClientProps) {
     })
   }, [])
 
-  const shouldHide = isEditorialRoute || editorAccessValue
+  const shouldHide =
+    isEditorialRoute || editorialState.editorAccess || editorialState.userType === 'editor'
 
   useEffect(() => {
     if (!shouldHide || accountTypeField.value == null) return

@@ -1,0 +1,24 @@
+import type { ReactNode } from 'react'
+import React from 'react'
+
+type Props = {
+  description?: ReactNode
+  eyebrow?: ReactNode
+  media?: ReactNode
+  navigation: ReactNode
+  title: ReactNode
+}
+
+export function ArtistProfileHeader({ description, eyebrow, media, navigation, title }: Props) {
+  return (
+    <header className={`artist-profile-header${media ? ' artist-profile-header--with-media' : ''}`}>
+      <div className="artist-profile-header__identity">
+        {eyebrow ? <div className="artist-profile-header__eyebrow">{eyebrow}</div> : null}
+        {media ? <div className="artist-profile-header__media">{media}</div> : null}
+        <h1 className="artist-profile-header__title artist-profile-page-title">{title}</h1>
+      </div>
+      {description ? <div className="artist-profile-header__description">{description}</div> : null}
+      <div className="artist-profile-header__navigation">{navigation}</div>
+    </header>
+  )
+}

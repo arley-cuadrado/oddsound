@@ -42,7 +42,7 @@ export function CreatorResetPasswordForm({ token }: { token: string }) {
 
       setSuccessMessage(result.message || 'Tu contraseña fue actualizada.')
       setTimeout(() => {
-        router.push('/creator/login')
+        router.push('/dashboard/login')
       }, 1200)
     } catch (caughtError) {
       setError(caughtError instanceof Error ? caughtError.message : 'Algo salió mal.')
@@ -122,7 +122,7 @@ export function CreatorResetPasswordForm({ token }: { token: string }) {
       </button>
 
       <p className="text-[13px] text-foreground/80">
-        <Link className="underline underline-offset-2" href="/creator/login">
+        <Link className="underline underline-offset-2" href="/dashboard/login">
           Volver a iniciar sesión
         </Link>
       </p>

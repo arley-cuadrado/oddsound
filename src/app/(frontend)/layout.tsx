@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 
 import { cn } from '@/utilities/ui'
 import { GeistMono } from 'geist/font/mono'
@@ -67,4 +67,12 @@ export const metadata: Metadata = {
     description: HOME_DESCRIPTION,
     images: [`${getServerSideURL()}/oddsound_main_share_image.jpg`],
   },
+}
+
+export const viewport: Viewport = {
+  colorScheme: 'light dark',
+  themeColor: [
+    { color: '#ffffff', media: '(prefers-color-scheme: light)' },
+    { color: '#0f0f0f', media: '(prefers-color-scheme: dark)' },
+  ],
 }

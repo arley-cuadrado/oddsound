@@ -176,7 +176,9 @@ export const Media: CollectionConfig = {
         },
       }
     },
-    read: async ({ req }) => {
+    read: async ({ isReadingStaticFile, req }) => {
+      if (isReadingStaticFile) return true
+
       const user = req.user
 
       if (!user) return true

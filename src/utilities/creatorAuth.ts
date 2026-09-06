@@ -1,8 +1,19 @@
-import config from '@payload-config'
+import crypto from 'crypto'
 import { createLocalReq, getPayload } from 'payload'
 
 import { getTemporaryLoginLockMessage } from '@/utilities/authLocking'
 import { ensureCreatorProfile } from '@/utilities/creatorProfiles'
+import {
+  generateCreatorVerificationEmailHTML,
+  generateCreatorVerificationEmailSubject,
+  generateEditorVerificationEmailHTML,
+  generateEditorVerificationEmailSubject,
+} from '@/utilities/emailVerification'
+import { hasEditorialIdentity } from '@/utilities/isEditorialUser'
+import {
+  isRetryableMongoTransactionError,
+  withMongoTransactionRetry,
+} from '@/utilities/mongoTransactionRetry'
 
 export type AccountType = 'artist' | 'band'
 export type LegacyAccountType = AccountType | 'label'
@@ -13,7 +24,11 @@ export type CreatorAuthStatus =
   | 'password_reset_completed'
   | 'password_reset_requested'
   | 'pending_verification'
+  | 'verification_already_completed'
+  | 'verification_completed'
   | 'verification_email_resent'
+  | 'verification_token_expired'
+  | 'verification_token_invalid'
 
 export type CreatorAuthResult = {
   email?: string
@@ -24,6 +39,7 @@ export type CreatorAuthResult = {
 
 export type VerificationUser = {
   authProvider?: null | string
+  editorAccess?: boolean | null
   name?: null | string
   role?: null | string
   userType?: null | string
@@ -34,15 +50,29 @@ export type VerificationUser = {
   email: string
   id: string
   updatedAt?: null | string
+  verificationExpiresAt?: null | string
 }
 
+type RequestHeadersLike = Headers | Record<string, string> | Record<string, string | undefined>
+export type VerificationRequestLike = Request | { headers?: RequestHeadersLike }
+
 export const CREATOR_LEGAL_VERSION = '2026-05-14'
-export const CREATOR_VERIFICATION_ERROR_MESSAGE = 'Debes confirmar tu correo antes de iniciar sesión.'
+export const CREATOR_VERIFICATION_EXPIRATION_MS = 24 * 60 * 60 * 1000
+export const CREATOR_VERIFICATION_ERROR_MESSAGE =
+  'Debes confirmar tu correo antes de iniciar sesión.'
 export const CROSS_ACCOUNT_EMAIL_CONFLICT_MESSAGE =
   'Este correo ya está asociado a una cuenta de otro tipo dentro de Oddsound.'
 
+async function getPayloadConfig() {
+  const { default: config } = await import('@payload-config')
+
+  return config
+}
+
 function isConsumerIdentity(user?: null | Pick<VerificationUser, 'authProvider' | 'userType'>) {
-  return user?.userType === 'consumer' || user?.userType === 'fan' || user?.authProvider === 'google'
+  return (
+    user?.userType === 'consumer' || user?.userType === 'fan' || user?.authProvider === 'google'
+  )
 }
 
 function buildUsernameSeed({ email, name }: { email: string; name: string }) {
@@ -61,11 +91,141 @@ function buildUsernameSeed({ email, name }: { email: string; name: string }) {
     .replace(/^-+|-+$/g, '')
 }
 
+function normalizeRequestHeaders(input?: VerificationRequestLike): Headers {
+  if (!input) return new Headers()
+
+  if (typeof Request !== 'undefined' && input instanceof Request) {
+    return new Headers(input.headers)
+  }
+
+  if (input.headers instanceof Headers) {
+    return new Headers(input.headers)
+  }
+
+  const headers = new Headers()
+
+  for (const [key, value] of Object.entries(input.headers || {})) {
+    if (typeof value === 'string' && value) {
+      headers.set(key, value)
+    }
+  }
+
+  return headers
+}
+
+export async function createPayloadReqWithHeaders(
+  input: VerificationRequestLike | undefined,
+  payload: Awaited<ReturnType<typeof getPayload>>,
+) {
+  const payloadReq = await createLocalReq({}, payload)
+
+  ;(payloadReq as typeof payloadReq & { headers: Headers }).headers = normalizeRequestHeaders(input)
+
+  return payloadReq
+}
+
+async function issueVerificationEmail(args: {
+  payload: Awaited<ReturnType<typeof getPayload>>
+  req?: VerificationRequestLike
+  user: VerificationUser
+}) {
+  const { payload, req, user } = args
+  const payloadReq = await createPayloadReqWithHeaders(req, payload)
+  const token = crypto.randomBytes(20).toString('hex')
+
+  const updatedUser = await withMongoTransactionRetry(() =>
+    payload.update({
+      id: user.id,
+      collection: 'users',
+      data: {
+        verificationExpiresAt: new Date(
+          Date.now() + CREATOR_VERIFICATION_EXPIRATION_MS,
+        ).toISOString(),
+        _verificationToken: token,
+        _verified: false,
+      } as never,
+      depth: 0,
+      overrideAccess: true,
+      req: payloadReq,
+      showHiddenFields: true,
+    }),
+  )
+
+  await payload.sendEmail({
+    html: hasEditorialIdentity(updatedUser)
+      ? generateEditorVerificationEmailHTML({
+          req,
+          token,
+          user: {
+            editorAccess: updatedUser.editorAccess,
+            email: updatedUser.email || user.email,
+            name: updatedUser.name || updatedUser.email || user.email,
+            userType: updatedUser.userType,
+          },
+        })
+      : generateCreatorVerificationEmailHTML({
+          req,
+          token,
+          user: {
+            editorAccess: updatedUser.editorAccess,
+            email: updatedUser.email || user.email,
+            name: updatedUser.name || updatedUser.email || user.email,
+            userType: updatedUser.userType,
+          },
+        }),
+    subject: hasEditorialIdentity(updatedUser)
+      ? generateEditorVerificationEmailSubject()
+      : generateCreatorVerificationEmailSubject(),
+    to: user.email,
+  })
+}
+
+async function sendExistingVerificationEmail(args: {
+  payload: Awaited<ReturnType<typeof getPayload>>
+  req?: VerificationRequestLike
+  token: string
+  user: VerificationUser
+}) {
+  const { payload, req, token, user } = args
+  const userType: 'artist' | 'band' | 'creator' | 'editor' | 'fan' | null =
+    user.userType === 'creator' ||
+    user.userType === 'fan' ||
+    user.userType === 'editor' ||
+    user.userType === 'artist' ||
+    user.userType === 'band'
+      ? user.userType
+      : null
+  const verificationEmailUser = {
+    editorAccess: user.editorAccess,
+    email: user.email,
+    name: user.name || user.email,
+    userType,
+  }
+
+  await payload.sendEmail({
+    html: hasEditorialIdentity(user)
+      ? generateEditorVerificationEmailHTML({
+          req,
+          token,
+          user: verificationEmailUser,
+        })
+      : generateCreatorVerificationEmailHTML({
+          req,
+          token,
+          user: verificationEmailUser,
+        }),
+    subject: hasEditorialIdentity(user)
+      ? generateEditorVerificationEmailSubject()
+      : generateCreatorVerificationEmailSubject(),
+    to: user.email,
+  })
+}
+
 export async function findUserByEmail(
   email: string,
   payloadArg?: Awaited<ReturnType<typeof getPayload>>,
 ): Promise<null | VerificationUser> {
-  const payload = payloadArg || (await getPayload({ config }))
+  const payload = payloadArg || (await getPayload({ config: await getPayloadConfig() }))
   const existingUser = await payload.find({
     collection: 'users',
     depth: 0,
@@ -83,6 +243,157 @@ export async function findUserByEmail(
   return (existingUser.docs[0] as VerificationUser | undefined) || null
 }
 
+async function findUserByEmailAndVerificationToken(args: {
+  email: string
+  payload: Awaited<ReturnType<typeof getPayload>>
+  token: string
+}): Promise<null | VerificationUser> {
+  const result = await args.payload.find({
+    collection: 'users',
+    depth: 0,
+    limit: 1,
+    overrideAccess: true,
+    pagination: false,
+    showHiddenFields: true,
+    where: {
+      and: [
+        {
+          email: {
+            equals: args.email,
+          },
+        },
+        {
+          _verificationToken: {
+            equals: args.token,
+          },
+        },
+      ],
+    },
+  })
+
+  return (result.docs[0] as VerificationUser | undefined) || null
+}
+
+export async function confirmCreatorVerification(input: {
+  email?: string
+  token?: string
+}): Promise<CreatorAuthResult> {
+  const email = input.email?.trim().toLowerCase() || ''
+  const token = input.token?.trim() || ''
+
+  if (!email || !token) {
+    return {
+      message: 'El enlace de verificación no es válido o está incompleto.',
+      ok: false,
+      status: 'verification_token_invalid',
+    }
+  }
+
+  try {
+    const payload = await getPayload({ config: await getPayloadConfig() })
+    const existingUser = await findUserByEmail(email, payload)
+
+    if (!existingUser) {
+      return {
+        email,
+        message: 'No encontramos una cuenta pendiente con ese correo.',
+        ok: false,
+        status: 'verification_token_invalid',
+      }
+    }
+
+    if (existingUser._verified) {
+      return {
+        email,
+        message: 'Tu correo ya había sido confirmado. Ya puedes iniciar sesión.',
+        ok: true,
+        status: 'verification_already_completed',
+      }
+    }
+
+    if (
+      existingUser.verificationExpiresAt &&
+      Date.parse(existingUser.verificationExpiresAt) <= Date.now()
+    ) {
+      return {
+        email,
+        message: 'El enlace de verificación expiró. Solicita uno nuevo para continuar.',
+        ok: false,
+        status: 'verification_token_expired',
+      }
+    }
+
+    const matchedUser = await findUserByEmailAndVerificationToken({
+      email,
+      payload,
+      token,
+    })
+
+    if (!matchedUser) {
+      return {
+        email,
+        message: 'El enlace ya no es válido. Solicita uno nuevo para continuar.',
+        ok: false,
+        status: 'verification_token_invalid',
+      }
+    }
+
+    await withMongoTransactionRetry(() =>
+      payload.verifyEmail({
+        collection: 'users',
+        token,
+      }),
+    )
+
+    await withMongoTransactionRetry(() =>
+      payload.update({
+        collection: 'users',
+        data: {
+          verificationExpiresAt: null,
+        },
+        depth: 0,
+        id: matchedUser.id,
+        overrideAccess: true,
+      }),
+    )
+
+    return {
+      email,
+      message: 'Tu correo fue confirmado correctamente. Ya puedes iniciar sesión.',
+      ok: true,
+      status: 'verification_completed',
+    }
+  } catch (error) {
+    try {
+      const payload = await getPayload({ config: await getPayloadConfig() })
+      const refreshedUser = email ? await findUserByEmail(email, payload) : null
+
+      if (refreshedUser?._verified) {
+        return {
+          email,
+          message: 'Tu correo ya había sido confirmado. Ya puedes iniciar sesión.',
+          ok: true,
+          status: 'verification_already_completed',
+        }
+      }
+    } catch {
+      // Keep the original failure message if the fallback lookup also fails.
+    }
+
+    return {
+      email,
+      message:
+        isRetryableMongoTransactionError(error)
+          ? 'No pudimos confirmar el correo por una demora temporal. Intenta nuevamente.'
+          : error instanceof Error
+            ? error.message
+            : 'No fue posible confirmar el correo electrónico.',
+      ok: false,
+      status: 'verification_token_invalid',
+    }
+  }
+}
+
 export async function registerCreatorAccount(input: {
   acceptedLegal: boolean
   accountType: AccountType
@@ -91,13 +402,15 @@ export async function registerCreatorAccount(input: {
   genre: string
   name: string
   password: string
+  req?: VerificationRequestLike
 }): Promise<CreatorAuthResult> {
   try {
-    const payload = await getPayload({ config })
     const country = input.country.trim()
     const email = input.email.trim().toLowerCase()
     const genre = input.genre.trim()
     const name = input.name.trim()
+
+    const payload = await getPayload({ config: await getPayloadConfig() })
 
     if (!input.acceptedLegal) {
       return {
@@ -130,43 +443,143 @@ export async function registerCreatorAccount(input: {
     }
 
     if (existingUser) {
+      await issueVerificationEmail({
+        payload,
+        req: input.req,
+        user: existingUser,
+      })
+
       return {
         email,
-        message: 'Esta cuenta ya existe y está pendiente de verificación.',
+        message: 'Te enviamos un nuevo enlace de verificación.',
         ok: true,
-        status: 'pending_verification',
+        status: 'verification_email_resent',
       }
     }
 
-    const createdUser = await payload.create({
-      collection: 'users',
-      data: {
-        accountType: input.accountType,
-        email,
-        legalAccepted: true,
-        legalAcceptedAt: new Date().toISOString(),
-        legalAcceptedVersion: CREATOR_LEGAL_VERSION,
-        name,
-        password: input.password,
-        role: 'creator',
-        username: buildUsernameSeed({ email, name }),
-      },
-      draft: false,
-      overrideAccess: true,
-    })
+    const payloadReq = await createPayloadReqWithHeaders(input.req, payload)
+    const createdUser = await withMongoTransactionRetry(() =>
+      payload.create({
+        collection: 'users',
+        context: {
+          deferProfileCreation: true,
+        },
+        data: {
+          accountType: input.accountType,
+          email,
+          legalAccepted: true,
+          legalAcceptedAt: new Date().toISOString(),
+          legalAcceptedVersion: CREATOR_LEGAL_VERSION,
+          name,
+          password: input.password,
+          role: 'creator',
+          userType: input.accountType,
+          username: buildUsernameSeed({ email, name }),
+          verificationExpiresAt: new Date(
+            Date.now() + CREATOR_VERIFICATION_EXPIRATION_MS,
+          ).toISOString(),
+        },
+        disableVerificationEmail: true,
+        draft: false,
+        overrideAccess: true,
+        req: payloadReq,
+        showHiddenFields: true,
+      }),
+    )
 
-    const profileId =
-      typeof createdUser.profile === 'string' ? createdUser.profile : createdUser.profile?.id
+    const persistedUser = await findUserByEmail(email, payload)
+
+    if (
+      !persistedUser ||
+      String(persistedUser.id) !== String(createdUser.id) ||
+      persistedUser._verified !== false
+    ) {
+      throw new Error('No fue posible guardar tu cuenta. Intenta nuevamente.')
+    }
+
+    const verificationUser = createdUser as VerificationUser
+    const persistedVerificationToken = persistedUser._verificationToken
+
+    if (
+      verificationUser._verificationToken &&
+      persistedVerificationToken !== verificationUser._verificationToken
+    ) {
+      throw new Error('No fue posible guardar el enlace de verificación. Intenta nuevamente.')
+    }
+
+    let profileId: null | string = null
+
+    try {
+      const ensuredProfile = await ensureCreatorProfile({
+        payload,
+        user: {
+          accountType: createdUser.accountType,
+          editorAccess: createdUser.editorAccess,
+          email: createdUser.email || email,
+          id: String(createdUser.id),
+          name: createdUser.name || name,
+          profile: createdUser.profile,
+          role: createdUser.role,
+          userType: createdUser.userType,
+        },
+      })
+
+      profileId = typeof ensuredProfile === 'string' ? ensuredProfile : ensuredProfile?.id || null
+    } catch (error) {
+      payload.logger.error(
+        {
+          err: error,
+          userEmail: email,
+          userID: createdUser.id,
+        },
+        'Creator profile creation failed after persisted user signup',
+      )
+    }
 
     if (profileId) {
-      await payload.update({
-        id: profileId,
-        collection: 'profiles',
-        data: {
-          genre,
-          location: country,
+      try {
+        await payload.update({
+          id: profileId,
+          collection: 'profiles',
+          data: {
+            genre,
+            location: country,
+          },
+          overrideAccess: true,
+        })
+      } catch (error) {
+        payload.logger.error(
+          {
+            err: error,
+            profileId,
+            userEmail: email,
+            userID: createdUser.id,
+          },
+          'Creator profile enrichment failed after user signup',
+        )
+      }
+    }
+
+    if (persistedVerificationToken) {
+      await sendExistingVerificationEmail({
+        payload,
+        req: input.req,
+        token: persistedVerificationToken,
+        user: persistedUser,
+      })
+    } else {
+      // Payload normally returns its native token when hidden fields are requested.
+      // Keep a fallback for adapters that omit it from the create result.
+      await issueVerificationEmail({
+        payload,
+        req: input.req,
+        user: {
+          editorAccess: createdUser.editorAccess,
+          email: createdUser.email || email,
+          id: createdUser.id,
+          name: createdUser.name || name,
+          userType: createdUser.userType,
         },
-        overrideAccess: true,
       })
     }
 
@@ -177,17 +590,49 @@ export async function registerCreatorAccount(input: {
       status: 'pending_verification',
     }
   } catch (error) {
+    if (isRetryableMongoTransactionError(error)) {
+      const email = input.email.trim().toLowerCase()
+
+      try {
+        const payload = await getPayload({ config: await getPayloadConfig() })
+        const existingUser = await findUserByEmail(email, payload)
+
+        if (existingUser && !existingUser._verified && !isConsumerIdentity(existingUser)) {
+          if (existingUser._verificationToken) {
+            await sendExistingVerificationEmail({
+              payload,
+              req: input.req,
+              token: existingUser._verificationToken,
+              user: existingUser,
+            })
+          } else {
+            await issueVerificationEmail({ payload, req: input.req, user: existingUser })
+          }
+
+          return {
+            email,
+            message: 'Tu cuenta fue creada. Revisa tu correo para activarla.',
+            ok: true,
+            status: 'pending_verification',
+          }
+        }
+      } catch {
+        // Return the safe retry message below when the recovery lookup fails.
+      }
+    }
+
     return {
-      message: error instanceof Error ? error.message : 'No fue posible crear tu cuenta.',
+      message: isRetryableMongoTransactionError(error)
+        ? 'No pudimos crear tu cuenta por una demora temporal. Intenta nuevamente.'
+        : error instanceof Error
+          ? error.message
+          : 'No fue posible crear tu cuenta.',
       ok: false,
     }
   }
 }
 
-export async function loginCreatorAccount(input: {
-  email: string
-  password: string
-}): Promise<
+export async function loginCreatorAccount(input: { email: string; password: string }): Promise<
   CreatorAuthResult & {
     token?: string
     user?: {
@@ -202,7 +647,7 @@ export async function loginCreatorAccount(input: {
 > {
   try {
     const email = input.email.trim().toLowerCase()
-    const payload = await getPayload({ config })
+    const payload = await getPayload({ config: await getPayloadConfig() })
     const existingUser = await findUserByEmail(email, payload)
 
     if (!existingUser) {

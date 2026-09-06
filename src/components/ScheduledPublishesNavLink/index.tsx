@@ -10,9 +10,7 @@ const ScheduledPublishesNavLink: React.FC = () => {
   const pathname = usePathname()
   const href = '/dashboard#scheduled-publishes'
   const isActive = pathname === '/dashboard'
-  const isFanUser = user?.userType === 'consumer' || user?.userType === 'fan'
-  const canSeeLink =
-    user?.role === 'admin' || (user?.role === 'creator' && !Boolean(user?.editorAccess) && !isFanUser)
+  const canSeeLink = user?.role === 'admin'
 
   if (!canSeeLink) return null
 

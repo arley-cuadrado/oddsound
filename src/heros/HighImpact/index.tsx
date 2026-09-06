@@ -41,11 +41,11 @@ export const HighImpactHero: React.FC<HighImpactHeroProps> = ({
         <div className="w-full max-w-4xl">
           <div className="px-5 pb-2 text-center md:px-8 md:pb-3">
             {creatorMeta && (
-              <p className="mb-2 text-xs uppercase tracking-[0.14em] text-white/70">
+              <p className="artist-profile-meta mb-2 text-white/70">
                 {creatorMeta}
               </p>
             )}
-            <h1 className="text-3xl font-black leading-none tracking-tight md:text-5xl lg:text-6xl">
+            <h1 className="artist-profile-page-title">
               {pageTitle}
             </h1>
           </div>

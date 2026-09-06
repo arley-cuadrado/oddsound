@@ -22,6 +22,7 @@ export async function POST(request: Request) {
     genre: body.genre || '',
     name: body.name || '',
     password: body.password || '',
+    req: request,
   })
 
   if (!result.ok) {

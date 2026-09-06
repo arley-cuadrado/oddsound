@@ -1,12 +1,39 @@
-import type { CollectionConfig, Field } from 'payload'
+import type { CollectionConfig, Field, PayloadRequest } from 'payload'
 
 import { authenticated } from '@/access/authenticated'
 import { hasFreshAdminAccess } from '@/access/hasFreshAdminAccess'
 import { assignOwnership } from '@/hooks/assignOwnership'
 import { BiographyContent } from '@/blocks/Content/config'
+import {
+  revalidateBiography,
+  revalidateBiographyDelete,
+} from '@/collections/Biographies/hooks/revalidateBiography'
 import { socialLinksField } from '@/fields/socialLinks'
 import { isAdminUser } from '@/utilities/isAdminUser'
 import { isMusicalCreatorUser } from '@/utilities/isEditorialUser'
+
+async function canCreateBiographyForRequest(req: PayloadRequest) {
+  const user = req.user
+
+  if (!user) return false
+  if (await hasFreshAdminAccess(req as any)) return true
+  if (!isMusicalCreatorUser(user)) return false
+
+  const existingBiography = await req.payload.find({
+    collection: 'biographies',
+    depth: 0,
+    limit: 1,
+    overrideAccess: true,
+    pagination: false,
+    where: {
+      owner: {
+        equals: user.id,
+      },
+    },
+  })
+
+  return existingBiography.docs.length === 0
+}
 
 const biographyHero: Field = {
   name: 'hero',
@@ -25,6 +52,7 @@ const biographyHero: Field = {
         },
       ],
       admin: {
+        hidden: true,
         readOnly: true,
       },
       required: true,
@@ -34,7 +62,8 @@ const biographyHero: Field = {
       type: 'upload',
       relationTo: 'media',
       admin: {
-        description: 'Opcional. Si agregas una imagen, la biografía mostrará el encabezado dividido.',
+        description:
+          'Opcional. Si agregas una imagen, la biografía mostrará el encabezado dividido.',
       },
       required: false,
     },
@@ -58,19 +87,13 @@ export const Biographies: CollectionConfig = {
   ],
   access: {
     admin: authenticated,
-    create: ({ req }) => isAdminUser(req.user) || isMusicalCreatorUser(req.user),
+    create: async ({ req }) => canCreateBiographyForRequest(req),
     delete: async ({ req }) => {
       const user = req.user
 
       if (!user) return false
       if (await hasFreshAdminAccess(req as any)) return true
-      if (!isMusicalCreatorUser(user)) return false
-
-      return {
-        owner: {
-          equals: user.id,
-        },
-      }
+      return false
     },
     read: async ({ req }) => {
       const user = req.user
@@ -199,16 +222,16 @@ export const Biographies: CollectionConfig = {
             },
           ],
         },
+        {
+          label: 'Redes sociales',
+          fields: [socialLinksField()],
+        },
       ],
-    },
-    {
-      ...socialLinksField(),
-      admin: {
-        hidden: true,
-      },
     },
   ],
   hooks: {
     beforeChange: [assignOwnership],
+    afterChange: [revalidateBiography],
+    afterDelete: [revalidateBiographyDelete],
   },
 }

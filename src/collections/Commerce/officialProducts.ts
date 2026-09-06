@@ -94,7 +94,7 @@ export function extendEcommerceProductsCollection({ defaultCollection }: Overrid
     admin: {
       ...(defaultCollection.admin || {}),
       defaultColumns: ['title', 'priceInUSD', 'inventory', 'updatedAt'],
-      hidden: ({ user }) => !isAdminUser(user) && !isMusicalCreatorUser(user),
+      hidden: ({ user }) => !isAdminUser(user),
       useAsTitle: 'title',
     },
     fields: [
@@ -207,7 +207,7 @@ export function extendEcommerceProductsCollection({ defaultCollection }: Overrid
         name: 'checkoutProvider',
         type: 'select',
         label: 'Proveedor de checkout',
-        defaultValue: 'other',
+        defaultValue: 'mercadopago',
         options: [
           {
             label: 'Stripe',
@@ -253,7 +253,7 @@ export function extendEcommerceProductsCollection({ defaultCollection }: Overrid
         name: 'checkoutButtonLabel',
         type: 'text',
         label: 'Texto del boton',
-        defaultValue: 'Comprar',
+        defaultValue: 'Agregar al carrito',
       },
       ...defaultCollection.fields,
       slugField({

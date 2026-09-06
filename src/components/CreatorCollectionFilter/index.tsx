@@ -2,6 +2,11 @@
 
 import { useAuth } from '@payloadcms/ui'
 import { useEffect } from 'react'
+import {
+  isEditorialUser,
+  isFanUser,
+  isMusicalCreatorUser,
+} from '@/utilities/isEditorialUser'
 
 type AuthUser = {
   editorAccess?: boolean | null
@@ -17,12 +22,15 @@ export default function CreatorCollectionFilter() {
     if (user?.role !== 'creator') return
 
     const hideCollectionsForCreators = () => {
-      const isFanUser = user?.userType === 'consumer' || user?.userType === 'fan'
-      const allowedCollections = isFanUser
-        ? []
-        : user?.editorAccess
-        ? ['posts', 'profiles', 'media']
-        : ['pages', 'biographies', 'products', 'profiles', 'media']
+      let allowedCollections: string[] = []
+
+      if (isEditorialUser(user)) {
+        allowedCollections = ['posts', 'profiles', 'media']
+      } else if (isMusicalCreatorUser(user)) {
+        allowedCollections = ['pages', 'biographies', 'products', 'profiles', 'media']
+      } else if (isFanUser(user)) {
+        allowedCollections = []
+      }
 
       // Find all collection links in the navigation
       const navLinks = Array.from(
@@ -48,8 +56,6 @@ export default function CreatorCollectionFilter() {
       const adminLinks = Array.from(document.querySelectorAll<HTMLElement>('a[href*="/dashboard"]'))
       adminLinks.forEach((link) => {
         const href = link.getAttribute('href') || ''
-        const text = link.textContent?.toLowerCase() || ''
-
         // Hide links to collections that aren't in allowedCollections
         const isCollectionLink = href.includes('/dashboard/collections/')
 
