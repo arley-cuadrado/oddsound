@@ -49,7 +49,7 @@ export default async function CreatorVerifyView({ searchParams }: Props) {
       {isVerified ? (
         <Link
           className="inline-flex h-12 w-full items-center justify-center bg-[#312e2e] px-4 text-[13px] font-medium text-white"
-          href="/creator/login"
+          href="/dashboard/login"
         >
           Ir a iniciar sesión
         </Link>
