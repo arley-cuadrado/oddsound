@@ -1,10 +1,10 @@
 import Link from 'next/link'
 import React from 'react'
 
-import type { Biography, Page, SocialMediaBlock as SocialMediaBlockProps } from '@/payload-types'
+import type { Biography, SocialMediaBlock as SocialMediaBlockProps } from '@/payload-types'
 
 type SocialLinkItem = NonNullable<
-  NonNullable<Biography['socialLinks'] | Page['socialLinks'] | SocialMediaBlockProps['socialLinks']>
+  NonNullable<Biography['socialLinks'] | SocialMediaBlockProps['socialLinks']>
 >[number]
 
 type Props = {
