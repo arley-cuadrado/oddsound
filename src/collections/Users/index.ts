@@ -434,7 +434,6 @@ export const Users: CollectionConfig = {
           name: 'label',
           type: 'text',
           label: 'Nombre / máscara',
-          defaultValue: '@',
         },
         {
           name: 'url',

@@ -6,6 +6,41 @@ import { exceedsMediaUploadLimit, mediaUploadLimitMessage } from '@/config/uploa
 
 const uploadButtonLabels = new Set(['Selecciona un archivo', 'Seleccionar archivo'])
 
+function markUploadDropCopy() {
+  document.querySelectorAll('span').forEach((element) => {
+    const text = element.textContent?.trim()
+    if (text === 'o arrastra y suelta un archivo' || text === 'arrastra y suelta un archivo') {
+      element.dataset.uploadDropCopy = 'true'
+    }
+  })
+}
+
+function addUploadMobileStyles() {
+  const existingStyles = document.querySelector('[data-upload-limit-styles]')
+  if (existingStyles) return existingStyles
+
+  const styles = document.createElement('style')
+  styles.dataset.uploadLimitStyles = 'true'
+  styles.textContent = `
+    @media (max-width: 767px) {
+      [data-upload-limit-notice] {
+        display: block !important;
+        margin: 10px auto 0 !important;
+        text-align: center !important;
+      }
+
+      [data-upload-drop-copy] {
+        display: block !important;
+        margin-top: 10px !important;
+        text-align: center !important;
+      }
+    }
+  `
+  document.head.append(styles)
+
+  return styles
+}
+
 function getUploadButton(target: EventTarget | null) {
   const element = target instanceof HTMLElement ? target : null
   const directButton = element?.closest('button')
@@ -58,6 +93,12 @@ function showUploadLimitMessage(target: EventTarget | null) {
 
 export default function AdminUploadSizeGuard() {
   useEffect(() => {
+    const mobileStyles = addUploadMobileStyles()
+    markUploadDropCopy()
+
+    const observer = new MutationObserver(markUploadDropCopy)
+    observer.observe(document.body, { childList: true, subtree: true })
+
     const preventOversizedUpload = (event: Event, files: File[]) => {
       if (!files.some((file) => exceedsMediaUploadLimit(file.size))) {
         clearUploadLimitMessage(event.target)
@@ -86,6 +127,11 @@ export default function AdminUploadSizeGuard() {
     document.addEventListener('drop', handleDrop, true)
 
     return () => {
+      observer.disconnect()
+      mobileStyles.remove()
+      document.querySelectorAll('[data-upload-drop-copy]').forEach((copy) => {
+        delete (copy as HTMLElement).dataset.uploadDropCopy
+      })
       document.removeEventListener('change', handleFileInputChange, true)
       document.removeEventListener('drop', handleDrop, true)
     }

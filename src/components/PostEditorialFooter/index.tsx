@@ -20,10 +20,12 @@ function getEditorialSocialLink(profile: Profile) {
   const label = profile.editorSocialLink?.label?.trim()
   const url = profile.editorSocialLink?.url?.trim()
 
-  if (!label || !url) return null
+  const formattedLabel = formatEditorialSocialHandle(label)
+
+  if (!formattedLabel || !url) return null
 
   return {
-    label: formatEditorialSocialHandle(label),
+    label: formattedLabel,
     url,
   }
 }

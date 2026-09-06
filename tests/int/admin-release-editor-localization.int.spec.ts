@@ -86,6 +86,7 @@ describe('release editor localization config', () => {
   it('formats editorial social handles with one visible at sign', () => {
     expect(formatEditorialSocialHandle('oddsound')).toBe('@oddsound')
     expect(formatEditorialSocialHandle('@oddsound')).toBe('@oddsound')
+    expect(formatEditorialSocialHandle('@')).toBe('')
   })
 
   it('localizes hero image upload labels and required validation', () => {

@@ -31,9 +31,11 @@ function getEditorialSocialLink(profile: Profile) {
   const label = profile.editorSocialLink?.label?.trim()
   const url = profile.editorSocialLink?.url?.trim()
 
-  if (!label || !url) return null
+  const formattedLabel = formatEditorialSocialHandle(label)
 
-  return { label: formatEditorialSocialHandle(label), url }
+  if (!formattedLabel || !url) return null
+
+  return { label: formattedLabel, url }
 }
 
 function isPublicEditorialAuthorProfile(profile: null | Profile) {
