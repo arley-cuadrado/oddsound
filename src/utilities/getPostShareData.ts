@@ -26,10 +26,10 @@ export function getPostShareData(post: Post) {
     authorAvatarUrl: authorAvatar || undefined,
     authorName: profile?.displayName || owner?.name || undefined,
     authorRole,
-    bannerImageUrl: heroImage || undefined,
     content,
     summary,
     title: post.title,
     urlPath: `/posts/${post.slug}`,
+    bannerImageUrl: heroImage || undefined,
   }
 }

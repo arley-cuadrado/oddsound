@@ -117,8 +117,7 @@ export async function generateMetadata({ params: paramsPromise }: Args): Promise
   }
 
   const shareData = getPostShareData(post)
-  const description =
-    post.meta?.description?.trim() || shareData.summary || 'Oddsound - Be heard. Stay odd.'
+  const description = post.meta?.description?.trim() || shareData.summary || 'Oddsound - Be heard. Stay odd.'
   const baseTitle = post.meta?.title?.trim() || post.title.trim()
   const title = baseTitle ? `${baseTitle} | Oddsound` : 'Oddsound - Be heard. Stay odd.'
   const imageUrl = shareData.bannerImageUrl
