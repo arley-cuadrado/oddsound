@@ -1,11 +1,12 @@
 'use client'
 
 import { DefaultEditView } from '@payloadcms/ui'
+import type { DocumentViewClientProps } from 'payload'
 
-export default function AccountEditView() {
+export default function AccountEditView(props: DocumentViewClientProps) {
   return (
     <div className="oddsound-account-view">
-      <DefaultEditView />
+      <DefaultEditView {...props} />
     </div>
   )
 }
