@@ -52,8 +52,18 @@
   display: flex;
   flex-direction: column;
 
-  .oddsound-creator-account-tabs .blocks-field__drawer-toggler {
-    margin: 2px 0;
+  .oddsound-creator-account-tabs {
+    .blocks-field {
+      gap: 0;
+    }
+
+    .blocks-field__rows {
+      min-height: 0;
+    }
+
+    .blocks-field__drawer-toggler {
+      margin: 2px 0;
+    }
   }
 
   .document-fields__fields {
@@ -78,10 +88,10 @@
         .tabs-field__tab-button:nth-of-type(4).tabs-field__tab-button--active
     ) {
     .collection-edit__auth {
-      display: block;
+      display: flex;
       margin-top: 32px;
 
-      .auth-fields {
+      &.auth-fields {
         gap: 16px;
       }
     }
