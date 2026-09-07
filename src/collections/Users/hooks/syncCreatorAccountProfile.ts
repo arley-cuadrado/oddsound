@@ -30,6 +30,8 @@ type CreatorAccountFields = {
   } | null
   genre?: null | string
   location?: null | string
+  name?: null | string
+  username?: null | string
 }
 
 function isProfileAccountUser(user: unknown) {
