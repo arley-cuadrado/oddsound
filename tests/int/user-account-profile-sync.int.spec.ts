@@ -106,6 +106,30 @@ describe('creator account profile synchronization', () => {
     )
   })
 
+  it('returns removed social links immediately after saving the account', async () => {
+    const result = await syncCreatorAccountProfile({
+      data: {
+        biographySocialLinks: [],
+      },
+      doc: {
+        id: 'creator-1',
+        name: 'Nueva Banda',
+        profile: 'profile-1',
+        role: 'creator',
+        userType: 'band',
+      },
+      operation: 'update',
+      req: {
+        payload: {
+          find: vi.fn().mockResolvedValue({ docs: [{ id: 'biography-1' }] }),
+          update: vi.fn().mockResolvedValue({}),
+        },
+      },
+    } as any)
+
+    expect(result).toMatchObject({ biographySocialLinks: [] })
+  })
+
   it('maps advanced artist account fields to their persisted counterparts', async () => {
     const result = await applyCreatorAccountAdvancedFields({
       data: {

@@ -267,5 +267,14 @@ export const syncCreatorAccountProfile: CollectionAfterChangeHook<User> = async 
     })
   }
 
-  return doc
+  // Reflect virtual biography fields in the save response so removed links do not reappear
+  // until the account page is manually refreshed.
+  return {
+    ...doc,
+    ...('biographyHero' in accountInput ? { biographyHero: biographyData.hero } : {}),
+    ...('biographyLayout' in accountInput ? { biographyLayout: biographyData.layout } : {}),
+    ...('biographySocialLinks' in accountInput
+      ? { biographySocialLinks: biographyData.socialLinks }
+      : {}),
+  } as User
 }
