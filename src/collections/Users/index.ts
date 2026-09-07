@@ -120,8 +120,22 @@ const creatorBiographyFields: Field[] = [
 ]
 
 const creatorAdvancedFields: Field[] = [
-  accountNameField,
-  accountUsernameField,
+  {
+    name: 'advancedName',
+    type: 'text',
+    virtual: true,
+    label: 'Nombre',
+    required: true,
+    admin: { readOnly: false },
+  },
+  {
+    name: 'advancedUsername',
+    type: 'text',
+    virtual: true,
+    label: 'Nombre de usuario',
+    required: true,
+    admin: { readOnly: false },
+  },
   {
     name: 'advancedAccountType',
     type: 'select',

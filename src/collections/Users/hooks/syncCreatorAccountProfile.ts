@@ -13,6 +13,8 @@ type CreatorAccountFields = {
   advancedAccountType?: null | 'artist' | 'band'
   advancedGenre?: null | string
   advancedLocation?: null | string
+  advancedName?: null | string
+  advancedUsername?: null | string
   accountAvatar?: Relation
   accountType?: null | 'artist' | 'band'
   biographyHero?: {
@@ -114,6 +116,8 @@ export const applyCreatorAccountAdvancedFields: CollectionBeforeChangeHook<User>
   if ('advancedAccountAvatar' in nextData) nextData.accountAvatar = nextData.advancedAccountAvatar
   if ('advancedLocation' in nextData) nextData.location = nextData.advancedLocation
   if ('advancedGenre' in nextData) nextData.genre = nextData.advancedGenre
+  if ('advancedName' in nextData) nextData.name = nextData.advancedName
+  if ('advancedUsername' in nextData) nextData.username = nextData.advancedUsername
 
   return nextData
 }
@@ -166,6 +170,8 @@ export const populateCreatorAccountProfile: CollectionAfterReadHook<User> = asyn
     advancedAccountType: account.accountType ?? profile.accountType ?? profile.profileType ?? 'artist',
     advancedGenre: account.genre ?? profile.genre ?? null,
     advancedLocation: account.location ?? profile.location ?? null,
+    advancedName: account.name ?? null,
+    advancedUsername: account.username ?? null,
     biographyHero: biography?.hero ?? { type: 'mediumImpact' },
     biographyLayout: biography?.layout ?? [],
     biographySocialLinks: biography?.socialLinks ?? [],
