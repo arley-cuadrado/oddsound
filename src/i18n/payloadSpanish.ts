@@ -21,6 +21,7 @@ export const payloadSpanish = {
       layout: 'Sección',
       noResults: 'No hay resultados',
       noResultsDescription: 'La búsqueda no generó coincidencias.',
+      payloadSettings: '',
       successfullyCreated: '{{label}} añadida correctamente',
     },
     validation: {
