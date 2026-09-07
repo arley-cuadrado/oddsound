@@ -73,7 +73,6 @@ const creatorBiographyFields: Field[] = [
     label: 'Contenido',
     labels: { plural: 'Secciones', singular: 'Sección' },
     blocks: [BiographyContent],
-    maxRows: 1,
     required: false,
     admin: { readOnly: false },
   },

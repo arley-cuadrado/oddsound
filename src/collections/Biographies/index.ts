@@ -196,7 +196,6 @@ export const Biographies: CollectionConfig = {
                 singular: 'Sección',
               },
               blocks: [BiographyContent],
-              maxRows: 1,
               defaultValue: [
                 {
                   blockType: 'content',
