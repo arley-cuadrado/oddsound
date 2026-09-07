@@ -15,12 +15,13 @@ export function socialLinksField(options?: {
   label?: string
   maxRows?: number
   minRows?: number
+  name?: string
   platformLabel?: string
   required?: boolean
   urlLabel?: string
 }) {
   return {
-    name: 'socialLinks',
+    name: options?.name || 'socialLinks',
     type: 'array',
     label: options?.label || 'Enlaces sociales',
     maxRows: options?.maxRows,

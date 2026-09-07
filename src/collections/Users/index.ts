@@ -76,8 +76,7 @@ const creatorBiographyFields: Field[] = [
     required: false,
   },
   {
-    ...(socialLinksField() as Field),
-    name: 'biographySocialLinks',
+    ...socialLinksField({ name: 'biographySocialLinks' }),
     virtual: true,
   },
 ]
