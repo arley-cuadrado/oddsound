@@ -53,12 +53,8 @@
   flex-direction: column;
 
   .oddsound-creator-account-tabs {
-    .blocks-field {
-      gap: 0;
-    }
-
-    .blocks-field__rows {
-      min-height: 0;
+    .blocks-field__rows:not(:has(.blocks-field__row)) {
+      display: none;
     }
 
     .blocks-field__drawer-toggler {
