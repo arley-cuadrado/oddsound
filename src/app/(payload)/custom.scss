@@ -44,20 +44,18 @@
   margin-top: 1.5rem;
 }
 
-.oddsound-account-view {
-  .payload-settings > h3 {
-    display: none;
-  }
+.payload-settings > h3 {
+  display: none;
+}
 
-  .document-fields__edit:has(.document-fields__fields > .tabs-field) {
-    display: flex;
-    flex-direction: column;
-  }
+.document-fields__edit:has(.oddsound-creator-account-tabs) {
+  display: flex;
+  flex-direction: column;
 
   .document-fields__fields {
     display: contents;
 
-    > .tabs-field {
+    > .oddsound-creator-account-tabs {
       order: 1;
     }
 

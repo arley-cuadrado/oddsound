@@ -68,11 +68,6 @@ export default buildConfig({
       },
     },
     components: {
-      views: {
-        account: {
-          Component: '@/components/AccountEditView',
-        },
-      },
       afterLogin: ['@/components/CreatorRegisterLink'],
       afterNavLinks: [
         '@/components/AdminUploadSizeGuard',

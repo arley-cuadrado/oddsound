@@ -526,6 +526,9 @@ export const Users: CollectionConfig = {
     },
     {
       type: 'tabs',
+      admin: {
+        className: 'oddsound-creator-account-tabs',
+      },
       tabs: [
         {
           label: 'Encabezado',
