@@ -52,6 +52,10 @@
   display: flex;
   flex-direction: column;
 
+  .oddsound-creator-account-tabs .blocks-field__drawer-toggler {
+    margin: 2px 0;
+  }
+
   .document-fields__fields {
     display: contents;
 
@@ -75,6 +79,11 @@
     ) {
     .collection-edit__auth {
       display: block;
+      margin-top: 32px;
+
+      .auth-fields {
+        gap: 16px;
+      }
     }
   }
 
