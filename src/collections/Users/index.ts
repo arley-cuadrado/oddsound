@@ -54,6 +54,42 @@ const isEditorialAccountForm = (
 const musicalAccountTabCondition = (_data: unknown, siblingData: any, { user }: any) =>
   isMusicalAccountForm(siblingData, user) && !isAdminUser(user)
 
+const accountNameField: Field = {
+  name: 'name',
+  label: 'Nombre',
+  type: 'text',
+  required: true,
+  access: {
+    update: async ({ req, data, siblingData }) => {
+      const user = req.user
+
+      if (!user) return false
+      if (await hasFreshAdminAccess(req as any)) return true
+
+      return data?.id === user.id || siblingData?.id === user.id
+    },
+  },
+}
+
+const accountUsernameField: Field = {
+  name: 'username',
+  type: 'text',
+  label: 'Nombre de usuario',
+  index: true,
+  required: true,
+  unique: true,
+  access: {
+    update: async ({ req, data, siblingData }) => {
+      const user = req.user
+
+      if (!user) return false
+      if (await hasFreshAdminAccess(req as any)) return true
+
+      return data?.id === user.id || siblingData?.id === user.id
+    },
+  },
+}
+
 const creatorBiographyFields: Field[] = [
   {
     name: 'biographyHero',
@@ -84,6 +120,8 @@ const creatorBiographyFields: Field[] = [
 ]
 
 const creatorAdvancedFields: Field[] = [
+  accountNameField,
+  accountUsernameField,
   {
     name: 'advancedAccountType',
     type: 'select',
@@ -191,38 +229,17 @@ export const Users: CollectionConfig = {
   },
   fields: [
     {
-      name: 'name',
-      label: 'Nombre',
-      type: 'text',
-      required: true,
-      access: {
-        update: async ({ req, data, siblingData }) => {
-          const user = req.user
-
-          if (!user) return false
-          if (await hasFreshAdminAccess(req as any)) return true
-
-          // Creators can only update their own name
-          return data?.id === user.id || siblingData?.id === user.id
-        },
+      ...accountNameField,
+      admin: {
+        condition: (_data, siblingData, { user }) =>
+          !isMusicalAccountForm(siblingData, user) || isAdminUser(user),
       },
     },
     {
-      name: 'username',
-      type: 'text',
-      label: 'Nombre de usuario',
-      index: true,
-      required: true,
-      unique: true,
-      access: {
-        update: async ({ req, data, siblingData }) => {
-          const user = req.user
-
-          if (!user) return false
-          if (await hasFreshAdminAccess(req as any)) return true
-
-          return data?.id === user.id || siblingData?.id === user.id
-        },
+      ...accountUsernameField,
+      admin: {
+        condition: (_data, siblingData, { user }) =>
+          !isMusicalAccountForm(siblingData, user) || isAdminUser(user),
       },
     },
     {

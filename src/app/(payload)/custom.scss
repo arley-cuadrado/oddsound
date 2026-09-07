@@ -65,7 +65,17 @@
   }
 
   .collection-edit__auth {
+    display: none;
     order: 2;
+  }
+
+  &:has(
+      .oddsound-creator-account-tabs
+        .tabs-field__tab-button:nth-of-type(4).tabs-field__tab-button--active
+    ) {
+    .collection-edit__auth {
+      display: block;
+    }
   }
 
   .payload-settings {
