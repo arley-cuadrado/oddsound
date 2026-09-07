@@ -60,6 +60,7 @@ const creatorBiographyFields: Field[] = [
     type: 'group',
     label: false,
     virtual: true,
+    admin: { readOnly: false },
     fields: [
       { name: 'type', type: 'select', defaultValue: 'mediumImpact', label: 'Tipo', options: [{ label: 'Dividido', value: 'mediumImpact' }], admin: { hidden: true, readOnly: true } },
       { name: 'media', type: 'upload', relationTo: 'media', required: false, admin: { description: 'Opcional. Si agregas una imagen, la biografía mostrará el encabezado dividido.' } },
@@ -74,18 +75,46 @@ const creatorBiographyFields: Field[] = [
     blocks: [BiographyContent],
     maxRows: 1,
     required: false,
+    admin: { readOnly: false },
   },
   {
     ...socialLinksField({ name: 'biographySocialLinks' }),
     virtual: true,
+    admin: { readOnly: false },
   },
 ]
 
 const creatorAdvancedFields: Field[] = [
-  { name: 'advancedAccountType', type: 'select', virtual: true, label: 'Tipo de cuenta', options: [{ label: 'Artista', value: 'artist' }, { label: 'Banda', value: 'band' }] },
-  { name: 'advancedAccountAvatar', type: 'upload', virtual: true, relationTo: 'media', label: 'Avatar' },
-  { name: 'advancedLocation', type: 'text', virtual: true, label: 'Ubicación' },
-  { name: 'advancedGenre', type: 'text', virtual: true, label: 'Género' },
+  {
+    name: 'advancedAccountType',
+    type: 'select',
+    virtual: true,
+    label: 'Tipo de cuenta',
+    options: [{ label: 'Artista', value: 'artist' }, { label: 'Banda', value: 'band' }],
+    admin: { readOnly: false },
+  },
+  {
+    name: 'advancedAccountAvatar',
+    type: 'upload',
+    virtual: true,
+    relationTo: 'media',
+    label: 'Avatar',
+    admin: { readOnly: false },
+  },
+  {
+    name: 'advancedLocation',
+    type: 'text',
+    virtual: true,
+    label: 'Ubicación',
+    admin: { readOnly: false },
+  },
+  {
+    name: 'advancedGenre',
+    type: 'text',
+    virtual: true,
+    label: 'Género',
+    admin: { readOnly: false },
+  },
 ]
 
 export const Users: CollectionConfig = {
