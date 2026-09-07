@@ -44,6 +44,37 @@
   margin-top: 1.5rem;
 }
 
+.oddsound-account-view {
+  .payload-settings > h3 {
+    display: none;
+  }
+
+  .document-fields__edit:has(.document-fields__fields > .tabs-field) {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .document-fields__fields {
+    display: contents;
+
+    > .tabs-field {
+      order: 1;
+    }
+
+    > *:not(.tabs-field) {
+      order: 3;
+    }
+  }
+
+  .collection-edit__auth {
+    order: 2;
+  }
+
+  .payload-settings {
+    order: 4;
+  }
+}
+
 .create-redactor-section {
   width: 100%;
 }
