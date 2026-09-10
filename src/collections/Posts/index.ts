@@ -48,6 +48,7 @@ export const Posts: CollectionConfig<'posts'> = {
   access: {
     admin: authenticated,
     create: ({ req: { user } }) => isAdminUser(user) || isEditorialUser(user),
+    readVersions: ({ req: { user } }) => isAdminUser(user),
     delete: async ({ req }) => {
       const user = req.user
 
@@ -108,6 +109,22 @@ export const Posts: CollectionConfig<'posts'> = {
   },
   admin: {
     hidden: ({ user }) => !isAdminUser(user) && !isEditorialUser(user),
+    components: {
+      views: {
+        edit: {
+          api: {
+            tab: {
+              condition: ({ req }) => isAdminUser(req.user),
+            },
+          },
+          versions: {
+            tab: {
+              condition: ({ req }) => isAdminUser(req.user),
+            },
+          },
+        },
+      },
+    },
     defaultColumns: ['title', 'slug', 'updatedAt'],
     livePreview: {
       url: ({ data, req }) =>
