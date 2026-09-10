@@ -30,6 +30,7 @@ export function RegisterForm() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [showPassword, setShowPassword] = useState(false)
+  const [accountType, setAccountType] = useState<AccountType | ''>('')
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -109,12 +110,15 @@ export function RegisterForm() {
           Elige tu tipo de cuenta
         </label>
         <select
-          className="h-12 w-full border border-border bg-background px-4 text-base text-foreground outline-none md:text-[13px]"
-          defaultValue=""
+          className={`h-12 w-full border border-border bg-background px-4 text-base outline-none md:text-[13px] ${
+            accountType ? 'text-foreground' : 'text-muted-foreground'
+          }`}
           id="accountType"
           name="accountType"
           // Account type is required because it defines the creator profile from signup.
+          onChange={(event) => setAccountType(event.target.value as AccountType | '')}
           required
+          value={accountType}
         >
           <option disabled value="">
             Puedes seleccionar dos categorías
