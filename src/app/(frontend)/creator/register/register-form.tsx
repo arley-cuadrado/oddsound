@@ -40,7 +40,7 @@ export function RegisterForm() {
     const name = String(formData.get('name') || '')
     const email = String(formData.get('email') || '')
     const password = String(formData.get('password') || '')
-    const accountType = String(formData.get('accountType') || 'artist') as AccountType
+    const accountType = String(formData.get('accountType') || '') as AccountType
     const acceptedLegal = formData.get('acceptedLegal') === 'on'
     const country = String(formData.get('country') || '')
     // Genre is collected at signup so releases can later be searched by musical style.
@@ -110,12 +110,15 @@ export function RegisterForm() {
         </label>
         <select
           className="h-12 w-full border border-border bg-background px-4 text-base text-foreground outline-none md:text-[13px]"
-          defaultValue="artist"
+          defaultValue=""
           id="accountType"
           name="accountType"
           // Account type is required because it defines the creator profile from signup.
           required
         >
+          <option disabled value="">
+            Puedes seleccionar dos categorías
+          </option>
           <option value="artist">Artista</option>
           <option value="band">Banda</option>
         </select>
