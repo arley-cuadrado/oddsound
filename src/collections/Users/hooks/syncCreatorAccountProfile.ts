@@ -114,12 +114,12 @@ export const applyCreatorAccountAdvancedFields: CollectionBeforeChangeHook<User>
 
   const nextData = { ...(data || {}) } as CreatorAccountFields
 
-  if ('advancedAccountType' in nextData) nextData.accountType = nextData.advancedAccountType
-  if ('advancedAccountAvatar' in nextData) nextData.accountAvatar = nextData.advancedAccountAvatar
-  if ('advancedLocation' in nextData) nextData.location = nextData.advancedLocation
-  if ('advancedGenre' in nextData) nextData.genre = nextData.advancedGenre
-  if ('advancedName' in nextData) nextData.name = nextData.advancedName
-  if ('advancedUsername' in nextData) nextData.username = nextData.advancedUsername
+  if (nextData.advancedAccountType !== undefined) nextData.accountType = nextData.advancedAccountType
+  if (nextData.advancedAccountAvatar !== undefined) nextData.accountAvatar = nextData.advancedAccountAvatar
+  if (nextData.advancedLocation !== undefined) nextData.location = nextData.advancedLocation
+  if (nextData.advancedGenre !== undefined) nextData.genre = nextData.advancedGenre
+  if (nextData.advancedName !== undefined) nextData.name = nextData.advancedName
+  if (nextData.advancedUsername !== undefined) nextData.username = nextData.advancedUsername
 
   return nextData
 }
