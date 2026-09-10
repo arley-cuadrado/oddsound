@@ -56,7 +56,7 @@ export async function ensureConsumerProfile({
       collection: 'consumerProfiles',
       id: inlineProfileId,
       data: {
-        avatar: user.avatar || undefined,
+        ...(user.avatar ? { avatar: user.avatar } : {}),
         displayName: user.name || user.email?.split('@')[0] || 'Fan',
         email: user.email || '',
       },
@@ -78,7 +78,7 @@ export async function ensureConsumerProfile({
       collection: 'consumerProfiles',
       id: existingProfileId,
       data: {
-        avatar: user.avatar || undefined,
+        ...(user.avatar ? { avatar: user.avatar } : {}),
         displayName: user.name || user.email?.split('@')[0] || 'Fan',
         email: user.email || '',
       },
@@ -106,7 +106,7 @@ export async function ensureConsumerProfile({
   const profile = await payload.create({
     collection: 'consumerProfiles',
     data: {
-      avatar: user.avatar || undefined,
+      ...(user.avatar ? { avatar: user.avatar } : {}),
       displayName,
       email: user.email || '',
       owner: user.id,
