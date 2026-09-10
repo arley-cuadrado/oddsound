@@ -111,7 +111,7 @@ export function RegisterForm() {
         </label>
         <select
           className={`h-12 w-full border border-border bg-background px-4 text-base outline-none md:text-[13px] ${
-            accountType ? 'text-foreground' : 'text-muted-foreground'
+            accountType ? 'text-foreground' : 'text-[#B8B8B8]'
           }`}
           id="accountType"
           name="accountType"
