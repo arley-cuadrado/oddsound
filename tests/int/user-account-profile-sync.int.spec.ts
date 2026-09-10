@@ -149,6 +149,23 @@ describe('creator account profile synchronization', () => {
     })
   })
 
+  it('preserves the registration account type when virtual account fields are absent', async () => {
+    const result = await applyCreatorAccountAdvancedFields({
+      data: {
+        accountType: 'band',
+        advancedAccountType: undefined,
+        role: 'creator',
+        userType: 'band',
+      },
+      originalDoc: null,
+    } as any)
+
+    expect(result).toMatchObject({
+      accountType: 'band',
+      userType: 'band',
+    })
+  })
+
   it('synchronizes account edits to the linked public profile', async () => {
     const update = vi.fn().mockResolvedValue({})
 
