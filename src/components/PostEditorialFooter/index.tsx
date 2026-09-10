@@ -1,6 +1,7 @@
 import { Media } from '@/components/Media'
 import EditorialOwnershipTooltip from '@/components/EditorialOwnershipTooltip'
 import type { Post, Profile } from '@/payload-types'
+import { formatEditorialSocialHandle } from '@/utilities/editorialSocialLink'
 import Link from 'next/link'
 
 type EditorialProfile = Post['profile'] | Profile | null | undefined
@@ -19,10 +20,12 @@ function getEditorialSocialLink(profile: Profile) {
   const label = profile.editorSocialLink?.label?.trim()
   const url = profile.editorSocialLink?.url?.trim()
 
-  if (!label || !url) return null
+  const formattedLabel = formatEditorialSocialHandle(label)
+
+  if (!formattedLabel || !url) return null
 
   return {
-    label,
+    label: formattedLabel,
     url,
   }
 }

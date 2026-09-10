@@ -55,7 +55,7 @@ const nextConfig: NextConfig = {
   experimental: {
     // Allow Payload's multipart parser to enforce the 1MB media limit so the
     // admin can show the localized error message instead of Next's generic 413.
-    proxyClientMaxBodySize: '10mb',
+    proxyClientMaxBodySize: '25mb',
   },
   turbopack: {
     root: path.resolve(dirname),

@@ -192,7 +192,6 @@ export async function loginOrRegisterConsumerWithGoogle(args: {
           data: {
             accountType: null,
             authProvider: 'google',
-            avatar: googleUser.picture || undefined,
             editorAccess: false,
             email,
             googleSubjectId: googleUser.sub,
@@ -215,7 +214,6 @@ export async function loginOrRegisterConsumerWithGoogle(args: {
           data: {
             accountType: null,
             authProvider: 'google',
-            avatar: googleUser.picture || undefined,
             editorAccess: false,
             email,
             googleSubjectId: googleUser.sub,
@@ -237,7 +235,6 @@ export async function loginOrRegisterConsumerWithGoogle(args: {
   await ensureConsumerProfile({
     payload,
     user: {
-      avatar: user.avatar || googleUser.picture || undefined,
       consumerProfile: user.consumerProfile,
       email: user.email,
       id: String(user.id),

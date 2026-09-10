@@ -1,4 +1,4 @@
-import type { CollectionBeforeChangeHook } from 'payload'
+import type { CollectionBeforeChangeHook, CollectionBeforeValidateHook } from 'payload'
 
 import { isAdminUser } from '@/utilities/isAdminUser'
 import { isSuperAdminUser } from '@/utilities/isSuperAdminUser'
@@ -9,6 +9,33 @@ function normalizeUsername(value: string) {
     .trim()
     .replace(/[^a-z0-9._-]+/g, '-')
     .replace(/^-+|-+$/g, '')
+}
+
+function normalizeAccountType(value: unknown) {
+  if (typeof value !== 'string') return null
+
+  const normalized = value.trim().toLowerCase()
+
+  if (normalized === 'artist' || normalized === 'artista') return 'artist'
+  if (normalized === 'band' || normalized === 'banda') return 'band'
+
+  return null
+}
+
+// Normalize stale form values before Payload validates select options.
+export const normalizeCreatorAccountType: CollectionBeforeValidateHook = ({ data }) => {
+  const nextData = { ...data }
+  const accountType = normalizeAccountType(nextData.accountType) || normalizeAccountType(nextData.userType)
+
+  if (!accountType) return nextData
+
+  nextData.accountType = accountType
+
+  if (normalizeAccountType(nextData.userType)) {
+    nextData.userType = accountType
+  }
+
+  return nextData
 }
 
 async function resolveUniqueUsername(args: {

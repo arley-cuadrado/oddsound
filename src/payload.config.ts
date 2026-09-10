@@ -56,6 +56,9 @@ export default buildConfig({
     admin: '/dashboard',
   },
   admin: {
+    avatar: {
+      Component: '@/components/AdminAccountAvatar',
+    },
     routes: {
       logout: '/role-logout',
     },
@@ -67,6 +70,7 @@ export default buildConfig({
     components: {
       afterLogin: ['@/components/CreatorRegisterLink'],
       afterNavLinks: [
+        '@/components/AdminUploadSizeGuard',
         '@/components/CreatorCollectionFilter',
         '@/components/CreatorNavLabelOverrides',
         '@/components/EditorsNavLink',

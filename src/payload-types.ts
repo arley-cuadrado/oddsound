@@ -269,13 +269,6 @@ export interface Page {
     | ArchiveBlock
     | FormBlock
   )[];
-  socialLinks?:
-    | {
-        platform: string;
-        url: string;
-        id?: string | null;
-      }[]
-    | null;
   meta?: {
     title?: string | null;
     /**
@@ -1661,13 +1654,6 @@ export interface PagesSelect<T extends boolean = true> {
         videoBlock?: T | VideoBlockSelect<T>;
         archive?: T | ArchiveBlockSelect<T>;
         formBlock?: T | FormBlockSelect<T>;
-      };
-  socialLinks?:
-    | T
-    | {
-        platform?: T;
-        url?: T;
-        id?: T;
       };
   meta?:
     | T

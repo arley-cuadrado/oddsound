@@ -30,6 +30,7 @@ export function RegisterForm() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [showPassword, setShowPassword] = useState(false)
+  const [accountType, setAccountType] = useState<AccountType | ''>('')
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -40,7 +41,7 @@ export function RegisterForm() {
     const name = String(formData.get('name') || '')
     const email = String(formData.get('email') || '')
     const password = String(formData.get('password') || '')
-    const accountType = String(formData.get('accountType') || 'artist') as AccountType
+    const accountType = String(formData.get('accountType') || '') as AccountType
     const acceptedLegal = formData.get('acceptedLegal') === 'on'
     const country = String(formData.get('country') || '')
     // Genre is collected at signup so releases can later be searched by musical style.
@@ -109,13 +110,19 @@ export function RegisterForm() {
           Elige tu tipo de cuenta
         </label>
         <select
-          className="h-12 w-full border border-border bg-background px-4 text-base text-foreground outline-none md:text-[13px]"
-          defaultValue="artist"
+          className={`h-12 w-full border border-border bg-background px-4 text-base outline-none md:text-[13px] ${
+            accountType ? 'text-foreground' : 'text-[#B8B8B8]'
+          }`}
           id="accountType"
           name="accountType"
           // Account type is required because it defines the creator profile from signup.
+          onChange={(event) => setAccountType(event.target.value as AccountType | '')}
           required
+          value={accountType}
         >
+          <option disabled value="">
+            Puedes seleccionar dos categorías
+          </option>
           <option value="artist">Artista</option>
           <option value="band">Banda</option>
         </select>

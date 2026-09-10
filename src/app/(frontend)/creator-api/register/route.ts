@@ -2,7 +2,7 @@ import { registerCreatorAccount } from '@/utilities/creatorAuth'
 
 type RegisterBody = {
   acceptedLegal?: boolean
-  accountType?: 'artist' | 'band' | 'label'
+  accountType?: string
   country?: string
   email?: string
   genre?: string
@@ -12,7 +12,14 @@ type RegisterBody = {
 
 export async function POST(request: Request) {
   const body = (await request.json()) as RegisterBody
-  const accountType = body.accountType === 'band' ? 'band' : 'artist'
+  const accountType = body.accountType === 'artist' || body.accountType === 'band' ? body.accountType : null
+
+  if (!accountType) {
+    return Response.json(
+      { message: 'Selecciona Artista o Banda como tipo de cuenta.' },
+      { status: 400 },
+    )
+  }
 
   const result = await registerCreatorAccount({
     acceptedLegal: body.acceptedLegal === true,
