@@ -20,7 +20,10 @@ import {
 import { hasEditorialIdentity, isMusicalCreatorUser } from '@/utilities/isEditorialUser'
 import { createProfile } from './hooks/createProfile'
 import { deleteCreatorData } from './hooks/deleteCreatorData'
-import { ensureCreatorDefaults } from './hooks/ensureCreatorDefaults'
+import {
+  ensureCreatorDefaults,
+  normalizeCreatorAccountType,
+} from './hooks/ensureCreatorDefaults'
 import {
   applyCreatorAccountAdvancedFields,
   populateCreatorAccountProfile,
@@ -645,6 +648,7 @@ export const Users: CollectionConfig = {
     afterOperation: [createProfile],
     afterChange: [syncCreatorAccountProfile],
     afterRead: [populateCreatorAccountProfile],
+    beforeValidate: [normalizeCreatorAccountType],
     beforeChange: [ensureCreatorDefaults, applyCreatorAccountAdvancedFields],
   },
   timestamps: true,
