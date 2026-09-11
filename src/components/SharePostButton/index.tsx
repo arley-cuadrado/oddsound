@@ -19,6 +19,7 @@ interface SharePostButtonProps {
   bannerImageUrl?: string
   authorName?: string
   authorAvatarUrl?: string
+  authorRole?: string
   heroImage?: {
     url?: string
   }
@@ -34,6 +35,7 @@ export default function SharePostButton({
   bannerImageUrl,
   authorName,
   authorAvatarUrl,
+  authorRole,
   heroImage,
 }: SharePostButtonProps) {
   const [copiedState, setCopiedState] = useState<null | string>(null)
@@ -183,7 +185,10 @@ export default function SharePostButton({
                       src={authorAvatarUrl}
                     />
                   ) : null}
-                  <span>Por {authorName}</span>
+                  <div className="share-modal__author-copy">
+                    <span>{authorName}</span>
+                    <span className="share-modal__author-role">{authorRole || 'Editor'}</span>
+                  </div>
                 </div>
               ) : null}
             </div>

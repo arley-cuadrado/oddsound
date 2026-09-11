@@ -358,6 +358,17 @@
     object-fit: cover;
   }
 
+  .share-modal__author-copy {
+    display: grid;
+    gap: 0.1rem;
+  }
+
+  .share-modal__author-role {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
   .share-modal__actions {
     display: flex;
     flex-direction: column;
