@@ -1,0 +1,293 @@
+import { describe, expect, it, vi } from 'vitest'
+
+import { Profiles } from '@/collections/Profiles'
+import { Users } from '@/collections/Users'
+import {
+  applyCreatorAccountAdvancedFields,
+  populateCreatorAccountProfile,
+  syncCreatorAccountProfile,
+} from '@/collections/Users/hooks/syncCreatorAccountProfile'
+
+describe('creator account profile synchronization', () => {
+  it('loads existing public profile fields into the creator account', async () => {
+    const find = vi.fn().mockImplementation(({ collection }) => {
+      if (collection === 'biographies') {
+        return Promise.resolve({
+          docs: [
+            {
+              hero: { media: 'hero-1', type: 'mediumImpact' },
+              id: 'biography-1',
+              layout: [{ blockType: 'content', columns: [] }],
+              socialLinks: [{ label: 'Instagram', url: 'https://instagram.com/artist' }],
+            },
+          ],
+        })
+      }
+
+      return Promise.resolve({ docs: [{ id: 'profile-1' }] })
+    })
+    const findByID = vi.fn().mockImplementation(({ collection }) => {
+      if (collection === 'media') {
+        return Promise.resolve({ id: 'media-1', thumbnailURL: '/media/avatar-thumb.jpg' })
+      }
+
+      return Promise.resolve({
+        avatar: 'media-1',
+        genre: 'Reggae',
+        location: 'Colombia',
+      })
+    })
+
+    const result = await populateCreatorAccountProfile({
+      doc: {
+        accountType: 'artist',
+        id: 'creator-1',
+        role: 'creator',
+        userType: 'artist',
+      },
+      req: {
+        payload: { find, findByID },
+        user: { id: 'creator-1' },
+      },
+    } as any)
+
+    expect(result).toMatchObject({
+      accountAvatar: { id: 'media-1', thumbnailURL: '/media/avatar-thumb.jpg' },
+      advancedAccountType: 'artist',
+      biographyHero: { media: 'hero-1', type: 'mediumImpact' },
+      biographyLayout: [{ blockType: 'content', columns: [] }],
+      biographySocialLinks: [{ label: 'Instagram', url: 'https://instagram.com/artist' }],
+      genre: 'Reggae',
+      location: 'Colombia',
+    })
+    expect(find).toHaveBeenCalledWith(
+      expect.objectContaining({
+        collection: 'profiles',
+        where: { owner: { equals: 'creator-1' } },
+      }),
+    )
+  })
+
+  it('persists the artist biography edited from the account tabs', async () => {
+    const update = vi.fn().mockResolvedValue({})
+
+    await syncCreatorAccountProfile({
+      data: {
+        biographyHero: { media: 'hero-next', type: 'mediumImpact' },
+        biographyLayout: [{ blockType: 'content', columns: [] }],
+        biographySocialLinks: [{ label: 'Spotify', url: 'https://spotify.com/artist' }],
+      },
+      doc: {
+        id: 'creator-1',
+        name: 'Nueva Banda',
+        profile: 'profile-1',
+        role: 'creator',
+        userType: 'band',
+      },
+      operation: 'update',
+      req: {
+        payload: {
+          find: vi.fn().mockResolvedValue({ docs: [{ id: 'biography-1' }] }),
+          update,
+        },
+      },
+    } as any)
+
+    expect(update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        collection: 'biographies',
+        data: {
+          hero: { media: 'hero-next', type: 'mediumImpact' },
+          layout: [{ blockType: 'content', columns: [] }],
+          socialLinks: [{ label: 'Spotify', url: 'https://spotify.com/artist' }],
+        },
+        id: 'biography-1',
+      }),
+    )
+  })
+
+  it('returns removed social links immediately after saving the account', async () => {
+    const result = await syncCreatorAccountProfile({
+      data: {
+        biographySocialLinks: [],
+      },
+      doc: {
+        id: 'creator-1',
+        name: 'Nueva Banda',
+        profile: 'profile-1',
+        role: 'creator',
+        userType: 'band',
+      },
+      operation: 'update',
+      req: {
+        payload: {
+          find: vi.fn().mockResolvedValue({ docs: [{ id: 'biography-1' }] }),
+          update: vi.fn().mockResolvedValue({}),
+        },
+      },
+    } as any)
+
+    expect(result).toMatchObject({ biographySocialLinks: [] })
+  })
+
+  it('maps advanced artist account fields to their persisted counterparts', async () => {
+    const result = await applyCreatorAccountAdvancedFields({
+      data: {
+        advancedAccountAvatar: 'avatar-1',
+        advancedAccountType: 'band',
+        advancedGenre: 'Rock',
+        advancedLocation: 'Bogotá',
+      },
+      originalDoc: { role: 'creator', userType: 'artist' },
+    } as any)
+
+    expect(result).toMatchObject({
+      accountAvatar: 'avatar-1',
+      accountType: 'band',
+      genre: 'Rock',
+      location: 'Bogotá',
+    })
+  })
+
+  it('preserves the registration account type when virtual account fields are absent', async () => {
+    const result = await applyCreatorAccountAdvancedFields({
+      data: {
+        accountType: 'band',
+        advancedAccountType: undefined,
+        role: 'creator',
+        userType: 'band',
+      },
+      originalDoc: null,
+    } as any)
+
+    expect(result).toMatchObject({
+      accountType: 'band',
+      userType: 'band',
+    })
+  })
+
+  it('synchronizes account edits to the linked public profile', async () => {
+    const update = vi.fn().mockResolvedValue({})
+
+    await syncCreatorAccountProfile({
+      data: {
+        accountAvatar: 'media-2',
+        accountType: 'band',
+        genre: 'Rock',
+        location: 'Medellín',
+        name: 'Nueva Banda',
+      },
+      doc: {
+        accountAvatar: 'media-2',
+        accountType: 'band',
+        genre: 'Rock',
+        id: 'creator-1',
+        location: 'Medellín',
+        name: 'Nueva Banda',
+        profile: 'profile-1',
+        role: 'creator',
+        userType: 'band',
+      },
+      operation: 'update',
+      req: { payload: { update } },
+    } as any)
+
+    expect(update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        collection: 'profiles',
+        data: {
+          accountType: 'band',
+          avatar: 'media-2',
+          displayName: 'Nueva Banda',
+          genre: 'Rock',
+          location: 'Medellín',
+          profileType: 'band',
+        },
+        id: 'profile-1',
+        overrideAccess: true,
+      }),
+    )
+  })
+
+  it('loads and synchronizes editorial account fields', async () => {
+    const findByID = vi.fn().mockImplementation(({ collection }) => {
+      if (collection === 'media') {
+        return Promise.resolve({ id: 'media-editor', url: '/media/editor-avatar.jpg' })
+      }
+
+      return Promise.resolve({
+        avatar: 'media-editor',
+        bio: 'Escritor musical.',
+        editorSocialLink: { label: 'Instagram', url: 'https://instagram.com/editor' },
+      })
+    })
+    const update = vi.fn().mockResolvedValue({})
+
+    const result = await populateCreatorAccountProfile({
+      doc: {
+        editorAccess: true,
+        id: 'editor-1',
+        profile: 'profile-editor',
+        role: 'creator',
+        userType: 'editor',
+      },
+      req: { payload: { findByID }, user: { id: 'editor-1' } },
+    } as any)
+
+    expect(result).toMatchObject({
+      accountAvatar: { id: 'media-editor', url: '/media/editor-avatar.jpg' },
+      editorBio: 'Escritor musical.',
+      editorSocialLink: { label: 'Instagram', url: 'https://instagram.com/editor' },
+    })
+
+    await syncCreatorAccountProfile({
+      data: {
+        accountAvatar: 'media-editor-next',
+        editorBio: 'Nueva bio.',
+        editorSocialLink: { label: 'X', url: 'https://x.com/editor' },
+      },
+      doc: {
+        accountAvatar: 'media-editor-next',
+        editorAccess: true,
+        editorBio: 'Nueva bio.',
+        editorSocialLink: { label: 'X', url: 'https://x.com/editor' },
+        id: 'editor-1',
+        profile: 'profile-editor',
+        role: 'creator',
+        userType: 'editor',
+      },
+      operation: 'update',
+      req: { payload: { update } },
+    } as any)
+
+    expect(update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: {
+          avatar: 'media-editor-next',
+          bio: 'Nueva bio.',
+          editorSocialLink: { label: 'X', url: 'https://x.com/editor' },
+        },
+        id: 'profile-editor',
+      }),
+    )
+  })
+
+  it('hides the redundant profile collection and editorial switch for artists', () => {
+    const editorAccessField = Users.fields.find(
+      (field) => 'name' in field && field.name === 'editorAccess',
+    ) as any
+
+    expect(Profiles.admin?.hidden).toBe(true)
+    expect(
+      editorAccessField.admin.condition({}, {}, { user: { role: 'creator', userType: 'artist' } }),
+    ).toBe(false)
+
+    const accountTabs = Users.fields.find((field) => field.type === 'tabs') as any
+    expect(accountTabs.tabs.map((tab: { label: string }) => tab.label)).toEqual([
+      'Encabezado',
+      'Bio',
+      'Redes sociales',
+      'Opciones avanzadas',
+    ])
+  })
+})

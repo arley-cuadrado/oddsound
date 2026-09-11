@@ -1,13 +1,10 @@
-import React from 'react'
 import AdminLoginPasswordToggle from '@/components/AdminLoginPasswordToggle'
+import React from 'react'
 
 const BeforeLogin: React.FC = () => {
   return (
-    <div className="space-y-3">
+    <div>
       <AdminLoginPasswordToggle />
-      <p>
-        Bienvenid@ a <strong>tu</strong> espacio, inicia sesión aquí.
-      </p>
     </div>
   )
 }

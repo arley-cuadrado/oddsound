@@ -6,7 +6,7 @@ import { getPayload, type RequiredDataFromCollectionSlug } from 'payload'
 import { draftMode } from 'next/headers'
 import Link from 'next/link'
 import React, { cache } from 'react'
-import { homeStatic } from '@/endpoints/seed/home-static'
+import { homeStatic } from '@/endpoints/homeStatic'
 
 import { RenderBlocks } from '@/blocks/RenderBlocks'
 import { RenderHero } from '@/heros/RenderHero'
@@ -101,9 +101,10 @@ export default async function Page({ params: paramsPromise }: Args) {
         pageTitle={page.title}
       />
       {creatorProfile?.slug ? (
-        <div className="flex flex-wrap justify-center gap-x-6 gap-y-3 px-4 pb-6 pt-6 md:px-0">
+        <div className="flex flex-wrap justify-center gap-x-6 gap-y-3 px-4 py-4 md:px-0">
           <Link
             href={`/${creatorProfile.slug}/releases`}
+            prefetch={false}
             className="inline-flex items-center text-[13px] font-medium text-[#777] underline underline-offset-4 dark:text-[#858c98]"
           >
             Ver lanzamientos de {creatorProfile.displayName || page.title}

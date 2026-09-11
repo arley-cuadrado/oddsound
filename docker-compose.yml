@@ -1,31 +1,36 @@
-version: '3'
-
+# Local database only. The app itself runs on the host with `pnpm dev`, which
+# needs Node 22 and pnpm 11 — versions the old all-in-one container predated.
+#
+# The replica set is not optional: Payload's mongoose adapter opens a
+# transaction for every write, and standalone MongoDB rejects them on commit.
 services:
-  payload:
-    image: node:18-alpine
-    ports:
-      - '3000:3000'
-    volumes:
-      - .:/home/node/app
-      - node_modules:/home/node/app/node_modules
-    working_dir: /home/node/app/
-    command: sh -c "yarn install && yarn dev"
-    depends_on:
-      - mongo
-    env_file:
-      - .env
-
   mongo:
-    image: mongo:latest
+    image: mongo:7
+    # maxTransactionLockRequestTimeoutMillis defaults to 5ms, which is not enough
+    # while mongoose is still building indexes on a fresh database: writes fail
+    # with "Unable to acquire IX lock". Only affects first boot, but it is fatal.
+    command:
+      [
+        '--replSet',
+        'rs0',
+        '--bind_ip_all',
+        '--setParameter',
+        'maxTransactionLockRequestTimeoutMillis=5000',
+      ]
     ports:
       - '27017:27017'
-    command:
-      - --storageEngine=wiredTiger
     volumes:
       - data:/data/db
-    logging:
-      driver: none
+    healthcheck:
+      # Reports healthy once the replica set is up, initiating it on first boot.
+      test: >
+        mongosh --quiet --eval "try { rs.status().ok } catch (error) {
+          rs.initiate({ _id: 'rs0', members: [{ _id: 0, host: '127.0.0.1:27017' }] }).ok
+        }"
+      interval: 5s
+      timeout: 10s
+      retries: 20
+      start_period: 5s
 
 volumes:
   data:
-  node_modules:

@@ -34,6 +34,7 @@ const eslintConfig = [
       'src/app/(frontend)/home-components/HeaderHome.tsx',
       'src/app/(frontend)/home-components/ReleasesHome.tsx',
       'src/components/Card/index.tsx',
+      'tests/helpers/preload-jsdom.cjs',
       'src/providers/Theme/ThemeSelector/index.tsx',
       'src/search/Component.tsx',
     ],

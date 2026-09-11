@@ -2,6 +2,7 @@ export interface SharePostData {
   title: string
   slug: string
   description: string
+  urlPath?: string
   imageUrl?: string
   authorName?: string
   authorAvatar?: string
@@ -11,11 +12,14 @@ const BASE_URL = process.env.NEXT_PUBLIC_SERVER_URL || 'https://oddsound.co'
 
 export const getSharePostURL = (slug: string) => `${BASE_URL}/posts/${slug}`
 
+export const getShareURL = (urlPath: string) =>
+  `${BASE_URL}${urlPath.startsWith('/') ? urlPath : `/${urlPath}`}`
+
 export const getSharePostText = (post: SharePostData) =>
   `${post.title} - ${post.description.substring(0, 140).trim()}`
 
 export const generateShareUrls = (post: SharePostData) => {
-  const postUrl = getSharePostURL(post.slug)
+  const postUrl = post.urlPath ? getShareURL(post.urlPath) : getSharePostURL(post.slug)
   const text = getSharePostText(post)
   const encodedUrl = encodeURIComponent(postUrl)
   const encodedText = encodeURIComponent(text)

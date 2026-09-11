@@ -19,6 +19,8 @@ export const payloadSpanish = {
       createNew: 'Crear',
       creatingNewLabel: '{{label}}',
       layout: 'Sección',
+      noResults: 'No hay resultados',
+      noResultsDescription: 'La búsqueda no generó coincidencias.',
       successfullyCreated: '{{label}} añadida correctamente',
     },
     validation: {

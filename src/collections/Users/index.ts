@@ -1,9 +1,10 @@
-import type { CollectionConfig } from 'payload'
+import type { CollectionConfig, Field } from 'payload'
 
 import { authenticated } from '@/access/authenticated'
 import { hasFreshAdminAccess } from '@/access/hasFreshAdminAccess'
 import { isAdmin } from '@/access/isAdmin'
 import { isAdminOrSelf } from '@/access/isAdminOrSelf'
+import { payloadDashboardAccess } from '@/access/payloadDashboardAccess'
 import { USERS_LOGIN_LOCK_TIME_MS, USERS_MAX_LOGIN_ATTEMPTS } from '@/utilities/authLocking'
 import { isAdminUser } from '@/utilities/isAdminUser'
 import { isConfiguredSuperAdminEmail, isSuperAdminUser } from '@/utilities/isSuperAdminUser'
@@ -16,15 +17,164 @@ import {
   generateCreatorVerificationEmailHTML,
   generateCreatorVerificationEmailSubject,
 } from '@/utilities/emailVerification'
-import { isCreatorOrAdmin } from '@/access/isCreatorOrAdmin'
+import { hasEditorialIdentity, isMusicalCreatorUser } from '@/utilities/isEditorialUser'
 import { createProfile } from './hooks/createProfile'
 import { deleteCreatorData } from './hooks/deleteCreatorData'
-import { ensureCreatorDefaults } from './hooks/ensureCreatorDefaults'
+import {
+  ensureCreatorDefaults,
+  normalizeCreatorAccountType,
+} from './hooks/ensureCreatorDefaults'
+import {
+  applyCreatorAccountAdvancedFields,
+  populateCreatorAccountProfile,
+  syncCreatorAccountProfile,
+} from './hooks/syncCreatorAccountProfile'
+import { BiographyContent } from '@/blocks/Content/config'
+import { socialLinksField } from '@/fields/socialLinks'
+
+const canUpdateOwnMusicalAccount = async ({ req }: { req: any }) => {
+  if (await hasFreshAdminAccess(req)) return true
+
+  return isMusicalCreatorUser(req.user)
+}
+
+const canUpdateOwnProfileAccount = async ({ req }: { req: any }) => {
+  if (await hasFreshAdminAccess(req)) return true
+
+  return isMusicalCreatorUser(req.user) || hasEditorialIdentity(req.user)
+}
+
+const isMusicalAccountForm = (
+  siblingData: Record<string, unknown> | undefined,
+  user: unknown,
+) => isMusicalCreatorUser(siblingData || user)
+
+const isEditorialAccountForm = (
+  siblingData: Record<string, unknown> | undefined,
+  user: unknown,
+) => hasEditorialIdentity(siblingData || user)
+
+const musicalAccountTabCondition = (_data: unknown, siblingData: any, { user }: any) =>
+  isMusicalAccountForm(siblingData, user) && !isAdminUser(user)
+
+const accountNameField: Field = {
+  name: 'name',
+  label: 'Nombre',
+  type: 'text',
+  required: true,
+  access: {
+    update: async ({ req, data, siblingData }) => {
+      const user = req.user
+
+      if (!user) return false
+      if (await hasFreshAdminAccess(req as any)) return true
+
+      return data?.id === user.id || siblingData?.id === user.id
+    },
+  },
+}
+
+const accountUsernameField: Field = {
+  name: 'username',
+  type: 'text',
+  label: 'Nombre de usuario',
+  index: true,
+  required: true,
+  unique: true,
+  access: {
+    update: async ({ req, data, siblingData }) => {
+      const user = req.user
+
+      if (!user) return false
+      if (await hasFreshAdminAccess(req as any)) return true
+
+      return data?.id === user.id || siblingData?.id === user.id
+    },
+  },
+}
+
+const creatorBiographyFields: Field[] = [
+  {
+    name: 'biographyHero',
+    type: 'group',
+    label: false,
+    virtual: true,
+    admin: { readOnly: false },
+    fields: [
+      { name: 'type', type: 'select', defaultValue: 'mediumImpact', label: 'Tipo', options: [{ label: 'Dividido', value: 'mediumImpact' }], admin: { hidden: true, readOnly: true } },
+      { name: 'media', type: 'upload', relationTo: 'media', required: false, admin: { description: 'Opcional. Si agregas una imagen, la biografía mostrará el encabezado dividido.' } },
+    ],
+  },
+  {
+    name: 'biographyLayout',
+    type: 'blocks',
+    virtual: true,
+    label: 'Contenido',
+    labels: { plural: 'Secciones', singular: 'Sección' },
+    blocks: [BiographyContent],
+    required: false,
+    admin: { readOnly: false },
+  },
+  {
+    ...socialLinksField({ name: 'biographySocialLinks' }),
+    virtual: true,
+    admin: { readOnly: false },
+  },
+]
+
+const creatorAdvancedFields: Field[] = [
+  {
+    name: 'advancedName',
+    type: 'text',
+    virtual: true,
+    label: 'Nombre',
+    required: true,
+    admin: { readOnly: false },
+  },
+  {
+    name: 'advancedUsername',
+    type: 'text',
+    virtual: true,
+    label: 'Nombre de usuario',
+    required: true,
+    admin: { readOnly: false },
+  },
+  {
+    name: 'advancedAccountType',
+    type: 'select',
+    virtual: true,
+    label: 'Tipo de cuenta',
+    options: [{ label: 'Artista', value: 'artist' }, { label: 'Banda', value: 'band' }],
+    admin: { readOnly: false },
+  },
+  {
+    name: 'advancedAccountAvatar',
+    type: 'upload',
+    virtual: true,
+    relationTo: 'media',
+    label: 'Avatar',
+    admin: { readOnly: false },
+  },
+  {
+    name: 'advancedLocation',
+    type: 'text',
+    virtual: true,
+    label: 'Ubicación',
+    admin: { readOnly: false },
+  },
+  {
+    name: 'advancedGenre',
+    type: 'text',
+    virtual: true,
+    label: 'Género',
+    admin: { readOnly: false },
+  },
+]
 
 export const Users: CollectionConfig = {
   slug: 'users',
   access: {
-    admin: authenticated,
+    admin: payloadDashboardAccess,
     create: isAdmin,
     delete: async ({ req }) => {
       const user = req.user
@@ -55,7 +205,7 @@ export const Users: CollectionConfig = {
     components: {
       beforeList: ['@/components/UsersListSelectionGuard', '@/components/CreateRedactorButton'],
     },
-    defaultColumns: ['name', 'username', 'email', 'role', 'editorAccess'],
+    defaultColumns: ['name', 'username', 'email', 'userType', 'role'],
     hidden: ({ user }) => !isAdminUser(user as { role?: null | string } | null | undefined),
     useAsTitle: 'name',
   },
@@ -66,6 +216,7 @@ export const Users: CollectionConfig = {
       expiration: CREATOR_RESET_PASSWORD_EXPIRATION_MS,
       generateEmailHTML: (args) =>
         generateCreatorResetPasswordEmailHTML({
+          req: args?.req,
           token: args?.token || '',
           user: {
             email: args?.user?.email || '',
@@ -75,56 +226,37 @@ export const Users: CollectionConfig = {
       generateEmailSubject: generateCreatorResetPasswordEmailSubject,
     },
     verify: {
-      generateEmailHTML: ({ token, user }) =>
-        user?.editorAccess
+      generateEmailHTML: ({ req, token, user }) =>
+        hasEditorialIdentity(user)
           ? generateEditorVerificationEmailHTML({
+              req,
               token,
               user,
             })
           : generateCreatorVerificationEmailHTML({
+              req,
               token,
               user,
             }),
       generateEmailSubject: ({ user }) =>
-        user?.editorAccess
+        hasEditorialIdentity(user)
           ? generateEditorVerificationEmailSubject()
           : generateCreatorVerificationEmailSubject(),
     },
   },
   fields: [
     {
-      name: 'name',
-      label: 'Nombre',
-      type: 'text',
-      required: true,
-      access: {
-        update: async ({ req, data, siblingData }) => {
-          const user = req.user
-          
-          if (!user) return false
-          if (await hasFreshAdminAccess(req as any)) return true
-          
-          // Creators can only update their own name
-          return data?.id === user.id || siblingData?.id === user.id
-        },
+      ...accountNameField,
+      admin: {
+        condition: (_data, siblingData, { user }) =>
+          !isMusicalAccountForm(siblingData, user) || isAdminUser(user),
       },
     },
     {
-      name: 'username',
-      type: 'text',
-      label: 'Nombre de usuario',
-      index: true,
-      required: true,
-      unique: true,
-      access: {
-        update: async ({ req, data, siblingData }) => {
-          const user = req.user
-
-          if (!user) return false
-          if (await hasFreshAdminAccess(req as any)) return true
-
-          return data?.id === user.id || siblingData?.id === user.id
-        },
+      ...accountUsernameField,
+      admin: {
+        condition: (_data, siblingData, { user }) =>
+          !isMusicalAccountForm(siblingData, user) || isAdminUser(user),
       },
     },
     {
@@ -133,8 +265,10 @@ export const Users: CollectionConfig = {
       defaultValue: 'creator',
       admin: {
         condition: (_data, siblingData, { user }) => {
-          const isSuperAdmin = isSuperAdminUser(user as { email?: null | string; role?: null | string } | null | undefined)
-          
+          const isSuperAdmin = isSuperAdminUser(
+            user as { email?: null | string; role?: null | string } | null | undefined,
+          )
+
           // Only superadmin can see role field
           return isSuperAdmin && siblingData?.role !== 'admin'
         },
@@ -143,7 +277,9 @@ export const Users: CollectionConfig = {
       access: {
         update: async ({ req }) => {
           // Only superadmin can update roles
-          return isSuperAdminUser(req.user as { email?: null | string; role?: null | string } | null | undefined)
+          return isSuperAdminUser(
+            req.user as { email?: null | string; role?: null | string } | null | undefined,
+          )
         },
       },
       options: [
@@ -183,7 +319,8 @@ export const Users: CollectionConfig = {
           isAdminUser(user as { role?: null | string } | null | undefined) &&
           isConfiguredSuperAdminEmail(data?.email) &&
           siblingData?.role === 'admin',
-        description: 'Esta cuenta es la única superadministradora y puede crear otras cuentas administrativas.',
+        description:
+          'Esta cuenta es la única superadministradora y puede crear otras cuentas administrativas.',
         readOnly: true,
       },
       label: 'Rol',
@@ -197,9 +334,55 @@ export const Users: CollectionConfig = {
         components: {
           Field: '@/components/UsersEditorAccessField',
         },
-        description:
-          'Identifica cuentas editoriales creadas por admin para publicar articulos.',
+        description: 'Identifica cuentas editoriales creadas por admin para publicar articulos.',
+        condition: (_data, _siblingData, { user }) => isAdminUser(user as any),
       },
+      access: {
+        update: async ({ req }) => await hasFreshAdminAccess(req as any),
+      },
+    },
+    {
+      name: 'userType',
+      type: 'select',
+      defaultValue: 'creator',
+      label: 'Tipo de usuario',
+      admin: {
+        condition: (_data, siblingData, { user }) => {
+          const isAdmin = isAdminUser(user as { role?: null | string } | null | undefined)
+          if (!isAdmin) return false
+          if (siblingData?.role === 'admin') return false
+
+          return true
+        },
+      },
+      access: {
+        update: async ({ req }) => {
+          return await hasFreshAdminAccess(req as any)
+        },
+      },
+      options: [
+        {
+          label: 'Creador',
+          value: 'creator',
+        },
+        {
+          label: 'Editor',
+          value: 'editor',
+        },
+        {
+          label: 'Artista',
+          value: 'artist',
+        },
+        {
+          label: 'Banda',
+          value: 'band',
+        },
+        {
+          label: 'Fan',
+          value: 'fan',
+        },
+      ],
+      required: true,
     },
     {
       name: 'accountType',
@@ -211,18 +394,14 @@ export const Users: CollectionConfig = {
           Field: '@/components/UsersAccountTypeField',
         },
         condition: (_data, siblingData, { user }) => {
-          const isAdmin = isAdminUser(user as { role?: null | string } | null | undefined)
-          if (!isAdmin || siblingData?.role === 'admin') return false
-          if (siblingData?.editorAccess) return false
+          if (siblingData?.role === 'admin') return false
+          if (isMusicalCreatorUser(user)) return false
 
-          return true
+          return isMusicalAccountForm(siblingData, user)
         },
       },
       access: {
-        update: async ({ req }) => {
-          // Only admins can update account type
-          return await hasFreshAdminAccess(req as any)
-        },
+        update: canUpdateOwnMusicalAccount,
       },
       options: [
         {
@@ -235,7 +414,8 @@ export const Users: CollectionConfig = {
         },
       ],
       validate: ((value: string | null | undefined, { siblingData }: any) => {
-        if (siblingData?.editorAccess) return true
+        if (siblingData?.editorAccess || siblingData?.userType === 'editor') return true
+        if (siblingData?.userType === 'consumer' || siblingData?.userType === 'fan') return true
 
         return value ? true : 'El tipo de cuenta es obligatorio para cuentas de artista o banda.'
       }) as any,
@@ -254,6 +434,159 @@ export const Users: CollectionConfig = {
       },
     },
     {
+      name: 'consumerProfile',
+      type: 'relationship',
+      relationTo: 'consumerProfiles',
+      access: {
+        create: ({ req: { user } }) => isAdminUser(user),
+        read: ({ req: { user } }) => isAdminUser(user),
+        update: ({ req: { user } }) => isAdminUser(user),
+      },
+      admin: {
+        hidden: true,
+      },
+    },
+    {
+      name: 'authProvider',
+      type: 'select',
+      access: {
+        create: ({ req: { user } }) => isAdminUser(user),
+        read: ({ req: { user } }) => isAdminUser(user),
+        update: ({ req: { user } }) => isAdminUser(user),
+      },
+      admin: {
+        hidden: true,
+      },
+      options: [
+        {
+          label: 'Google',
+          value: 'google',
+        },
+      ],
+    },
+    {
+      name: 'googleSubjectId',
+      type: 'text',
+      access: {
+        create: ({ req: { user } }) => isAdminUser(user),
+        read: ({ req: { user } }) => isAdminUser(user),
+        update: ({ req: { user } }) => isAdminUser(user),
+      },
+      admin: {
+        hidden: true,
+      },
+    },
+    {
+      name: 'accountAvatar',
+      type: 'upload',
+      relationTo: 'media',
+      label: 'Avatar',
+      access: {
+        update: canUpdateOwnProfileAccount,
+      },
+      admin: {
+        condition: (_data, siblingData, { user }) =>
+          (!isMusicalCreatorUser(user) && isMusicalAccountForm(siblingData, user)) ||
+          isEditorialAccountForm(siblingData, user),
+      },
+    },
+    {
+      name: 'location',
+      type: 'text',
+      label: 'Ubicación',
+      access: {
+        update: canUpdateOwnMusicalAccount,
+      },
+      admin: {
+        condition: (_data, siblingData, { user }) =>
+          !isMusicalCreatorUser(user) && isMusicalAccountForm(siblingData, user),
+      },
+    },
+    {
+      name: 'genre',
+      type: 'text',
+      label: 'Género',
+      access: {
+        update: canUpdateOwnMusicalAccount,
+      },
+      admin: {
+        condition: (_data, siblingData, { user }) =>
+          !isMusicalCreatorUser(user) && isMusicalAccountForm(siblingData, user),
+      },
+    },
+    {
+      name: 'editorBio',
+      type: 'textarea',
+      label: 'Bio',
+      access: {
+        update: canUpdateOwnProfileAccount,
+      },
+      admin: {
+        condition: (_data, siblingData, { user }) => isEditorialAccountForm(siblingData, user),
+      },
+    },
+    {
+      name: 'editorSocialLink',
+      type: 'group',
+      label: 'Red social',
+      access: {
+        update: canUpdateOwnProfileAccount,
+      },
+      admin: {
+        condition: (_data, siblingData, { user }) => isEditorialAccountForm(siblingData, user),
+      },
+      fields: [
+        {
+          name: 'label',
+          type: 'text',
+          label: 'Nombre / máscara',
+        },
+        {
+          name: 'url',
+          type: 'text',
+          label: 'Enlace',
+          validate: (value: null | string | undefined) => {
+            if (typeof value !== 'string' || !value.trim()) return true
+
+            try {
+              new URL(value)
+              return true
+            } catch {
+              return 'Ingresa una URL válida.'
+            }
+          },
+        },
+      ],
+    },
+    {
+      type: 'tabs',
+      admin: {
+        className: 'oddsound-creator-account-tabs',
+      },
+      tabs: [
+        {
+          label: 'Encabezado',
+          admin: { condition: musicalAccountTabCondition },
+          fields: [creatorBiographyFields[0]],
+        },
+        {
+          label: 'Bio',
+          admin: { condition: musicalAccountTabCondition },
+          fields: [creatorBiographyFields[1]],
+        },
+        {
+          label: 'Redes sociales',
+          admin: { condition: musicalAccountTabCondition },
+          fields: [creatorBiographyFields[2]],
+        },
+        {
+          label: 'Opciones avanzadas',
+          admin: { condition: musicalAccountTabCondition },
+          fields: creatorAdvancedFields,
+        },
+      ],
+    },
+    {
       name: 'isActive',
       type: 'checkbox',
       defaultValue: true,
@@ -268,6 +601,11 @@ export const Users: CollectionConfig = {
           return await hasFreshAdminAccess(req as any)
         },
       },
+    },
+    {
+      name: 'verificationExpiresAt',
+      type: 'date',
+      hidden: true,
     },
     {
       name: 'legalAccepted',
@@ -308,7 +646,10 @@ export const Users: CollectionConfig = {
   hooks: {
     afterDelete: [deleteCreatorData],
     afterOperation: [createProfile],
-    beforeChange: [ensureCreatorDefaults],
+    afterChange: [syncCreatorAccountProfile],
+    afterRead: [populateCreatorAccountProfile],
+    beforeValidate: [normalizeCreatorAccountType],
+    beforeChange: [ensureCreatorDefaults, applyCreatorAccountAdvancedFields],
   },
   timestamps: true,
 }

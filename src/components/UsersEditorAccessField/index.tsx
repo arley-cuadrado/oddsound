@@ -1,6 +1,6 @@
 'use client'
 
-import { CheckboxField, useField } from '@payloadcms/ui'
+import { CheckboxField, useField, useFormFields } from '@payloadcms/ui'
 import type { CheckboxFieldClientProps } from 'payload'
 import { useEffect, useMemo } from 'react'
 
@@ -10,6 +10,9 @@ export default function UsersEditorAccessField(props: CheckboxFieldClientProps) 
   const editorAccessField = useField<boolean>({
     path: props.path,
   })
+  const userTypeValue = useFormFields(([fields]) =>
+    typeof fields?.userType?.value === 'string' ? fields.userType.value : null,
+  )
 
   const isEditorialRoute = useMemo(() => {
     if (typeof window === 'undefined') return false
@@ -21,12 +24,12 @@ export default function UsersEditorAccessField(props: CheckboxFieldClientProps) 
   }, [])
 
   useEffect(() => {
-    if (!isEditorialRoute || editorAccessField.value === true) return
+    if ((!isEditorialRoute && userTypeValue !== 'editor') || editorAccessField.value === true) return
 
     editorAccessField.setValue(true, true)
-  }, [editorAccessField, isEditorialRoute])
+  }, [editorAccessField, isEditorialRoute, userTypeValue])
 
-  if (isEditorialRoute || Boolean(editorAccessField.value)) {
+  if (isEditorialRoute || userTypeValue === 'editor' || Boolean(editorAccessField.value)) {
     return null
   }
 

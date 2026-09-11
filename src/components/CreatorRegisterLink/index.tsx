@@ -3,10 +3,22 @@ import React from 'react'
 
 const CreatorRegisterLink: React.FC = () => {
   return (
-    <p>
-      ¿Necesitas primero una cuenta de creador?{' '}
-      <Link href="/creator/register">regístrate aquí</Link>
-    </p>
+    <div
+      style={{
+        alignItems: 'center',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '12px',
+        textAlign: 'center',
+      }}
+    >
+      <Link href="/creator/register" style={{ textDecoration: 'underline' }}>
+        Regístrate como artista
+      </Link>
+      <Link href="/fan/login" style={{ textDecoration: 'underline' }}>
+        Inicia sesión como fan
+      </Link>
+    </div>
   )
 }
 

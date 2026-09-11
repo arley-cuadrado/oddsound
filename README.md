@@ -40,12 +40,121 @@ pnpx create-payload-app my-project -t website
 ### Development
 
 1. First [clone the repo](#clone) if you have not done so already
-1. `cd my-project && cp .env.example .env` to copy the example environment variables
+1. `cp .env.example .env` and set `DATABASE_URL`, `PAYLOAD_SECRET` and `NEXT_PUBLIC_SERVER_URL`
 1. Enable Corepack and use the repo-pinned pnpm version: `corepack enable && corepack use pnpm@11.1.1`
-1. `pnpm install && pnpm dev` to install dependencies and start the dev server
-1. open `http://localhost:3000` to open the app in your browser
+1. `docker compose up -d mongo` to start the local database
+1. `pnpm install && pnpm seed` to install dependencies and load test data
+1. `pnpm dev` and open `http://localhost:3000`
+
+For a local database, point `DATABASE_URL` at the Docker service:
+
+```
+DATABASE_URL=mongodb://127.0.0.1:27017/oddsound?replicaSet=rs0
+```
+
+The `replicaSet` part is required. Payload's mongoose adapter opens a transaction
+for every write and standalone MongoDB rejects them, so `docker-compose.yml`
+starts Mongo with `--replSet rs0` and initialises it from the healthcheck.
+
+That's it! Changes made in `./src` will be reflected in your app. Then check out [Production](#production) once you're ready to build and serve your app, and [Deployment](#deployment) when you're ready to go live.
+
+### Seeding test data
+
+`pnpm seed` fills the database with a catalogue big enough to exercise Discovery:
+8 artists across 7 genres and 8 countries, 32 releases, 6 scenes, 8 biographies
+and 5 shop products, with cover art generated on the fly by `sharp`.
+
+The products belong to three different artists on purpose. Connect two of them to
+Mercado Pago test accounts and leave the third alone, and a single cart then shows
+both a payable and a blocked group.
+
+| Command | What it does |
+| --- | --- |
+| `pnpm seed` | Upserts everything. Safe to re-run: it never deletes and never duplicates. |
+| `pnpm seed --fresh` | Deletes the previously seeded data, then seeds again. |
+| `pnpm seed --stress` | Adds 20 more artists and 120 more releases to gauge catalogue limits. |
+| `pnpm seed --force` | Skips the guard that refuses to run against a non-local database. |
+
+**Cuentas:** `admin@seed.oddsound.test` y `los-petirrojos@seed.oddsound.test` (y el
+resto de slugs), clave `oddsound123`.
+
+Every seeded account lives under `@seed.oddsound.test`, and cleanup finds seeded
+documents through those accounts, so `--fresh` never touches real content.
+
+The seed refuses to run when `NODE_ENV=production` or when `DATABASE_URL` does not
+point at localhost, unless you pass `--force`.
+
+If you want to test `consumer` registration or login with Google locally, also configure:
+
+```env
+GOOGLE_OAUTH_CLIENT_ID=google_oauth_client_id
+GOOGLE_OAUTH_CLIENT_SECRET=google_oauth_client_secret
+GOOGLE_OAUTH_REDIRECT_URI=http://localhost:3000/consumer-api/auth/google/callback
+```
+
+The authorized Google redirect URI must match that callback exactly in local development.
 
 That's it! Changes made in `./src` will be reflected in your app. Follow the on-screen instructions to login and create your first admin user. Then check out [Production](#production) once you're ready to build and serve your app, and [Deployment](#deployment) when you're ready to go live.
+
+## Merch and Mercado Pago
+
+Artists sell merch through **Mercado Pago's Split Payments 1:1**, which pays exactly
+one seller per transaction plus the marketplace's commission. That constraint is the
+reason the cart settles **once per artist** rather than once per order: a cart holding
+merch from three artists produces three payments, three orders and three preferences.
+
+Reference: <https://www.mercadopago.com.co/developers/es/docs/split-payments/split-1-1/overview>
+
+### One-time setup for oddsound
+
+1. In [Tus integraciones](https://www.mercadopago.com.co/developers/panel/app), create
+   an application with solution **Pagos online**, product **Checkout Pro** and
+   integration model **Marketplace**.
+2. Edit it and set the Redirect URL to
+   `https://<tu-dominio>/creator-api/payments/connect/callback`. It must match exactly —
+   Mercado Pago rejects the authorisation otherwise, which is why any extra data travels
+   in the OAuth `state` instead.
+3. Copy `client_id` and `client_secret` into `MERCADOPAGO_CLIENT_ID` and
+   `MERCADOPAGO_CLIENT_SECRET`.
+4. In the application's **Webhooks** section, copy the signing secret into
+   `MERCADOPAGO_WEBHOOK_SECRET`. Notifications without a valid `x-signature` are rejected.
+
+### What each artist does
+
+Nothing but authorise. There is no key to paste: the artist clicks **Conectar Mercado
+Pago** in `/creator/dashboard`, approves on Mercado Pago's own site, and the resulting
+access and refresh tokens are stored encrypted with AES-256-GCM
+(`src/utilities/secrets.ts`). Those fields have `read: () => false`, so they never leave
+the server — not even for the artist who owns them.
+
+### Keeping the connection alive
+
+Mercado Pago access tokens live 180 days and the refresh token rotates on every renewal.
+Six layers keep a checkout from ever meeting a dead token:
+
+| Layer | Where |
+| --- | --- |
+| A cron that actually runs on serverless | `vercel.json` → `/api/cron/jobs` |
+| Proactive renewal once a token is 30 days old | `src/jobs/refreshMercadoPagoTokens.ts` |
+| Just-in-time renewal before a checkout | `getValidMercadoPagoAccessToken` |
+| Retry after Mercado Pago rejects the token | `withMercadoPagoAccessToken` |
+| A compare-and-set lock so concurrent checkouts cannot spend the same single-use refresh token | `src/utilities/mercadoPagoTokens.ts` |
+| The artist's group is blocked in the cart before anyone presses pay | `src/utilities/cartGroups.ts` |
+
+`jobs.autoRun` is only used in development. Payload's own types warn against it on
+serverless, so production is driven by the Vercel cron. On the Hobby plan crons are
+limited to once a day — change the schedule in `vercel.json` accordingly.
+
+### Testing without real money
+
+Create test accounts in the application's **Cuentas de prueba** section: one seller, one
+buyer, and the integrator account itself. Connect an artist with the test seller, then
+buy with the test buyer. Mercado Pago refuses to let an account pay its own preference.
+
+Before going live, confirm three things with a Mercado Pago commercial executive: that
+`marketplace_fee` is enabled for the account, that the seller reaches KYC level 6, and
+what the documented "payments using available balance between Mercado Pago accounts"
+restriction means for card and PSE payments in Colombia.
 
 ## How it works
 

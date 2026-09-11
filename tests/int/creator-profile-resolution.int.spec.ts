@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { assignOwnership } from '@/hooks/assignOwnership'
+import { ensureConsumerProfile, findConsumerProfileByOwner } from '@/utilities/consumerProfiles'
 import { ensureCreatorProfile, findCreatorProfileByOwner } from '@/utilities/creatorProfiles'
 
 describe('findCreatorProfileByOwner', () => {
@@ -82,6 +83,75 @@ describe('ensureCreatorProfile', () => {
     expect(payload.create.mock.calls[0]?.[0]?.data).not.toHaveProperty('accountType')
   })
 
+  it('creates editorial profiles for admins who author posts', async () => {
+    const payload = {
+      create: vi.fn().mockResolvedValue({ id: 'profile-admin-1' }),
+      find: vi.fn().mockResolvedValue({
+        docs: [],
+      }),
+      update: vi.fn().mockResolvedValue({}),
+    }
+
+    await expect(
+      ensureCreatorProfile({
+        payload: payload as never,
+        user: {
+          email: 'admin@oddsound.co',
+          id: 'admin-1',
+          name: 'Admin One',
+          role: 'admin',
+        },
+      }),
+    ).resolves.toBe('profile-admin-1')
+
+    expect(payload.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        collection: 'profiles',
+        data: expect.objectContaining({
+          contactEmail: 'admin@oddsound.co',
+          displayName: 'Admin One',
+          editorialProfile: true,
+          owner: 'admin-1',
+          profileType: 'editorial',
+        }),
+      }),
+    )
+  })
+
+  it('treats explicit editor userType as an editorial profile', async () => {
+    const payload = {
+      create: vi.fn().mockResolvedValue({ id: 'profile-editor-2' }),
+      find: vi.fn().mockResolvedValue({
+        docs: [],
+      }),
+      update: vi.fn().mockResolvedValue({}),
+    }
+
+    await expect(
+      ensureCreatorProfile({
+        payload: payload as never,
+        user: {
+          email: 'editor2@example.com',
+          id: 'user-editor-2',
+          name: 'Editor Two',
+          role: 'creator',
+          userType: 'editor',
+        },
+      }),
+    ).resolves.toBe('profile-editor-2')
+
+    expect(payload.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        collection: 'profiles',
+        data: expect.objectContaining({
+          editorialProfile: true,
+          owner: 'user-editor-2',
+          profileType: 'editorial',
+        }),
+      }),
+    )
+  })
+
   it('normalizes existing inline editorial profiles away from artist account types', async () => {
     const payload = {
       create: vi.fn(),
@@ -112,6 +182,101 @@ describe('ensureCreatorProfile', () => {
           profileType: 'editorial',
         }),
         id: 'profile-editor-1',
+      }),
+    )
+  })
+})
+
+describe('findConsumerProfileByOwner', () => {
+  it('returns the first matching consumer profile id for an owner', async () => {
+    const payload = {
+      find: vi.fn().mockResolvedValue({
+        docs: [{ id: 'consumer-profile-1' }],
+      }),
+    }
+
+    await expect(
+      findConsumerProfileByOwner({
+        ownerID: 'user-1',
+        payload: payload as never,
+      }),
+    ).resolves.toBe('consumer-profile-1')
+  })
+})
+
+describe('ensureConsumerProfile', () => {
+  it('returns the inline consumer profile id without extra queries when it already exists', async () => {
+    const payload = {
+      find: vi.fn(),
+      create: vi.fn(),
+      update: vi.fn(),
+    }
+
+    await expect(
+      ensureConsumerProfile({
+        payload: payload as never,
+        user: {
+          consumerProfile: 'consumer-profile-1',
+          id: 'consumer-1',
+          userType: 'consumer',
+        },
+      }),
+    ).resolves.toBe('consumer-profile-1')
+
+    expect(payload.find).not.toHaveBeenCalled()
+    expect(payload.create).not.toHaveBeenCalled()
+    expect(payload.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        collection: 'consumerProfiles',
+        data: expect.objectContaining({
+          displayName: 'Fan',
+          email: '',
+        }),
+        id: 'consumer-profile-1',
+      }),
+    )
+  })
+
+  it('creates a consumer profile and links it back to the user', async () => {
+    const payload = {
+      create: vi.fn().mockResolvedValue({ id: 'consumer-profile-1' }),
+      find: vi.fn().mockResolvedValue({
+        docs: [],
+      }),
+      update: vi.fn().mockResolvedValue({}),
+    }
+
+    await expect(
+      ensureConsumerProfile({
+        payload: payload as never,
+        user: {
+          email: 'consumer@example.com',
+          id: 'consumer-1',
+          name: 'Consumer One',
+          userType: 'consumer',
+        },
+      }),
+    ).resolves.toBe('consumer-profile-1')
+
+    expect(payload.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        collection: 'consumerProfiles',
+        data: expect.objectContaining({
+          displayName: 'Consumer One',
+          email: 'consumer@example.com',
+          owner: 'consumer-1',
+          status: 'active',
+        }),
+      }),
+    )
+
+    expect(payload.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        collection: 'users',
+        data: expect.objectContaining({
+          consumerProfile: 'consumer-profile-1',
+        }),
+        id: 'consumer-1',
       }),
     )
   })
@@ -175,5 +340,35 @@ describe('assignOwnership', () => {
       title: 'Admin Release',
     })
     expect(payload.find).not.toHaveBeenCalled()
+  })
+
+  it('creates and assigns an editorial profile for admins without one', async () => {
+    const payload = {
+      create: vi.fn().mockResolvedValue({ id: 'profile-admin-2' }),
+      find: vi.fn().mockResolvedValue({
+        docs: [],
+      }),
+      update: vi.fn().mockResolvedValue({}),
+    }
+
+    const result = await assignOwnership({
+      data: { title: 'Admin Post' },
+      req: {
+        context: {},
+        payload,
+        user: {
+          email: 'admin2@oddsound.co',
+          id: 'admin-2',
+          name: 'Admin Two',
+          role: 'admin',
+        },
+      },
+    } as never)
+
+    expect(result).toMatchObject({
+      owner: 'admin-2',
+      profile: 'profile-admin-2',
+      title: 'Admin Post',
+    })
   })
 })

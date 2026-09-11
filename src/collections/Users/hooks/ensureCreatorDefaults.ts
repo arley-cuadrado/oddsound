@@ -1,4 +1,4 @@
-import type { CollectionBeforeChangeHook } from 'payload'
+import type { CollectionBeforeChangeHook, CollectionBeforeValidateHook } from 'payload'
 
 import { isAdminUser } from '@/utilities/isAdminUser'
 import { isSuperAdminUser } from '@/utilities/isSuperAdminUser'
@@ -9,6 +9,33 @@ function normalizeUsername(value: string) {
     .trim()
     .replace(/[^a-z0-9._-]+/g, '-')
     .replace(/^-+|-+$/g, '')
+}
+
+function normalizeAccountType(value: unknown) {
+  if (typeof value !== 'string') return null
+
+  const normalized = value.trim().toLowerCase()
+
+  if (normalized === 'artist' || normalized === 'artista') return 'artist'
+  if (normalized === 'band' || normalized === 'banda') return 'band'
+
+  return null
+}
+
+// Normalize stale form values before Payload validates select options.
+export const normalizeCreatorAccountType: CollectionBeforeValidateHook = ({ data }) => {
+  const nextData = { ...data }
+  const accountType = normalizeAccountType(nextData.accountType) || normalizeAccountType(nextData.userType)
+
+  if (!accountType) return nextData
+
+  nextData.accountType = accountType
+
+  if (normalizeAccountType(nextData.userType)) {
+    nextData.userType = accountType
+  }
+
+  return nextData
 }
 
 async function resolveUniqueUsername(args: {
@@ -82,8 +109,22 @@ export const ensureCreatorDefaults: CollectionBeforeChangeHook = async ({
     nextData.isActive = true
   }
 
+  const requestedUserType =
+    typeof nextData.userType === 'string' && nextData.userType
+      ? nextData.userType
+      : typeof originalDoc?.userType === 'string' && originalDoc.userType
+        ? originalDoc.userType
+        : 'creator'
+
   if (nextData.role === 'admin') {
     nextData.editorAccess = false
+    if (requestedUserType === 'consumer' || requestedUserType === 'fan') {
+      nextData.userType = 'creator'
+    } else {
+      nextData.userType = requestedUserType
+    }
+  } else if (requestedUserType === 'editor') {
+    nextData.editorAccess = true
   } else if (typeof nextData.editorAccess === 'boolean') {
     nextData.editorAccess = nextData.editorAccess
   } else if (typeof originalDoc?.editorAccess === 'boolean') {
@@ -92,8 +133,24 @@ export const ensureCreatorDefaults: CollectionBeforeChangeHook = async ({
     nextData.editorAccess = false
   }
 
-  if (!nextData.editorAccess && !nextData.accountType) {
-    nextData.accountType = 'artist'
+  if (requestedUserType === 'consumer' || requestedUserType === 'fan') {
+    nextData.userType = 'fan'
+    nextData.editorAccess = false
+    nextData.accountType = null
+    nextData.profile = null
+  } else if (nextData.editorAccess) {
+    nextData.userType = 'editor'
+    nextData.accountType = null
+  } else {
+    const resolvedAccountType =
+      nextData.accountType === 'artist' || nextData.accountType === 'band'
+        ? nextData.accountType
+        : originalDoc?.accountType === 'artist' || originalDoc?.accountType === 'band'
+          ? originalDoc.accountType
+          : 'artist'
+
+    nextData.accountType = resolvedAccountType
+    nextData.userType = resolvedAccountType
   }
 
   const currentID =

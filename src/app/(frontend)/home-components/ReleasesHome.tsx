@@ -102,8 +102,8 @@ export default function ReleasesHome({ releases }: { releases: ReleaseItem[] }) 
 
         return (
           <article key={release.id} className="w-full min-w-0 max-w-[28rem] max-[767.98px]:max-w-none">
-            <section className="flex w-full flex-col items-start gap-2 pt-4 pb-4">
-              <Link className="w-full" href={`/${release.releaseSlug}`}>
+            <section className="flex w-full flex-col items-start gap-2 pb-4 pt-0 md:pt-4">
+              <Link className="w-full" href={release.releaseHref}>
                 <div className="relative h-[28rem] w-full overflow-hidden bg-slate-100 dark:bg-slate-900 rounded-lg">
                   {release.imageUrl ? (
                     <img

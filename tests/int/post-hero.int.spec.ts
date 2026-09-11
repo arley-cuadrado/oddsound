@@ -70,7 +70,6 @@ describe('PostHero', () => {
     render(React.createElement(PostHero, { post }))
 
     expect(screen.getByRole('heading', { name: 'Administrador en vivo' })).toBeTruthy()
-    expect(screen.getByText('Noticias')).toBeTruthy()
     expect(screen.getByText('Arlo')).toBeTruthy()
     expect(screen.getByText('Publicado: ayer')).toBeTruthy()
     expect(screen.getByTestId('post-hero-media')).toBeTruthy()

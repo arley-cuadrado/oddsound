@@ -13,13 +13,18 @@ function isValidURL(value: null | string | undefined) {
 
 export function socialLinksField(options?: {
   label?: string
+  maxRows?: number
   minRows?: number
+  name?: string
+  platformLabel?: string
   required?: boolean
+  urlLabel?: string
 }) {
   return {
-    name: 'socialLinks',
+    name: options?.name || 'socialLinks',
     type: 'array',
     label: options?.label || 'Enlaces sociales',
+    maxRows: options?.maxRows,
     minRows: options?.minRows ?? 1,
     required: options?.required ?? false,
     labels: {
@@ -30,13 +35,13 @@ export function socialLinksField(options?: {
       {
         name: 'platform',
         type: 'text',
-        label: 'Plataforma',
+        label: options?.platformLabel || 'Plataforma',
         required: true,
       },
       {
         name: 'url',
         type: 'text',
-        label: 'URL',
+        label: options?.urlLabel || 'URL',
         required: true,
         validate: (value: null | string | undefined) => {
           if (typeof value !== 'string' || !value.trim()) {

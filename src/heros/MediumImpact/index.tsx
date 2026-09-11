@@ -23,7 +23,7 @@ export const MediumImpactHero: React.FC<MediumImpactHeroProps> = ({
   const creatorMeta = [creatorGenre, creatorCountry].filter(Boolean).join(' · ')
 
   return (
-    <div className="container mt-12 px-4 py-0 md:mt-4 md:px-6">
+    <div className="container mt-4 px-4 py-0 md:px-6">
       <div className="grid items-center gap-8 md:grid-cols-[minmax(0,1.05fr)_minmax(18rem,0.95fr)] md:gap-12">
         <div className="h-[272px] overflow-hidden md:h-[320px]">
           {media && typeof media === 'object' && (
@@ -39,13 +39,13 @@ export const MediumImpactHero: React.FC<MediumImpactHeroProps> = ({
         <div className="flex flex-col justify-center">
           {creatorMeta && (
             <div className="mb-4 space-y-1">
-              <p className="text-xs uppercase tracking-[0.14em] text-[#777] dark:text-[#858c98]">
+              <p className="artist-profile-meta text-[#777] dark:text-[#858c98]">
                 {creatorMeta}
               </p>
             </div>
           )}
 
-          <h1 className="text-4xl font-black leading-[0.95] tracking-tight text-slate-950 md:text-6xl lg:text-7xl dark:text-white">
+          <h1 className="artist-profile-page-title text-slate-950 dark:text-white">
             {pageTitle}
           </h1>
 

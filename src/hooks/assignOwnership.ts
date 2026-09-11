@@ -1,6 +1,6 @@
 import type { CollectionBeforeChangeHook } from 'payload'
+import { ensureCreatorProfile, findCreatorProfileByOwner } from '@/utilities/creatorProfiles'
 import { isAdminUser } from '@/utilities/isAdminUser'
-import { findCreatorProfileByOwner } from '@/utilities/creatorProfiles'
 
 type RequestContextWithProfileCache = {
   creatorProfileIdByOwner?: Map<string | number, null | string>
@@ -42,18 +42,34 @@ export const assignOwnership: CollectionBeforeChangeHook = async ({ data, req })
   if (!req.user) return data
 
   const profileId = await resolveUserProfileId(req)
+  const ensuredProfileId =
+    profileId ||
+    (isAdminUser(req.user)
+      ? await ensureCreatorProfile({
+          payload: req.payload,
+          req,
+          user: {
+            email: req.user.email,
+            id: String(req.user.id),
+            name: req.user.name,
+            profile: req.user.profile,
+            role: req.user.role,
+            userType: (req.user as { userType?: null | string }).userType,
+          },
+        })
+      : null)
 
   if (isAdminUser(req.user)) {
     return {
       ...data,
       owner: req.user.id,
-      ...(profileId ? { profile: profileId } : {}),
+      ...(ensuredProfileId ? { profile: ensuredProfileId } : {}),
     }
   }
 
   return {
     ...data,
     owner: req.user.id,
-    ...(profileId ? { profile: profileId } : {}),
+    ...(ensuredProfileId ? { profile: ensuredProfileId } : {}),
   }
 }

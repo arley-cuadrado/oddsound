@@ -1,6 +1,8 @@
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 
 import { getMeUser } from '@/utilities/getMeUser'
+import { isFanUser } from '@/utilities/isEditorialUser'
 import { CreatorAuthShell } from '../auth-shell'
 import { CreatorResetPasswordForm } from './reset-password-form'
 
@@ -11,9 +13,11 @@ type Props = {
 }
 
 export default async function CreatorResetPasswordView({ searchParams }: Props) {
-  await getMeUser({
-    validUserRedirect: '/dashboard',
-  }).catch(() => null)
+  const session = await getMeUser().catch(() => null)
+
+  if (session?.user) {
+    redirect(isFanUser(session.user) ? '/fan/account' : '/dashboard')
+  }
 
   const { token } = await searchParams
 

@@ -19,7 +19,7 @@ export type CommerceProductSummary = {
   id: string
   images?: Product['images']
   inventory?: null | number
-  priceInUSD?: null | number
+  priceInCOP?: null | number
   profile?: ProductReference | null
   release?: ProductReference | null
   slug?: null | string
@@ -238,7 +238,7 @@ export async function listCommerceProducts({
     id: product.id,
     images: product.images,
     inventory: product.inventory,
-    priceInUSD: product.priceInUSD,
+    priceInCOP: product.priceInCOP,
     profile: toReference(product.profile),
     release: toReference(product.release),
     slug: product.slug,

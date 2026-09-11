@@ -5,8 +5,9 @@ import tsconfigPaths from 'vite-tsconfig-paths'
 export default defineConfig({
   plugins: [tsconfigPaths(), react()],
   test: {
+    execArgv: ['./tests/helpers/preload-jsdom.cjs'].map((path) => `--require=${path}`),
     environment: 'jsdom',
     setupFiles: ['./vitest.setup.ts'],
-    include: ['tests/int/**/*.int.spec.ts'],
+    include: ['tests/int/**/*.int.spec.ts', 'tests/int/**/*.int.spec.tsx'],
   },
 })

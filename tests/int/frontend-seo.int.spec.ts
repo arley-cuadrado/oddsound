@@ -3,7 +3,6 @@ import { describe, expect, it } from 'vitest'
 import { metadata as aboutUsMetadata } from '@/app/(frontend)/about-us/page'
 import { metadata as homeMetadata } from '@/app/(frontend)/page'
 import { generateMetadata as generateSearchMetadata } from '@/app/(frontend)/search/page'
-import { metadata as loginMetadata } from '@/app/(creator-auth)/creator/login/page'
 import { metadata as registerMetadata } from '@/app/(creator-auth)/creator/register/page'
 import {
   ABOUT_US_DESCRIPTION,
@@ -12,7 +11,6 @@ import {
   getSiteStructuredData,
   HOME_DESCRIPTION,
   INSTAGRAM_URL,
-  LOGIN_DESCRIPTION,
   REGISTER_DESCRIPTION,
   STATIC_SITEMAP_PATHS,
 } from '@/seo/site'
@@ -27,12 +25,7 @@ describe('frontend SEO config', () => {
 
     expect(searchMetadata.description).toBe(DISCOVERY_DESCRIPTION)
     expect(aboutUsMetadata.description).toBe(ABOUT_US_DESCRIPTION)
-    expect(loginMetadata.description).toBe(LOGIN_DESCRIPTION)
     expect(registerMetadata.description).toBe(REGISTER_DESCRIPTION)
-    expect(loginMetadata.robots).toEqual({
-      follow: true,
-      index: true,
-    })
     expect(registerMetadata.robots).toEqual({
       follow: true,
       index: true,
@@ -41,7 +34,7 @@ describe('frontend SEO config', () => {
 
   it('includes the requested public routes in the static sitemap set', () => {
     expect(STATIC_SITEMAP_PATHS).toEqual(
-      expect.arrayContaining(['/', '/about-us', '/search', '/creator/login', '/creator/register']),
+      expect.arrayContaining(['/', '/about-us', '/search', '/creator/register']),
     )
   })
 

@@ -3,8 +3,12 @@ import { getPayload } from 'payload'
 import Link from 'next/link'
 import React from 'react'
 
+import type { Profile } from '@/payload-types'
 import { getMeUser } from '@/utilities/getMeUser'
 import { listCommerceProducts, resolveUserProfileID } from '@/utilities/commerceProducts'
+import { canAccessPayloadDashboard, isMusicalCreatorUser } from '@/utilities/isEditorialUser'
+import { getMerchOnboarding } from '@/utilities/merchOnboarding'
+import { getPlatformFeePercent } from '@/utilities/money'
 
 type ScheduledJobInput = {
   doc?: {
@@ -32,8 +36,9 @@ const BeforeDashboard = async () => {
   const now = new Date().toISOString()
   const currentUser = await getMeUser().catch(() => null)
   const user = currentUser?.user || null
+  if (!canAccessPayloadDashboard(user)) return null
   const userRole = user?.role || null
-  const isMusicalCreator = userRole === 'creator' && !Boolean(user?.editorAccess)
+  const isMusicalCreator = isMusicalCreatorUser(user)
   const profileID = resolveUserProfileID(user)
   const commerceProducts =
     userRole === 'admin' || isMusicalCreator
@@ -44,6 +49,20 @@ const BeforeDashboard = async () => {
           profile: profileID,
         })
       : []
+  // Read straight from the profile: the sanitized connection lives behind
+  // `overrideAccess`, and the admin panel is the one place an artist reliably
+  // lands after logging in.
+  const commerceProfile =
+    profileID && (userRole === 'admin' || isMusicalCreator)
+      ? ((await payload
+          .findByID({ collection: 'profiles', id: String(profileID), depth: 0, overrideAccess: true })
+          .catch(() => null)) as null | Profile)
+      : null
+  const platformFeePercent = getPlatformFeePercent()
+  const merch = getMerchOnboarding({
+    hasPublishedProduct: commerceProducts.some((product) => product.status === 'published'),
+    profile: commerceProfile,
+  })
   const commerceProfileSlug =
     (typeof user?.profile === 'object' && user?.profile && 'slug' in user.profile
       ? user.profile.slug
@@ -111,33 +130,95 @@ const BeforeDashboard = async () => {
 
   return (
     <section className={baseClass} id="scheduled-publishes">
-      <section className={`${baseClass}__section`} aria-labelledby="before-dashboard-scheduled">
-        <div className={`${baseClass}__header`}>
-          <div>
-            <h4 id="before-dashboard-scheduled">Publicaciones programadas</h4>
-            <p>
-              Próximas tareas de publicación y despublicación. Hora editorial oficial:
-              <strong> America/Bogota</strong>.
-            </p>
+      {isMusicalCreator ? (
+        <section className={`${baseClass}__section`} aria-labelledby="before-dashboard-payments">
+          <div className={`${baseClass}__header`}>
+            <div>
+              <h4 id="before-dashboard-payments">
+                Cobros con Mercado Pago{' '}
+                <span
+                  className={`${baseClass}__badge ${baseClass}__badge--${
+                    merch.ready ? 'ready' : merch.needsReconnect ? 'alert' : 'pending'
+                  }`}
+                >
+                  {merch.ready
+                    ? 'Listo para vender'
+                    : merch.needsReconnect
+                      ? 'Requiere acción'
+                      : 'Pendiente'}
+                </span>
+              </h4>
+              <p>Cobras directo a tu cuenta. oddsound se queda el {platformFeePercent}%.</p>
+            </div>
           </div>
-        </div>
 
-        {items.length > 0 ? (
-          <ul className={`${baseClass}__list`}>
-            {items.map((item) => (
-              <li className={`${baseClass}__item`} key={item.id}>
-                <div className={`${baseClass}__item-content`}>
-                  <strong>{item.target}</strong>
-                  <p>{item.typeLabel}</p>
-                </div>
-                <time>{item.scheduledFor}</time>
+          <ul className={`${baseClass}__meta-list`}>
+            {merch.steps.map((step, index) => (
+              <li className={`${baseClass}__meta-item`} key={step.key}>
+                <span>
+                  {step.done ? '✓' : `${index + 1}.`} {step.title}
+                </span>
+                <strong>{step.detail}</strong>
               </li>
             ))}
           </ul>
-        ) : (
-          <p className={`${baseClass}__empty`}>No hay publicaciones programadas próximas.</p>
-        )}
-      </section>
+
+          {merch.health.state === 'connected' || merch.health.state === 'expiring' ? (
+            <p className={`${baseClass}__empty`}>
+              Autorización vigente por {merch.health.daysRemaining} días más. Se renueva sola.
+            </p>
+          ) : null}
+
+          <div className={`${baseClass}__links`}>
+            {merch.nextStep?.action ? (
+              <Link
+                className={`${baseClass}__link ${baseClass}__link--primary`}
+                href={merch.nextStep.action}
+              >
+                {merch.nextStep.actionLabel}
+              </Link>
+            ) : null}
+            {merch.steps[0]?.done ? (
+              <Link className={`${baseClass}__link`} href="/creator-api/payments/connect/start">
+                Reconectar Mercado Pago
+              </Link>
+            ) : null}
+            <Link className={`${baseClass}__link`} href="/creator/dashboard">
+              Ver mis ventas y envíos
+            </Link>
+          </div>
+        </section>
+      ) : null}
+
+      {userRole === 'admin' || isMusicalCreator ? (
+        <section className={`${baseClass}__section`} aria-labelledby="before-dashboard-scheduled">
+          <div className={`${baseClass}__header`}>
+            <div>
+              <h4 id="before-dashboard-scheduled">Publicaciones programadas</h4>
+              <p>
+                Próximas tareas de publicación y despublicación. Hora editorial oficial:
+                <strong> America/Bogota</strong>.
+              </p>
+            </div>
+          </div>
+
+          {items.length > 0 ? (
+            <ul className={`${baseClass}__list`}>
+              {items.map((item) => (
+                <li className={`${baseClass}__item`} key={item.id}>
+                  <div className={`${baseClass}__item-content`}>
+                    <strong>{item.target}</strong>
+                    <p>{item.typeLabel}</p>
+                  </div>
+                  <time>{item.scheduledFor}</time>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className={`${baseClass}__empty`}>No hay publicaciones programadas próximas.</p>
+          )}
+        </section>
+      ) : null}
 
       {userRole === 'admin' ? (
         <section className={`${baseClass}__section`} aria-labelledby="before-dashboard-editors">
@@ -190,7 +271,7 @@ const BeforeDashboard = async () => {
 
           <div className={`${baseClass}__links`}>
             <Link className={`${baseClass}__link`} href="/creator/dashboard">
-              Abrir vista remota de commerce
+              Abrir mi panel de artista
             </Link>
             <Link className={`${baseClass}__link`} href="/dashboard/collections/products">
               Gestionar productos

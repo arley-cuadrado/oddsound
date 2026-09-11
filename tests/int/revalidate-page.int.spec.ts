@@ -49,7 +49,7 @@ describe('revalidatePage', () => {
 
     expect(revalidatePathMock).toHaveBeenCalledWith('/mi-release')
     expect(revalidatePathMock).toHaveBeenCalledWith('/')
-    expect(revalidatePathMock).toHaveBeenCalledWith('/forte-marea')
+    expect(revalidatePathMock).toHaveBeenCalledWith('/forte-marea/bio')
     expect(revalidatePathMock).toHaveBeenCalledWith('/forte-marea/releases')
     expect(revalidatePathMock).toHaveBeenCalledWith('/forte-marea/release/mi-release')
   })
@@ -80,7 +80,7 @@ describe('revalidatePage', () => {
 
     expect(revalidatePathMock).toHaveBeenCalledWith('/mi-release')
     expect(revalidatePathMock).toHaveBeenCalledWith('/')
-    expect(revalidatePathMock).toHaveBeenCalledWith('/forte-marea')
+    expect(revalidatePathMock).toHaveBeenCalledWith('/forte-marea/bio')
     expect(revalidatePathMock).toHaveBeenCalledWith('/forte-marea/releases')
     expect(revalidatePathMock).toHaveBeenCalledWith('/forte-marea/release/mi-release')
   })
@@ -110,7 +110,7 @@ describe('revalidateDelete', () => {
 
     expect(revalidatePathMock).toHaveBeenCalledWith('/mi-release')
     expect(revalidatePathMock).toHaveBeenCalledWith('/')
-    expect(revalidatePathMock).toHaveBeenCalledWith('/forte-marea')
+    expect(revalidatePathMock).toHaveBeenCalledWith('/forte-marea/bio')
     expect(revalidatePathMock).toHaveBeenCalledWith('/forte-marea/releases')
     expect(revalidatePathMock).toHaveBeenCalledWith('/forte-marea/release/mi-release')
   })

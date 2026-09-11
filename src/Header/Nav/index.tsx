@@ -5,15 +5,19 @@ import { ThemeSelector } from '@/providers/Theme/ThemeSelector'
 
 import type { Header as HeaderType } from '@/payload-types'
 
+import { CartBadge } from '@/components/Cart/CartBadge'
 import { CMSLink } from '@/components/Link'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 
 export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
   const navItems = data?.navItems || []
   const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [isFanAuthenticated, setIsFanAuthenticated] = useState(false)
+  const pathname = usePathname()
   const fallbackLoginLink = {
     label: 'Iniciar sesión',
-    url: '/creator/login',
+    url: '/dashboard/login',
   }
 
   useEffect(() => {
@@ -26,17 +30,30 @@ export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
         })
 
         if (!response.ok) {
-          if (isMounted) setIsAuthenticated(false)
+          if (isMounted) {
+            setIsAuthenticated(false)
+            setIsFanAuthenticated(false)
+          }
           return
         }
 
-        const result = (await response.json()) as { user?: { id?: string | null } | null }
+        const result = (await response.json()) as {
+          user?: { id?: string | null; role?: null | string; userType?: null | string } | null
+        }
 
         if (isMounted) {
           setIsAuthenticated(Boolean(result.user?.id))
+          setIsFanAuthenticated(
+            Boolean(result.user?.id) &&
+              result.user?.role === 'creator' &&
+              (result.user?.userType === 'consumer' || result.user?.userType === 'fan'),
+          )
         }
       } catch {
-        if (isMounted) setIsAuthenticated(false)
+        if (isMounted) {
+          setIsAuthenticated(false)
+          setIsFanAuthenticated(false)
+        }
       }
     }
 
@@ -46,6 +63,17 @@ export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
       isMounted = false
     }
   }, [])
+
+  const handleLogout = async () => {
+    try {
+      await fetch('/creator-api/logout', {
+        credentials: 'include',
+        method: 'POST',
+      })
+    } finally {
+      window.location.href = isFanAuthenticated ? '/fan/login' : '/dashboard/login'
+    }
+  }
 
   const isLoginLink = (label?: string | null, url?: string | null) => {
     const normalizedLabel = label?.toLowerCase() || ''
@@ -64,7 +92,7 @@ export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
     return {
       ...link,
       label: 'Iniciar sesión',
-      url: '/creator/login',
+      url: '/dashboard/login',
     }
   }
 
@@ -110,6 +138,17 @@ export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
           <Link href="/search" className="flex text-[13px] hover:underline">
             <span className="block">Discover</span>
           </Link>
+          {isFanAuthenticated ? (
+            <Link
+              href="/fan/account"
+              className={`flex text-[13px] hover:underline ${
+                pathname === '/fan/account' ? 'underline underline-offset-4' : ''
+              }`}
+            >
+              <span className="block">Mi cuenta</span>
+            </Link>
+          ) : null}
+          <CartBadge className="self-start max-[975px]:self-auto" />
           {/* dynamic routes, registered artists */}
           {navItems.map(({ link }, i) => {
             return (
@@ -139,6 +178,15 @@ export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
                 className="block w-full text-[13px] text-left hover:underline max-[975px]:w-auto"
               />
             </div>
+          ) : null}
+          {isFanAuthenticated ? (
+            <button
+              className="w-full text-left text-[13px] hover:underline max-[975px]:w-auto"
+              onClick={handleLogout}
+              type="button"
+            >
+              Cerrar sesión
+            </button>
           ) : null}
         </div>
         <div className="hidden max-[975px]:block max-[975px]:shrink-0">

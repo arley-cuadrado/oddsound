@@ -1,19 +1,33 @@
 import type { Payload, PayloadRequest } from 'payload'
+import { isAdminUser } from '@/utilities/isAdminUser'
 
 type CreatorLike = {
   accountType?: null | 'artist' | 'band' | 'label'
   editorAccess?: boolean | null
   email?: null | string
+  genre?: null | string
   id: string
+  location?: null | string
   name?: null | string
   profile?: null | string | { id?: null | string }
   role?: null | string
+  userType?: null | string
 }
 
 function getInlineProfileId(user: CreatorLike | null | undefined) {
   if (!user) return null
 
   return typeof user.profile === 'string' ? user.profile : user.profile?.id || null
+}
+
+function isEditorialCreator(user: CreatorLike) {
+  return isAdminUser(user) || user.userType === 'editor' || Boolean(user.editorAccess)
+}
+
+function resolveMusicalAccountType(user: CreatorLike) {
+  if (user.accountType === 'band' || user.userType === 'band') return 'band'
+
+  return 'artist'
 }
 
 function toSlug(value: string) {
@@ -82,9 +96,9 @@ export async function ensureCreatorProfile({
   req?: PayloadRequest
   user: CreatorLike
 }) {
-  if (user.role !== 'creator') return user.profile || null
+  if (user.role !== 'creator' && user.role !== 'admin') return user.profile || null
 
-  const isEditorialProfile = Boolean(user.editorAccess)
+  const isEditorialProfile = isEditorialCreator(user)
   const inlineProfileId = getInlineProfileId(user)
 
   if (inlineProfileId) {
@@ -155,15 +169,17 @@ export async function ensureCreatorProfile({
             profileType: 'editorial',
           }
         : {
-            profileType: user.accountType === 'band' ? 'band' : 'artist',
+            profileType: resolveMusicalAccountType(user),
           }),
       ...(!isEditorialProfile
         ? {
-            accountType: user.accountType === 'band' ? 'band' : 'artist',
+            accountType: resolveMusicalAccountType(user),
           }
         : {}),
       contactEmail: user.email || undefined,
       displayName,
+      genre: user.genre || undefined,
+      location: user.location || undefined,
       owner: user.id,
       slug: profileSlug,
     },

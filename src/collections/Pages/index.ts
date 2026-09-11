@@ -13,11 +13,6 @@ import { slugField } from 'payload'
 import { populatePublishedAt } from '../../hooks/populatePublishedAt'
 import { generatePreviewPath } from '../../utilities/generatePreviewPath'
 import { revalidateDelete, revalidatePage } from './hooks/revalidatePage'
-import { socialLinksField } from '@/fields/socialLinks'
-import {
-  normalizeLegacySocialLinksAfterRead,
-  normalizeLegacySocialLinksBeforeChange,
-} from '@/hooks/normalizeLegacySocialLinks'
 
 import {
   MetaDescriptionField,
@@ -129,8 +124,7 @@ export const Pages: CollectionConfig<'pages'> = {
       url: ({ data, req }) =>
         generatePreviewPath({
           profile: data?.profile,
-          id:
-            typeof data?.id === 'string' || typeof data?.id === 'number' ? data.id : undefined,
+          id: typeof data?.id === 'string' || typeof data?.id === 'number' ? data.id : undefined,
           slug: data?.slug,
           collection: 'pages',
           req,
@@ -139,8 +133,7 @@ export const Pages: CollectionConfig<'pages'> = {
     preview: (data, { req }) =>
       generatePreviewPath({
         profile: data?.profile,
-        id:
-          typeof data?.id === 'string' || typeof data?.id === 'number' ? data.id : undefined,
+        id: typeof data?.id === 'string' || typeof data?.id === 'number' ? data.id : undefined,
         slug: data?.slug as string,
         collection: 'pages',
         req,
@@ -187,6 +180,7 @@ export const Pages: CollectionConfig<'pages'> = {
       admin: {
         defaultColumns: ['title', 'priceInUSD', '_status', 'updatedAt'],
         description: 'Productos del commerce oficial vinculados a este lanzamiento.',
+        hidden: true,
         position: 'sidebar',
       },
       label: 'Productos vinculados',
@@ -238,10 +232,6 @@ export const Pages: CollectionConfig<'pages'> = {
           label: 'Contenido',
         },
         {
-          fields: [socialLinksField()],
-          label: 'Red Social',
-        },
-        {
           name: 'meta',
           label: 'SEO',
           fields: [
@@ -284,14 +274,8 @@ export const Pages: CollectionConfig<'pages'> = {
     slugField(),
   ],
   hooks: {
-    afterRead: [normalizeLegacySocialLinksAfterRead],
     afterChange: [revalidatePage],
-    beforeChange: [
-      assignOwnership,
-      normalizeLegacySocialLinksBeforeChange,
-      generateCreatorContentSlug('pages'),
-      populatePublishedAt,
-    ],
+    beforeChange: [assignOwnership, generateCreatorContentSlug('pages'), populatePublishedAt],
     afterDelete: [revalidateDelete],
   },
   versions: {

@@ -1,10 +1,10 @@
 import type { Metadata } from 'next/types'
 
-import { CollectionArchive } from '@/components/CollectionArchive'
-import { PageRange } from '@/components/PageRange'
+import EditorialPostsList from '@/components/EditorialPostsList'
 import { Pagination } from '@/components/Pagination'
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
+import Link from 'next/link'
 import React from 'react'
 import PageClient from './page.client'
 import { notFound } from 'next/navigation'
@@ -27,10 +27,19 @@ export default async function Page({ params: paramsPromise }: Args) {
 
   const posts = await payload.find({
     collection: 'posts',
-    depth: 1,
+    depth: 2,
     limit: 12,
     page: sanitizedPageNumber,
     overrideAccess: true,
+    select: {
+      content: true,
+      heroImage: true,
+      profile: true,
+      publishedAt: true,
+      slug: true,
+      title: true,
+    },
+    sort: '-publishedAt',
     where: {
       _status: {
         equals: 'published',
@@ -39,26 +48,43 @@ export default async function Page({ params: paramsPromise }: Args) {
   })
 
   return (
-    <div className="mx-auto max-w-4xl pt-24 pb-24">
+    <div className="mx-auto max-w-6xl pb-8 pt-6 md:pb-16 md:pt-10">
       <PageClient />
-      <div className="container mb-16">
-        <div className="prose dark:prose-invert max-w-none">
-          <h1>Posts</h1>
-        </div>
-      </div>
+      <div className="container space-y-12">
+        <header className="space-y-7 pb-8">
+          <div className="space-y-5">
+            <p className="text-xs uppercase tracking-[0.28em] text-[#777] dark:text-[#858c98]">
+              Oddosund Editorial
+            </p>
 
-      <div className="container mb-8">
-        <PageRange
-          collection="posts"
-          currentPage={posts.page}
-          limit={12}
-          totalDocs={posts.totalDocs}
-        />
-      </div>
+            <div className="min-w-0 space-y-2">
+              <h1 className="text-[2.75rem] font-black leading-none tracking-tight text-slate-900 dark:text-white md:text-[4.6rem]">
+                Artículos
+              </h1>
+            </div>
+          </div>
 
-      <CollectionArchive posts={posts.docs} />
+          <p className="max-w-4xl text-sm leading-7 text-[#777] dark:text-[#858c98]">
+            Aquí encontrarás todas las entradas de editores que colaboran con la plataforma.
+          </p>
 
-      <div className="container">
+        </header>
+
+        <div className="border-t border-border" />
+
+        <section className="space-y-8">
+          <div className="flex justify-end">
+            <Link
+              href="/"
+              className="inline-flex items-center text-[13px] font-medium text-[#777] underline underline-offset-4 dark:text-[#858c98]"
+            >
+              Ir a inicio
+            </Link>
+          </div>
+
+          <EditorialPostsList posts={posts.docs as any} showAuthor />
+        </section>
+
         {posts?.page && posts?.totalPages > 1 && (
           <Pagination page={posts.page} totalPages={posts.totalPages} />
         )}
@@ -70,7 +96,7 @@ export default async function Page({ params: paramsPromise }: Args) {
 export async function generateMetadata({ params: paramsPromise }: Args): Promise<Metadata> {
   const { pageNumber } = await paramsPromise
   return {
-    title: `Payload Website Template Posts Page ${pageNumber || ''}`,
+    title: `Artículos | Página ${pageNumber || ''} | Oddsound Editorial`,
   }
 }
 
@@ -86,7 +112,7 @@ export async function generateStaticParams() {
     },
   })
 
-  const totalPages = Math.ceil(totalDocs / 10)
+  const totalPages = Math.ceil(totalDocs / 12)
 
   const pages: { pageNumber: string }[] = []
 

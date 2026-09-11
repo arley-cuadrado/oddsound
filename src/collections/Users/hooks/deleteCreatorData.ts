@@ -3,7 +3,7 @@ import type { CollectionAfterDeleteHook } from 'payload'
 import type { User } from '@/payload-types'
 
 async function findOwnedDocumentIDs(args: {
-  collection: 'media' | 'pages' | 'posts' | 'profiles'
+  collection: 'consumerProfiles' | 'media' | 'pages' | 'posts' | 'profiles'
   ownerID: number | string
   req: Parameters<CollectionAfterDeleteHook<User>>[0]['req']
 }) {
@@ -40,7 +40,8 @@ export const deleteCreatorData: CollectionAfterDeleteHook<User> = async ({ doc, 
 
   const ownerID = doc.id
 
-  const [profileIDs, pageIDs, postIDs, mediaIDs] = await Promise.all([
+  const [consumerProfileIDs, profileIDs, pageIDs, postIDs, mediaIDs] = await Promise.all([
+    findOwnedDocumentIDs({ collection: 'consumerProfiles', ownerID, req }),
     findOwnedDocumentIDs({ collection: 'profiles', ownerID, req }),
     findOwnedDocumentIDs({ collection: 'pages', ownerID, req }),
     findOwnedDocumentIDs({ collection: 'posts', ownerID, req }),
@@ -48,6 +49,17 @@ export const deleteCreatorData: CollectionAfterDeleteHook<User> = async ({ doc, 
   ])
 
   await Promise.all([
+    ...consumerProfileIDs.map((consumerProfileID) =>
+      req.payload.delete({
+        collection: 'consumerProfiles',
+        req,
+        where: {
+          id: {
+            equals: consumerProfileID,
+          },
+        },
+      }),
+    ),
     ...pageIDs.map((pageID) =>
       req.payload.delete({
         collection: 'pages',

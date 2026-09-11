@@ -1,13 +1,18 @@
 'use client'
 
+import { useAuth } from '@payloadcms/ui'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import React from 'react'
 
 const ScheduledPublishesNavLink: React.FC = () => {
+  const { user } = useAuth<{ editorAccess?: boolean | null; role?: null | string; userType?: null | string }>()
   const pathname = usePathname()
   const href = '/dashboard#scheduled-publishes'
   const isActive = pathname === '/dashboard'
+  const canSeeLink = user?.role === 'admin'
+
+  if (!canSeeLink) return null
 
   return (
     <div className="scheduled-publishes-nav-link">

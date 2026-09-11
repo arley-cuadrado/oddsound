@@ -1,6 +1,5 @@
 'use client'
 
-import { registerCreator } from '@/app/(frontend)/creator/actions'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { FormEvent, useState } from 'react'
@@ -31,6 +30,7 @@ export function RegisterForm() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [showPassword, setShowPassword] = useState(false)
+  const [accountType, setAccountType] = useState<AccountType | ''>('')
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -41,28 +41,45 @@ export function RegisterForm() {
     const name = String(formData.get('name') || '')
     const email = String(formData.get('email') || '')
     const password = String(formData.get('password') || '')
-    const accountType = String(formData.get('accountType') || 'artist') as AccountType
+    const accountType = String(formData.get('accountType') || '') as AccountType
     const acceptedLegal = formData.get('acceptedLegal') === 'on'
     const country = String(formData.get('country') || '')
     // Genre is collected at signup so releases can later be searched by musical style.
     const genre = String(formData.get('genre') || '')
 
     try {
-      const result = await registerCreator({
-        acceptedLegal,
-        accountType,
-        country,
-        email,
-        genre,
-        name,
-        password,
+      const response = await fetch('/creator-api/register', {
+        body: JSON.stringify({
+          acceptedLegal,
+          accountType,
+          country,
+          email,
+          genre,
+          name,
+          password,
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        method: 'POST',
       })
+      const result = (await response.json().catch(() => null)) as unknown
 
-      if (!result.ok) {
+      if (!response.ok) {
         throw new Error(parseErrorMessage(result, 'No fue posible crear tu cuenta.'))
       }
 
-      const nextEmail = encodeURIComponent(result.email || email.trim().toLowerCase())
+      let registeredEmail: string | undefined
+
+      if (result && typeof result === 'object' && 'user' in result) {
+        const user = (result as { user?: { email?: unknown } }).user
+
+        if (typeof user?.email === 'string') {
+          registeredEmail = user.email
+        }
+      }
+
+      const nextEmail = encodeURIComponent(registeredEmail || email.trim().toLowerCase())
 
       router.push(`/creator/register/check-email?email=${nextEmail}`)
     } catch (caughtError) {
@@ -79,7 +96,7 @@ export function RegisterForm() {
           ¿Cuál es tu nombre?
         </label>
         <input
-          className="h-12 w-full border border-border bg-background px-4 text-[13px] text-foreground outline-none placeholder:text-[13px]"
+          className="h-12 w-full border border-border bg-background px-4 text-base text-foreground outline-none placeholder:text-base md:text-[13px] md:placeholder:text-[13px]"
           id="name"
           name="name"
           placeholder="Artista o Banda"
@@ -93,13 +110,19 @@ export function RegisterForm() {
           Elige tu tipo de cuenta
         </label>
         <select
-          className="h-12 w-full border border-border bg-background px-4 text-[13px] text-foreground outline-none"
-          defaultValue="artist"
+          className={`h-12 w-full border border-border bg-background px-4 text-base outline-none md:text-[13px] ${
+            accountType ? 'text-foreground' : 'text-[#B8B8B8]'
+          }`}
           id="accountType"
           name="accountType"
           // Account type is required because it defines the creator profile from signup.
+          onChange={(event) => setAccountType(event.target.value as AccountType | '')}
           required
+          value={accountType}
         >
+          <option disabled value="">
+            Puedes seleccionar dos categorías
+          </option>
           <option value="artist">Artista</option>
           <option value="band">Banda</option>
         </select>
@@ -110,7 +133,7 @@ export function RegisterForm() {
           Ingresa tu país
         </label>
         <input
-          className="h-12 w-full border border-border bg-background px-4 text-[13px] text-foreground outline-none placeholder:text-[13px]"
+          className="h-12 w-full border border-border bg-background px-4 text-base text-foreground outline-none placeholder:text-base md:text-[13px] md:placeholder:text-[13px]"
           id="country"
           name="country"
           placeholder="Colombia, México, EE. UU., etc..."
@@ -124,7 +147,7 @@ export function RegisterForm() {
           Ahora tu género musical
         </label>
         <input
-          className="h-12 w-full border border-border bg-background px-4 text-[13px] text-foreground outline-none placeholder:text-[13px]"
+          className="h-12 w-full border border-border bg-background px-4 text-base text-foreground outline-none placeholder:text-base md:text-[13px] md:placeholder:text-[13px]"
           id="genre"
           name="genre"
           placeholder="Indie Rock, Afrobeats, Champeta, Reggaetón, etc..."
@@ -138,7 +161,7 @@ export function RegisterForm() {
           Tu correo electrónico
         </label>
         <input
-          className="h-12 w-full border border-border bg-background px-4 text-[13px] text-foreground outline-none placeholder:text-[13px]"
+          className="h-12 w-full border border-border bg-background px-4 text-base text-foreground outline-none placeholder:text-base md:text-[13px] md:placeholder:text-[13px]"
           id="email"
           name="email"
           placeholder="name@mail.com"
@@ -153,7 +176,7 @@ export function RegisterForm() {
         </label>
         <div className="relative">
           <input
-            className="h-12 w-full border border-border bg-background px-4 pr-20 text-[13px] text-foreground outline-none placeholder:text-[13px]"
+            className="h-12 w-full border border-border bg-background px-4 pr-20 text-base text-foreground outline-none placeholder:text-base md:text-[13px] md:placeholder:text-[13px]"
             id="password"
             minLength={8}
             name="password"

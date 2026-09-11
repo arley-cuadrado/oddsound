@@ -1,17 +1,6 @@
-import type { Metadata } from 'next'
+import { permanentRedirect } from 'next/navigation'
 
-import { LOGIN_DESCRIPTION, SITE_NAME } from '@/seo/site'
-
-export { default } from '@/app/(frontend)/creator/login/view'
-
-export const metadata: Metadata = {
-  title: `${SITE_NAME} Login`,
-  description: LOGIN_DESCRIPTION,
-  alternates: {
-    canonical: '/creator/login',
-  },
-  robots: {
-    follow: true,
-    index: true,
-  },
+/** The Payload dashboard is the single creator authentication surface. */
+export default function LegacyCreatorLoginPage() {
+  permanentRedirect('/dashboard/login')
 }

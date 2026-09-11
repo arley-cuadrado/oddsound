@@ -3,7 +3,8 @@
 import config from '@payload-config'
 import crypto from 'crypto'
 import { cookies } from 'next/headers'
-import { createLocalReq, getPayload } from 'payload'
+import { headers } from 'next/headers'
+import { getPayload } from 'payload'
 
 import {
   VERIFICATION_RESEND_COOLDOWN_MS,
@@ -13,13 +14,20 @@ import {
   generateEditorVerificationEmailSubject,
   getVerificationCooldownMessage,
 } from '@/utilities/emailVerification'
+import { hasEditorialIdentity } from '@/utilities/isEditorialUser'
+import {
+  isRetryableMongoTransactionError,
+  withMongoTransactionRetry,
+} from '@/utilities/mongoTransactionRetry'
 import {
   getExpiredPayloadTokenCookieOptions,
   getPayloadTokenCookieOptions,
 } from '@/utilities/payloadAuthCookie'
 import {
   AccountType,
+  confirmCreatorVerification,
   CreatorAuthResult as ActionResult,
+  createPayloadReqWithHeaders,
   findUserByEmail,
   loginCreatorAccount,
   registerCreatorAccount,
@@ -31,11 +39,22 @@ type ActionStatus =
   | 'password_reset_completed'
   | 'password_reset_requested'
   | 'pending_verification'
+  | 'verification_already_completed'
+  | 'verification_completed'
   | 'verification_email_resent'
+  | 'verification_token_expired'
+  | 'verification_token_invalid'
 
 type ExtendedActionResult = ActionResult & {
-  status?:
-    | ActionStatus
+  status?: ActionStatus
+}
+
+async function buildVerificationEmailReq() {
+  const requestHeaders = await headers()
+
+  return {
+    headers: Object.fromEntries(requestHeaders.entries()),
+  }
 }
 
 function getCooldownRemaining(isoDate?: null | string) {
@@ -57,7 +76,12 @@ export async function registerCreator(input: {
   name: string
   password: string
 }): Promise<ExtendedActionResult> {
-  return registerCreatorAccount(input)
+  const req = await buildVerificationEmailReq()
+
+  return registerCreatorAccount({
+    ...input,
+    req,
+  })
 }
 
 export async function loginCreator(input: {
@@ -77,9 +101,7 @@ export async function loginCreator(input: {
   return { ok: true, status: 'logged_in' }
 }
 
-export async function resendVerificationEmail(input: {
-  email: string
-}): Promise<ActionResult> {
+export async function resendVerificationEmail(input: { email: string }): Promise<ActionResult> {
   const email = input.email.trim().toLowerCase()
 
   if (!email) {
@@ -92,6 +114,7 @@ export async function resendVerificationEmail(input: {
   try {
     const payload = await getPayload({ config })
     const user = await findUserByEmail(email, payload)
+    const verificationReq = await buildVerificationEmailReq()
 
     if (!user) {
       return {
@@ -118,41 +141,47 @@ export async function resendVerificationEmail(input: {
       }
     }
 
-    const payloadReq = await createLocalReq({}, payload)
+    const payloadReq = await createPayloadReqWithHeaders(verificationReq, payload)
     const token = crypto.randomBytes(20).toString('hex')
 
-    const updatedUser = await payload.update({
-      id: user.id,
-      collection: 'users',
-      data: {
-        _verificationToken: token,
-        _verified: false,
-      } as never,
-      depth: 0,
-      overrideAccess: true,
-      req: payloadReq,
-      showHiddenFields: true,
-    })
+    const updatedUser = await withMongoTransactionRetry(() =>
+      payload.update({
+        id: user.id,
+        collection: 'users',
+        data: {
+          _verificationToken: token,
+          _verified: false,
+        } as never,
+        depth: 0,
+        overrideAccess: true,
+        req: payloadReq,
+        showHiddenFields: true,
+      }),
+    )
 
     await payload.sendEmail({
-      html: updatedUser.editorAccess
+      html: hasEditorialIdentity(updatedUser)
         ? generateEditorVerificationEmailHTML({
+            req: verificationReq,
             token,
             user: {
               editorAccess: updatedUser.editorAccess,
               email: updatedUser.email || email,
               name: updatedUser.name || updatedUser.email || email,
+              userType: updatedUser.userType,
             },
           })
         : generateCreatorVerificationEmailHTML({
+            req: verificationReq,
             token,
             user: {
               editorAccess: updatedUser.editorAccess,
               email: updatedUser.email || email,
               name: updatedUser.name || updatedUser.email || email,
+              userType: updatedUser.userType,
             },
           }),
-      subject: updatedUser.editorAccess
+      subject: hasEditorialIdentity(updatedUser)
         ? generateEditorVerificationEmailSubject()
         : generateCreatorVerificationEmailSubject(),
       to: email,
@@ -167,15 +196,24 @@ export async function resendVerificationEmail(input: {
   } catch (error) {
     return {
       email,
-      message: error instanceof Error ? error.message : 'No fue posible reenviar el correo.',
+      message: isRetryableMongoTransactionError(error)
+        ? 'No pudimos reenviar el correo por una demora temporal. Intenta nuevamente.'
+        : error instanceof Error
+          ? error.message
+          : 'No fue posible reenviar el correo.',
       ok: false,
     }
   }
 }
 
-export async function requestCreatorPasswordReset(input: {
-  email: string
+export async function confirmCreatorVerificationAction(input: {
+  email?: string
+  token?: string
 }): Promise<ActionResult> {
+  return confirmCreatorVerification(input)
+}
+
+export async function requestCreatorPasswordReset(input: { email: string }): Promise<ActionResult> {
   const email = input.email.trim().toLowerCase()
 
   if (!email) {
