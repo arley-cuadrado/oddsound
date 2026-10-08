@@ -1,6 +1,7 @@
 import { mongooseAdapter } from '@payloadcms/db-mongodb'
 import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
 import { ecommercePlugin } from '@payloadcms/plugin-ecommerce'
+import { isShoppingEnabled } from '@/config/shopping'
 import sharp from 'sharp'
 import path from 'path'
 import { buildConfig, PayloadRequest } from 'payload'
@@ -146,7 +147,17 @@ export default buildConfig({
           } as any,
         }),
   }),
-  collections: [Pages, Posts, Biographies, Media, Categories, Profiles, ConsumerProfiles, Comments, Users],
+  collections: [
+    Pages,
+    Posts,
+    Biographies,
+    Media,
+    Categories,
+    Profiles,
+    ConsumerProfiles,
+    Comments,
+    Users,
+  ],
   cors: trustedServerURLs,
   globals: [Header, Footer],
   i18n: {
@@ -172,7 +183,7 @@ export default buildConfig({
         // vinyl in the cart costs more sales than the account is worth; the
         // plugin keeps guest carts behind a per-cart secret and merges them on
         // login.
-        allowGuestCarts: true,
+        allowGuestCarts: isShoppingEnabled(),
         cartsCollectionOverride: extendEcommerceCartsCollection,
       },
       currencies: currenciesConfig,

@@ -3,15 +3,14 @@ import type { Metadata } from 'next'
 import configPromise from '@payload-config'
 import type { Media } from '@/payload-types'
 import { getPayload } from 'payload'
-import Link from 'next/link'
 import { notFound, permanentRedirect } from 'next/navigation'
 
 import { AddToCartButton } from '@/components/Cart/AddToCartButton'
+import { isShoppingEnabled } from '@/config/shopping'
 import { Media as MediaComponent } from '@/components/Media'
 import { ShopBackButton } from './ShopBackButton'
 import { findPublicProfileBySlug } from '@/utilities/publicProfiles'
 import { listCommerceProducts } from '@/utilities/commerceProducts'
-import { isMercadoPagoReadyForProfile } from '@/utilities/mercadoPagoCheckout'
 import { formatCOP } from '@/utilities/money'
 import { normalizePublicSlugParam } from '@/utilities/publicSlugs'
 
@@ -56,6 +55,8 @@ async function queryShopByProfileSlug(slug: string) {
 }
 
 export async function generateMetadata({ params: paramsPromise }: Args): Promise<Metadata> {
+  if (!isShoppingEnabled()) return { title: 'Shop' }
+
   const { slug = '' } = await paramsPromise
   const decodedSlug = normalizePublicSlugParam(slug)
   const { products, profile } = await queryShopByProfileSlug(decodedSlug)
@@ -73,6 +74,8 @@ export async function generateMetadata({ params: paramsPromise }: Args): Promise
 }
 
 export default async function ArtistShopPage({ params: paramsPromise }: Args) {
+  if (!isShoppingEnabled()) notFound()
+
   const { slug = '' } = await paramsPromise
   const decodedSlug = normalizePublicSlugParam(slug)
   const { products, profile } = await queryShopByProfileSlug(decodedSlug)
@@ -89,9 +92,10 @@ export default async function ArtistShopPage({ params: paramsPromise }: Args) {
     notFound()
   }
 
-  const acceptsPayments = isMercadoPagoReadyForProfile(profile)
   const shopGridClassName =
-    products.length === 1 ? 'grid gap-5' : 'grid grid-cols-2 gap-4 md:grid-cols-2 md:gap-5 xl:grid-cols-3'
+    products.length === 1
+      ? 'grid gap-5'
+      : 'grid grid-cols-2 gap-4 md:grid-cols-2 md:gap-5 xl:grid-cols-3'
 
   return (
     <div className="mx-auto max-w-6xl px-6 pb-24 pt-12">
@@ -187,10 +191,6 @@ export default async function ArtistShopPage({ params: paramsPromise }: Args) {
                       <AddToCartButton
                         label={product.checkoutButtonLabel || 'Agregar al carrito'}
                         productID={product.id}
-                        // An artist without a linked Mercado Pago account has
-                        // nowhere to receive the money, so the shop shows the
-                        // product rather than a button that would dead-end.
-                        unavailable={!acceptsPayments}
                       />
                     ) : product.externalCheckoutURL ? (
                       <a

@@ -2,6 +2,7 @@ import config from '@payload-config'
 import { headers as nextHeaders } from 'next/headers'
 import { getPayload } from 'payload'
 
+import { isShoppingEnabled } from '@/config/shopping'
 import type { Order, Profile, Transaction } from '@/payload-types'
 import {
   assertGroupIsPurchasable,
@@ -49,6 +50,13 @@ function fail(error: unknown) {
  * loading a URL.
  */
 export async function POST(request: Request) {
+  if (!isShoppingEnabled()) {
+    return Response.json(
+      { code: 'shopping_disabled', message: 'La tienda está desactivada.' },
+      { status: 503 },
+    )
+  }
+
   const payload = await getPayload({ config })
 
   try {
@@ -117,7 +125,11 @@ export async function POST(request: Request) {
           { cart: { equals: cartID } },
           { artistProfile: { equals: profileID } },
           { status: { equals: 'processing' } },
-          { createdAt: { greater_than: new Date(Date.now() - REUSABLE_ORDER_WINDOW_MS).toISOString() } },
+          {
+            createdAt: {
+              greater_than: new Date(Date.now() - REUSABLE_ORDER_WINDOW_MS).toISOString(),
+            },
+          },
         ],
       },
     })

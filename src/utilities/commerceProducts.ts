@@ -1,5 +1,6 @@
 import type { Payload, Where } from 'payload'
 
+import { isShoppingEnabled } from '@/config/shopping'
 import type { Page, Product, Profile, User } from '@/payload-types'
 
 type ProductReference = {
@@ -113,7 +114,9 @@ export function resolveUserProfileID(user: null | User | undefined): null | stri
   return null
 }
 
-export function groupCommerceProductsByRelease(products: CommerceProductSummary[]): GroupedCommerceProducts[] {
+export function groupCommerceProductsByRelease(
+  products: CommerceProductSummary[],
+): GroupedCommerceProducts[] {
   const groups = new Map<string, GroupedCommerceProducts>()
 
   products.forEach((product) => {
@@ -145,6 +148,8 @@ export async function hasPublishedCommerceProducts(args: {
   profile?: null | string
   release?: null | string
 }): Promise<boolean> {
+  if (!isShoppingEnabled()) return false
+
   const products = await listCommerceProducts({
     includeDrafts: false,
     limit: 1,

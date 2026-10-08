@@ -9,9 +9,10 @@ import { HeaderNav } from './Nav'
 
 interface HeaderClientProps {
   data: Header
+  shoppingEnabled: boolean
 }
 
-export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
+export const HeaderClient: React.FC<HeaderClientProps> = ({ data, shoppingEnabled }) => {
   const { headerTheme, setHeaderTheme } = useHeaderTheme()
   const pathname = usePathname()
 
@@ -23,7 +24,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
   return (
     <header className="relative z-20" {...(headerTheme ? { 'data-theme': headerTheme } : {})}>
       <div className="py-8">
-        <HeaderNav data={data} />
+        <HeaderNav data={data} shoppingEnabled={shoppingEnabled} />
       </div>
     </header>
   )

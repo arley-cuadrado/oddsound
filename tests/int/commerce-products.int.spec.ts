@@ -1,12 +1,27 @@
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import {
   groupCommerceProductsByRelease,
+  hasPublishedCommerceProducts,
   listCommerceProducts,
   resolveUserProfileID,
 } from '@/utilities/commerceProducts'
 
+const originalShoppingEnabled = process.env.SHOPPING_ENABLED
+
 describe('commerce product utilities', () => {
+  beforeEach(() => {
+    process.env.SHOPPING_ENABLED = 'true'
+  })
+
+  afterEach(() => {
+    if (originalShoppingEnabled === undefined) {
+      delete process.env.SHOPPING_ENABLED
+    } else {
+      process.env.SHOPPING_ENABLED = originalShoppingEnabled
+    }
+  })
+
   it('resolves inline user profile ids', () => {
     expect(resolveUserProfileID({ profile: 'profile-1' } as never)).toBe('profile-1')
     expect(resolveUserProfileID({ profile: { id: 'profile-2' } } as never)).toBe('profile-2')
@@ -27,6 +42,16 @@ describe('commerce product utilities', () => {
     ).resolves.toEqual([])
 
     expect(payload.find).toHaveBeenCalledTimes(1)
+  })
+
+  it('does not advertise shops when shopping is disabled', async () => {
+    process.env.SHOPPING_ENABLED = 'false'
+    const payload = { find: vi.fn() }
+
+    await expect(
+      hasPublishedCommerceProducts({ payload: payload as never, profile: 'profile-1' }),
+    ).resolves.toBe(false)
+    expect(payload.find).not.toHaveBeenCalled()
   })
 
   it('builds a scoped products query for owned release commerce data', async () => {
@@ -137,7 +162,10 @@ describe('commerce product utilities', () => {
 
     expect(groups).toHaveLength(2)
     expect(groups[0]).toMatchObject({
-      products: [expect.objectContaining({ id: 'product-1' }), expect.objectContaining({ id: 'product-3' })],
+      products: [
+        expect.objectContaining({ id: 'product-1' }),
+        expect.objectContaining({ id: 'product-3' }),
+      ],
       release: {
         id: 'release-1',
       },

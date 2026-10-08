@@ -1,11 +1,15 @@
 import type { Metadata } from 'next'
 
 import React from 'react'
+import { notFound } from 'next/navigation'
 
+import { isShoppingEnabled } from '@/config/shopping'
 import { SITE_NAME } from '@/seo/site'
 import { CartClient } from './CartClient'
 
 export default function CartPage() {
+  if (!isShoppingEnabled()) notFound()
+
   return (
     <div className="mx-auto max-w-3xl px-6 pb-24 pt-16">
       <header className="mb-8">
