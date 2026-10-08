@@ -337,8 +337,8 @@ export interface User {
         id?: string | null;
       }[]
     | null;
-  advancedName: string;
-  advancedUsername: string;
+  advancedName?: string | null;
+  advancedUsername?: string | null;
   advancedAccountType?: ('artist' | 'band') | null;
   advancedAccountAvatar?: (string | null) | Media;
   advancedLocation?: string | null;

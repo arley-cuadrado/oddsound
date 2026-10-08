@@ -123,13 +123,15 @@ const creatorBiographyFields: Field[] = [
 ]
 
 const creatorAdvancedFields: Field[] = [
+  // The tab already applies this condition. Repeating it on the required fields keeps the
+  // generated `User` type from demanding them on every create, as with `name` and `username`.
   {
     name: 'advancedName',
     type: 'text',
     virtual: true,
     label: 'Nombre',
     required: true,
-    admin: { readOnly: false },
+    admin: { condition: musicalAccountTabCondition, readOnly: false },
   },
   {
     name: 'advancedUsername',
@@ -137,7 +139,7 @@ const creatorAdvancedFields: Field[] = [
     virtual: true,
     label: 'Nombre de usuario',
     required: true,
-    admin: { readOnly: false },
+    admin: { condition: musicalAccountTabCondition, readOnly: false },
   },
   {
     name: 'advancedAccountType',
