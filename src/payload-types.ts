@@ -293,8 +293,8 @@ export interface Page {
  */
 export interface User {
   id: string;
-  name: string;
-  username: string;
+  name?: string | null;
+  username?: string | null;
   role?: ('admin' | 'creator') | null;
   /**
    * Esta cuenta es administrativa y no puede cambiarse a creador.
@@ -314,7 +314,35 @@ export interface User {
   consumerProfile?: (string | null) | ConsumerProfile;
   authProvider?: 'google' | null;
   googleSubjectId?: string | null;
-  avatar?: string | null;
+  accountAvatar?: (string | null) | Media;
+  location?: string | null;
+  genre?: string | null;
+  editorBio?: string | null;
+  editorSocialLink?: {
+    label?: string | null;
+    url?: string | null;
+  };
+  biographyHero?: {
+    type?: 'mediumImpact' | null;
+    /**
+     * Opcional. Si agregas una imagen, la biografía mostrará el encabezado dividido.
+     */
+    media?: (string | null) | Media;
+  };
+  biographyLayout?: ContentBlock[] | null;
+  biographySocialLinks?:
+    | {
+        platform: string;
+        url: string;
+        id?: string | null;
+      }[]
+    | null;
+  advancedName: string;
+  advancedUsername: string;
+  advancedAccountType?: ('artist' | 'band') | null;
+  advancedAccountAvatar?: (string | null) | Media;
+  advancedLocation?: string | null;
+  advancedGenre?: string | null;
   isActive?: boolean | null;
   verificationExpiresAt?: string | null;
   /**
@@ -518,53 +546,49 @@ export interface ConsumerProfile {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "products".
+ * via the `definition` "ContentBlock".
  */
-export interface Product {
-  id: string;
-  owner?: (string | null) | User;
-  profile?: (string | null) | Profile;
-  title: string;
-  description?: string | null;
-  productType: 'physical' | 'digital';
-  requiresShipping?: boolean | null;
-  /**
-   * Se usa para el calculo interno de envios por zonas.
-   */
-  weightInGrams?: number | null;
-  coverImage?: (string | null) | Media;
-  /**
-   * La primera imagen puede reutilizarse luego en la vitrina publica del producto.
-   */
-  images?:
+export interface ContentBlock {
+  columns?:
     | {
-        image: string | Media;
+        size?: ('oneThird' | 'half' | 'twoThirds' | 'full') | null;
+        richText?: {
+          root: {
+            type: string;
+            children: {
+              type: any;
+              version: number;
+              [k: string]: unknown;
+            }[];
+            direction: ('ltr' | 'rtl') | null;
+            format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+            indent: number;
+            version: number;
+          };
+          [k: string]: unknown;
+        } | null;
+        enableLink?: boolean | null;
+        link?: {
+          type?: ('reference' | 'custom') | null;
+          newTab?: boolean | null;
+          reference?:
+            | ({
+                relationTo: 'pages';
+                value: string | Page;
+              } | null)
+            | ({
+                relationTo: 'posts';
+                value: string | Post;
+              } | null);
+          url?: string | null;
+          label: string;
+        };
         id?: string | null;
       }[]
     | null;
-  release?: (string | null) | Page;
-  checkoutProvider: 'stripe' | 'shopify' | 'eventbrite' | 'mercadopago' | 'other';
-  /**
-   * Prepara productos con checkout externo mientras definimos la integracion final de pagos.
-   */
-  externalCheckoutURL?: string | null;
-  /**
-   * Guarda el ID del producto o precio en la plataforma externa para futuras automatizaciones.
-   */
-  externalProductReference?: string | null;
-  checkoutButtonLabel?: string | null;
-  inventory?: number | null;
-  priceInCOPEnabled?: boolean | null;
-  priceInCOP?: number | null;
-  /**
-   * When enabled, the slug will auto-generate from the title field on save and autosave.
-   */
-  generateSlug?: boolean | null;
-  slug: string;
-  updatedAt: string;
-  createdAt: string;
-  deletedAt?: string | null;
-  _status?: ('draft' | 'published') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'content';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -678,52 +702,6 @@ export interface CallToActionBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'cta';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "ContentBlock".
- */
-export interface ContentBlock {
-  columns?:
-    | {
-        size?: ('oneThird' | 'half' | 'twoThirds' | 'full') | null;
-        richText?: {
-          root: {
-            type: string;
-            children: {
-              type: any;
-              version: number;
-              [k: string]: unknown;
-            }[];
-            direction: ('ltr' | 'rtl') | null;
-            format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-            indent: number;
-            version: number;
-          };
-          [k: string]: unknown;
-        } | null;
-        enableLink?: boolean | null;
-        link?: {
-          type?: ('reference' | 'custom') | null;
-          newTab?: boolean | null;
-          reference?:
-            | ({
-                relationTo: 'pages';
-                value: string | Page;
-              } | null)
-            | ({
-                relationTo: 'posts';
-                value: string | Post;
-              } | null);
-          url?: string | null;
-          label: string;
-        };
-        id?: string | null;
-      }[]
-    | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'content';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1062,6 +1040,56 @@ export interface Form {
     | null;
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "products".
+ */
+export interface Product {
+  id: string;
+  owner?: (string | null) | User;
+  profile?: (string | null) | Profile;
+  title: string;
+  description?: string | null;
+  productType: 'physical' | 'digital';
+  requiresShipping?: boolean | null;
+  /**
+   * Se usa para el calculo interno de envios por zonas.
+   */
+  weightInGrams?: number | null;
+  coverImage?: (string | null) | Media;
+  /**
+   * La primera imagen puede reutilizarse luego en la vitrina publica del producto.
+   */
+  images?:
+    | {
+        image: string | Media;
+        id?: string | null;
+      }[]
+    | null;
+  release?: (string | null) | Page;
+  checkoutProvider: 'stripe' | 'shopify' | 'eventbrite' | 'mercadopago' | 'other';
+  /**
+   * Prepara productos con checkout externo mientras definimos la integracion final de pagos.
+   */
+  externalCheckoutURL?: string | null;
+  /**
+   * Guarda el ID del producto o precio en la plataforma externa para futuras automatizaciones.
+   */
+  externalProductReference?: string | null;
+  checkoutButtonLabel?: string | null;
+  inventory?: number | null;
+  priceInCOPEnabled?: boolean | null;
+  priceInCOP?: number | null;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  updatedAt: string;
+  createdAt: string;
+  deletedAt?: string | null;
+  _status?: ('draft' | 'published') | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2109,7 +2137,40 @@ export interface UsersSelect<T extends boolean = true> {
   consumerProfile?: T;
   authProvider?: T;
   googleSubjectId?: T;
-  avatar?: T;
+  accountAvatar?: T;
+  location?: T;
+  genre?: T;
+  editorBio?: T;
+  editorSocialLink?:
+    | T
+    | {
+        label?: T;
+        url?: T;
+      };
+  biographyHero?:
+    | T
+    | {
+        type?: T;
+        media?: T;
+      };
+  biographyLayout?:
+    | T
+    | {
+        content?: T | ContentBlockSelect<T>;
+      };
+  biographySocialLinks?:
+    | T
+    | {
+        platform?: T;
+        url?: T;
+        id?: T;
+      };
+  advancedName?: T;
+  advancedUsername?: T;
+  advancedAccountType?: T;
+  advancedAccountAvatar?: T;
+  advancedLocation?: T;
+  advancedGenre?: T;
   isActive?: T;
   verificationExpiresAt?: T;
   legalAccepted?: T;
