@@ -189,7 +189,12 @@ export default async function ArtistShopPage({ params: paramsPromise }: Args) {
                   <div className="flex flex-wrap gap-3">
                     {product.checkoutProvider === 'mercadopago' ? (
                       <AddToCartButton
-                        label={product.checkoutButtonLabel || 'Agregar al carrito'}
+                        label={
+                          product.checkoutButtonLabel === 'Agregar al carrito'
+                            ? 'Comprar'
+                            : product.checkoutButtonLabel || 'Comprar'
+                        }
+                        openCheckout
                         productID={product.id}
                       />
                     ) : product.externalCheckoutURL ? (

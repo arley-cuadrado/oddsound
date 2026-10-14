@@ -4,7 +4,6 @@ import React, { createContext, useCallback, use, useEffect, useState } from 'rea
 
 import type { Theme, ThemeContextType } from './types'
 
-import canUseDOM from '@/utilities/canUseDOM'
 import {
   defaultTheme,
   getImplicitPreference,
@@ -37,9 +36,8 @@ const getViewportTheme = (): Theme => {
 }
 
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
-  const [theme, setThemeState] = useState<Theme | undefined>(
-    canUseDOM ? (document.documentElement.getAttribute('data-theme') as Theme) : undefined,
-  )
+  // The effect below reads the browser preference after hydration.
+  const [theme, setThemeState] = useState<Theme | undefined>(undefined)
 
   const setTheme = useCallback((themeToSet: Theme | null) => {
     if (themeToSet === null) {

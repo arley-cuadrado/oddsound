@@ -1,6 +1,7 @@
 'use client'
 
 import { useCart } from '@payloadcms/plugin-ecommerce/client/react'
+import { useRouter } from 'next/navigation'
 import React, { useEffect, useState } from 'react'
 
 import { cn } from '@/utilities/ui'
@@ -9,6 +10,7 @@ type AddToCartButtonProps = {
   className?: string
   label?: string
   productID: string
+  openCheckout?: boolean
 }
 
 const CONFIRMATION_MS = 2200
@@ -17,10 +19,13 @@ export const AddToCartButton: React.FC<AddToCartButtonProps> = ({
   className,
   label = 'Agregar al carrito',
   productID,
+  openCheckout = false,
 }) => {
+  const router = useRouter()
   const { addItem, cart, isLoading } = useCart()
   const [expectedQuantity, setExpectedQuantity] = useState<null | number>(null)
   const [requestFailed, setRequestFailed] = useState(false)
+  const [requestPending, setRequestPending] = useState(false)
 
   const currentQuantity = (cart?.items || []).reduce((total, item) => {
     const product = item.product
@@ -34,12 +39,17 @@ export const AddToCartButton: React.FC<AddToCartButtonProps> = ({
       ? 'idle'
       : currentQuantity >= expectedQuantity
         ? 'added'
-        : requestFailed || !isLoading
+        : requestFailed || (!isLoading && !requestPending)
           ? 'failed'
           : 'idle'
 
   useEffect(() => {
-    if (state === 'idle') return
+    if (state === 'idle' || requestPending) return
+
+    if (state === 'added' && openCheckout) {
+      router.push('/cart')
+      return
+    }
 
     const timer = setTimeout(() => {
       setExpectedQuantity(null)
@@ -47,9 +57,12 @@ export const AddToCartButton: React.FC<AddToCartButtonProps> = ({
     }, CONFIRMATION_MS)
 
     return () => clearTimeout(timer)
-  }, [state])
+  }, [openCheckout, requestPending, router, state])
 
   const handleClick = async () => {
+    if (isLoading || requestPending) return
+
+    setRequestPending(true)
     setRequestFailed(false)
     setExpectedQuantity(currentQuantity + 1)
 
@@ -57,6 +70,8 @@ export const AddToCartButton: React.FC<AddToCartButtonProps> = ({
       await addItem({ product: productID }, 1)
     } catch {
       setRequestFailed(true)
+    } finally {
+      setRequestPending(false)
     }
   }
 
@@ -72,11 +87,13 @@ export const AddToCartButton: React.FC<AddToCartButtonProps> = ({
             : 'bg-primary text-primary-foreground hover:opacity-90',
         className,
       )}
-      disabled={isLoading}
+      disabled={isLoading || requestPending}
       onClick={handleClick}
       type="button"
     >
-      {state === 'added' ? (
+      {requestPending ? (
+        'Agregando…'
+      ) : state === 'added' ? (
         <>
           <CheckIcon />
           En el carrito
