@@ -1,8 +1,8 @@
 import type { Metadata } from 'next/types'
 
 import React from 'react'
-
 import { DISCOVERY_DESCRIPTION, SITE_NAME } from '@/seo/site'
+
 import { getDiscoveryPool } from './discovery/getDiscoveryPool'
 import type { DiscoveryTab } from './discovery/types'
 import { ExploreClient } from './ExploreClient'

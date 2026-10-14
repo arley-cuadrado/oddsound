@@ -92,8 +92,9 @@ function getFallbackDescription(doc: Partial<Page> | Partial<Post> | null) {
 
 export const generateMeta = async (args: {
   doc: Partial<Page> | Partial<Post> | null
+  urlPath?: string
 }): Promise<Metadata> => {
-  const { doc } = args
+  const { doc, urlPath } = args
 
   const ogImage = doc?.meta?.image ? getImageURL(doc.meta.image) : getFallbackImageURL(doc)
   const description = getFallbackDescription(doc)
@@ -115,7 +116,7 @@ export const generateMeta = async (args: {
           ]
         : undefined,
       title,
-      url: typeof doc?.slug === 'string' ? doc.slug : '/',
+      url: urlPath || (typeof doc?.slug === 'string' ? doc.slug : '/'),
     }),
     title,
     twitter: {
