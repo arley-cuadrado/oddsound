@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('@/access/hasFreshAdminAccess', () => ({
   hasFreshAdminAccess: vi.fn(),
@@ -15,10 +15,20 @@ import {
 } from '@/access/ecommerce'
 
 const mockedHasFreshAdminAccess = vi.mocked(hasFreshAdminAccess)
+const originalShoppingEnabled = process.env.SHOPPING_ENABLED
 
 describe('ecommerce access helpers', () => {
   beforeEach(() => {
     mockedHasFreshAdminAccess.mockReset()
+    process.env.SHOPPING_ENABLED = 'true'
+  })
+
+  afterEach(() => {
+    if (originalShoppingEnabled === undefined) {
+      delete process.env.SHOPPING_ENABLED
+    } else {
+      process.env.SHOPPING_ENABLED = originalShoppingEnabled
+    }
   })
 
   it('treats creators as authenticated customers', () => {
@@ -34,7 +44,29 @@ describe('ecommerce access helpers', () => {
     expect(ecommerceIsCustomer({ req } as never)).toBe(true)
   })
 
-  it('blocks fan users from ecommerce customer access', async () => {
+  it('allows fan users to own a shopping cart', async () => {
+    mockedHasFreshAdminAccess.mockResolvedValue(false)
+
+    const req = {
+      payload: {},
+      user: {
+        id: 'fan-1',
+        role: 'creator',
+        userType: 'fan',
+      },
+    }
+
+    expect(ecommerceIsAuthenticated({ req } as never)).toBe(true)
+    expect(ecommerceIsCustomer({ req } as never)).toBe(true)
+    await expect(ecommerceIsDocumentOwner({ req } as never)).resolves.toEqual({
+      customer: {
+        equals: 'fan-1',
+      },
+    })
+  })
+
+  it('blocks storefront access when shopping is disabled', async () => {
+    process.env.SHOPPING_ENABLED = 'false'
     mockedHasFreshAdminAccess.mockResolvedValue(false)
 
     const req = {
@@ -49,6 +81,15 @@ describe('ecommerce access helpers', () => {
     expect(ecommerceIsAuthenticated({ req } as never)).toBe(false)
     expect(ecommerceIsCustomer({ req } as never)).toBe(false)
     await expect(ecommerceIsDocumentOwner({ req } as never)).resolves.toBe(false)
+    await expect(ecommerceAdminOrPublishedStatus({ req } as never)).resolves.toBe(false)
+  })
+
+  it('keeps shopping disabled when the flag is missing', () => {
+    delete process.env.SHOPPING_ENABLED
+
+    expect(ecommerceIsAuthenticated({ req: { payload: {}, user: { id: 'fan-1' } } } as never)).toBe(
+      false,
+    )
   })
 
   it('treats admins as non-customer users with full field access', async () => {

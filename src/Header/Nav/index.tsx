@@ -10,7 +10,10 @@ import { CMSLink } from '@/components/Link'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
-export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
+export const HeaderNav: React.FC<{ data: HeaderType; shoppingEnabled: boolean }> = ({
+  data,
+  shoppingEnabled,
+}) => {
   const navItems = data?.navItems || []
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isFanAuthenticated, setIsFanAuthenticated] = useState(false)
@@ -98,7 +101,9 @@ export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
 
   const topNavItems = navItems.filter(({ link }) => isLoginLink(link.label, link.url))
   const loginNavItems =
-    topNavItems.length > 0 ? topNavItems : [{ link: fallbackLoginLink as typeof navItems[number]['link'] }]
+    topNavItems.length > 0
+      ? topNavItems
+      : [{ link: fallbackLoginLink as (typeof navItems)[number]['link'] }]
 
   return (
     <nav
@@ -148,7 +153,7 @@ export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
               <span className="block">Mi cuenta</span>
             </Link>
           ) : null}
-          <CartBadge className="self-start max-[975px]:self-auto" />
+          {shoppingEnabled ? <CartBadge className="self-start max-[975px]:self-auto" /> : null}
           {/* dynamic routes, registered artists */}
           {navItems.map(({ link }, i) => {
             return (

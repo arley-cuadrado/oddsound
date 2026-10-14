@@ -2,6 +2,7 @@ import config from '@payload-config'
 import { headers as nextHeaders } from 'next/headers'
 import { getPayload } from 'payload'
 
+import { isShoppingEnabled } from '@/config/shopping'
 import { groupCartItemsByArtist } from '@/utilities/cartGroups'
 import { CheckoutError, loadAuthorizedCart } from '@/utilities/checkoutSession'
 
@@ -15,6 +16,13 @@ import { CheckoutError, loadAuthorizedCart } from '@/utilities/checkoutSession'
  * never drift apart.
  */
 export async function GET(request: Request): Promise<Response> {
+  if (!isShoppingEnabled()) {
+    return Response.json(
+      { code: 'shopping_disabled', message: 'La tienda está desactivada.' },
+      { status: 503 },
+    )
+  }
+
   const payload = await getPayload({ config })
   const url = new URL(request.url)
 

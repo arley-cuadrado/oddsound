@@ -9,9 +9,6 @@ type AddToCartButtonProps = {
   className?: string
   label?: string
   productID: string
-  /** Set when the artist cannot take payments yet, so the shop shows a state
-   *  instead of a button that would fail. */
-  unavailable?: boolean
 }
 
 const CONFIRMATION_MS = 2200
@@ -20,38 +17,46 @@ export const AddToCartButton: React.FC<AddToCartButtonProps> = ({
   className,
   label = 'Agregar al carrito',
   productID,
-  unavailable = false,
 }) => {
-  const { addItem, isLoading } = useCart()
-  const [state, setState] = useState<'added' | 'failed' | 'idle'>('idle')
+  const { addItem, cart, isLoading } = useCart()
+  const [expectedQuantity, setExpectedQuantity] = useState<null | number>(null)
+  const [requestFailed, setRequestFailed] = useState(false)
+
+  const currentQuantity = (cart?.items || []).reduce((total, item) => {
+    const product = item.product
+    const itemProductID = typeof product === 'object' && product ? product.id : product
+
+    return String(itemProductID) === productID ? total + (item.quantity || 0) : total
+  }, 0)
+
+  const state =
+    expectedQuantity === null
+      ? 'idle'
+      : currentQuantity >= expectedQuantity
+        ? 'added'
+        : requestFailed || !isLoading
+          ? 'failed'
+          : 'idle'
 
   useEffect(() => {
     if (state === 'idle') return
 
-    const timer = setTimeout(() => setState('idle'), CONFIRMATION_MS)
+    const timer = setTimeout(() => {
+      setExpectedQuantity(null)
+      setRequestFailed(false)
+    }, CONFIRMATION_MS)
 
     return () => clearTimeout(timer)
   }, [state])
 
-  if (unavailable) {
-    return (
-      <span
-        className={cn(
-          'inline-flex h-11 items-center justify-center rounded-full border border-dashed border-border px-5 text-[13px] font-medium text-muted-foreground dark:border-white/15 dark:text-primary-foreground/50',
-          className,
-        )}
-      >
-        Próximamente
-      </span>
-    )
-  }
-
   const handleClick = async () => {
+    setRequestFailed(false)
+    setExpectedQuantity(currentQuantity + 1)
+
     try {
       await addItem({ product: productID }, 1)
-      setState('added')
     } catch {
-      setState('failed')
+      setRequestFailed(true)
     }
   }
 
