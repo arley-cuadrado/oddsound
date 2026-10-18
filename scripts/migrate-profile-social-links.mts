@@ -1,11 +1,22 @@
 import 'dotenv/config'
 
-import configPromise from '../src/payload.config.ts'
-import { getPayload } from 'payload'
 import { normalizeSocialLinksWithLegacy } from '../src/utilities/socialLinks.ts'
 
 async function main() {
+  if (!process.env.DATABASE_URL) {
+    throw new Error('DATABASE_URL is missing. Add it to .env.migration.local and run the command again.')
+  }
+
+  console.log('Loading Payload configuration...')
+  const [{ default: configPromise }, { getPayload }] = await Promise.all([
+    import('../src/payload.config.ts'),
+    import('payload'),
+  ])
+
+  console.log('Connecting to MongoDB...')
   const payload = await getPayload({ config: configPromise })
+  console.log('Connected. Reading artist profiles...')
+  try {
   const profiles = await payload.find({
     collection: 'profiles',
     depth: 0,
@@ -41,6 +52,8 @@ async function main() {
     const socialLinks = source ? normalizeSocialLinksWithLegacy(source).socialLinks || [] : []
 
     if (socialLinks.length === 0) continue
+
+    console.log(`Processing ${profile.displayName || profile.id}...`)
 
     const biographies = await payload.find({
       collection: 'biographies',
@@ -84,9 +97,19 @@ async function main() {
     migrated += 1
   }
 
-  console.log(
-    `Migrated ${migrated} artist profiles; skipped ${skipped} already configured biographies.`,
-  )
+  return { migrated, skipped }
+  } finally {
+    await payload.db.connection.close()
+  }
 }
 
 void main()
+  .then(({ migrated, skipped }) => {
+    console.log(
+      `Migrated ${migrated} artist profiles; skipped ${skipped} already configured biographies.`,
+    )
+  })
+  .catch((error) => {
+    console.error('Profile social links migration failed:', error)
+    process.exitCode = 1
+  })
