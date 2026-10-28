@@ -15,7 +15,7 @@ import { resolveUserConsumerProfileID } from '@/utilities/userRelations'
 
 export const metadata: Metadata = {
   title: `${SITE_NAME} Fan Account`,
-  description: 'Consulta tus comentarios dentro de Oddsound.',
+  description: 'Consulta tus compras, envíos, mensajes y comentarios dentro de Oddsound.',
   alternates: {
     canonical: '/fan/account',
   },
@@ -89,7 +89,7 @@ export default async function FanAccountPage() {
               Hola{user.name ? `, ${user.name}` : ''}.
             </h1>
             <p className="max-w-[44rem] text-[13px] leading-6 text-foreground/75">
-              Aquí puedes ver tus comentarios.
+              Consulta tus compras y envíos, habla con las tiendas y revisa tus comentarios.
             </p>
           </header>
 

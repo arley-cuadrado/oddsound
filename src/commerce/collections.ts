@@ -50,6 +50,41 @@ function internal(slug: string, fields: Field[], immutable = false): CollectionC
 }
 
 export const commerceCollections: CollectionConfig[] = [
+  internal('commerceConversations', [
+    text('order', { unique: true, required: true }),
+    text('artist', { index: true }),
+    text('buyer'),
+    json('readAt'),
+  ]),
+  internal('commerceMessages', [
+    text('order', { index: true, required: true }),
+    text('sender', { required: true }),
+    text('senderRole'),
+    text('product'),
+    text('body', { required: true }),
+  ]),
+  {
+    ...internal('commerceReviews', [
+      text('buyer', { required: true }),
+      text('order', { required: true }),
+      text('product', { required: true, index: true }),
+      text('artist', { required: true, index: true }),
+      text('publicName'),
+      { name: 'stars', type: 'number', min: 1, max: 5, required: true },
+      text('body'),
+      { name: 'hidden', type: 'checkbox', defaultValue: false },
+      json('history'),
+    ]),
+    indexes: [{ fields: ['buyer', 'order', 'product'], unique: true }],
+  },
+  {
+    ...internal('commerceReviewReports', [
+      text('review', { required: true, index: true }),
+      text('reporter', { required: true }),
+      text('reason'),
+    ]),
+    indexes: [{ fields: ['review', 'reporter'], unique: true }],
+  },
   internal(
     'commerceJournal',
     [

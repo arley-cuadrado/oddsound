@@ -1,5 +1,5 @@
-import type { CollectionConfig } from 'payload'
-import { slugField } from 'payload'
+import type { CollectionConfig, CollectionBeforeValidateHook, Field, FieldAccess } from 'payload'
+import { APIError, slugField } from 'payload'
 
 import { hasFreshAdminAccess } from '@/access/hasFreshAdminAccess'
 import { assignOwnership } from '@/hooks/assignOwnership'
@@ -8,6 +8,44 @@ import { isMusicalCreatorUser } from '@/utilities/isEditorialUser'
 
 type OverrideArgs = {
   defaultCollection: CollectionConfig
+}
+
+const adminField: FieldAccess = ({ req }) => isAdminUser(req.user)
+const technicalAccess = { create: adminField, read: adminField, update: adminField }
+const technicalAdmin = {
+  condition: (_data: unknown, _siblings: unknown, { user }: { user: unknown }) => isAdminUser(user),
+}
+
+export const enforcePhysicalProduct: CollectionBeforeValidateHook = ({
+  data,
+  req,
+  originalDoc,
+  operation,
+}) => {
+  if (!data || !isMusicalCreatorUser(req.user)) return data
+  if (data.productType && data.productType !== 'physical')
+    throw new APIError('Solo puedes vender productos físicos.', 400)
+  if (operation === 'update' && originalDoc?.productType === 'digital')
+    throw new APIError('Este producto histórico requiere revisión administrativa.', 400)
+  if (data.requiresShipping === false)
+    throw new APIError('Los productos físicos requieren envío, también si es gratuito.', 400)
+  return { ...data, productType: 'physical', requiresShipping: true }
+}
+
+function simplifyPrices(field: Field): Field {
+  if ('name' in field && field.name === 'priceInCOPEnabled')
+    return {
+      ...field,
+      defaultValue: true,
+      admin: { ...field.admin, hidden: true },
+    } as Field
+  if ('name' in field && field.name === 'priceInCOP')
+    return {
+      ...field,
+      admin: { ...field.admin, condition: undefined },
+    } as Field
+  if ('fields' in field) return { ...field, fields: field.fields.map(simplifyPrices) } as Field
+  return field
 }
 
 function validateExternalCheckoutURL(
@@ -99,6 +137,10 @@ export function extendEcommerceProductsCollection({
       group: 'Tienda',
       hidden: ({ user }) => !isAdminUser(user) && !isMusicalCreatorUser(user),
       useAsTitle: 'title',
+      components: {
+        ...defaultCollection.admin?.components,
+        beforeList: ['@/components/SellerProductsHub'],
+      },
     },
     labels: {
       singular: 'Producto',
@@ -149,6 +191,7 @@ export function extendEcommerceProductsCollection({
         type: 'select',
         label: 'Tipo de producto',
         defaultValue: 'physical',
+        admin: { components: { Field: '@/components/PhysicalProductField' } },
         options: [
           {
             label: 'Fisico',
@@ -167,7 +210,8 @@ export function extendEcommerceProductsCollection({
         label: 'Requiere envio',
         defaultValue: true,
         admin: {
-          condition: (_data, siblingData) => siblingData?.productType !== 'digital',
+          condition: (data, siblingData, { user }) =>
+            isAdminUser(user) && siblingData?.productType !== 'digital',
         },
       },
       {
@@ -215,8 +259,11 @@ export function extendEcommerceProductsCollection({
         name: 'checkoutProvider',
         type: 'select',
         label: 'Proveedor de checkout',
-        defaultValue: 'mercadopago',
+        defaultValue: 'wompi',
+        access: technicalAccess,
+        admin: technicalAdmin,
         options: [
+          { label: 'Wompi', value: 'wompi' },
           {
             label: 'Stripe',
             value: 'stripe',
@@ -244,7 +291,9 @@ export function extendEcommerceProductsCollection({
         name: 'externalCheckoutURL',
         type: 'text',
         label: 'URL de compra externa',
+        access: technicalAccess,
         admin: {
+          ...technicalAdmin,
           description:
             'Prepara productos con checkout externo mientras definimos la integracion final de pagos.',
         },
@@ -254,7 +303,9 @@ export function extendEcommerceProductsCollection({
         name: 'externalProductReference',
         type: 'text',
         label: 'Referencia externa',
+        access: technicalAccess,
         admin: {
+          ...technicalAdmin,
           description:
             'Guarda el ID del producto o precio en la plataforma externa para futuras automatizaciones.',
         },
@@ -265,13 +316,14 @@ export function extendEcommerceProductsCollection({
         label: 'Texto del boton',
         defaultValue: 'Agregar al carrito',
       },
-      ...defaultCollection.fields,
+      ...defaultCollection.fields.map(simplifyPrices),
       slugField({
         useAsSlug: 'title',
       }),
     ],
     hooks: {
       ...defaultCollection.hooks,
+      beforeValidate: [...(defaultCollection.hooks?.beforeValidate || []), enforcePhysicalProduct],
       beforeChange: [...(defaultCollection.hooks?.beforeChange || []), assignOwnership],
     },
     versions: {

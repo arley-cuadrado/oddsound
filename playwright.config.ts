@@ -34,8 +34,10 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'pnpm dev',
-    reuseExistingServer: true,
+    command: process.env.COMMERCE_TEST_SERVER
+      ? 'node node_modules/next/dist/bin/next dev'
+      : 'pnpm dev',
+    reuseExistingServer: !process.env.COMMERCE_TEST_SERVER,
     url: 'http://localhost:3000',
   },
 })

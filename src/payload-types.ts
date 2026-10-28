@@ -81,6 +81,10 @@ export interface Config {
     consumerProfiles: ConsumerProfile;
     comments: Comment;
     users: User;
+    commerceConversations: CommerceConversation;
+    commerceMessages: CommerceMessage;
+    commerceReviews: CommerceReview;
+    commerceReviewReports: CommerceReviewReport;
     commerceJournal: CommerceJournal;
     commerceLocks: CommerceLock;
     commerceEvents: CommerceEvent;
@@ -125,6 +129,10 @@ export interface Config {
     consumerProfiles: ConsumerProfilesSelect<false> | ConsumerProfilesSelect<true>;
     comments: CommentsSelect<false> | CommentsSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
+    commerceConversations: CommerceConversationsSelect<false> | CommerceConversationsSelect<true>;
+    commerceMessages: CommerceMessagesSelect<false> | CommerceMessagesSelect<true>;
+    commerceReviews: CommerceReviewsSelect<false> | CommerceReviewsSelect<true>;
+    commerceReviewReports: CommerceReviewReportsSelect<false> | CommerceReviewReportsSelect<true>;
     commerceJournal: CommerceJournalSelect<false> | CommerceJournalSelect<true>;
     commerceLocks: CommerceLocksSelect<false> | CommerceLocksSelect<true>;
     commerceEvents: CommerceEventsSelect<false> | CommerceEventsSelect<true>;
@@ -1100,7 +1108,7 @@ export interface Product {
       }[]
     | null;
   release?: (string | null) | Page;
-  checkoutProvider: 'stripe' | 'shopify' | 'eventbrite' | 'mercadopago' | 'other';
+  checkoutProvider?: ('wompi' | 'stripe' | 'shopify' | 'eventbrite' | 'mercadopago' | 'other') | null;
   /**
    * Prepara productos con checkout externo mientras definimos la integracion final de pagos.
    */
@@ -1167,6 +1175,79 @@ export interface Comment {
   source: 'release-public' | 'article-public';
   moderatedAt?: string | null;
   moderatedBy?: (string | null) | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "commerceConversations".
+ */
+export interface CommerceConversation {
+  id: string;
+  order: string;
+  artist?: string | null;
+  buyer?: string | null;
+  readAt?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "commerceMessages".
+ */
+export interface CommerceMessage {
+  id: string;
+  order: string;
+  sender: string;
+  senderRole?: string | null;
+  product?: string | null;
+  body: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "commerceReviews".
+ */
+export interface CommerceReview {
+  id: string;
+  buyer: string;
+  order: string;
+  product: string;
+  artist: string;
+  publicName?: string | null;
+  stars: number;
+  body?: string | null;
+  hidden?: boolean | null;
+  history?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "commerceReviewReports".
+ */
+export interface CommerceReviewReport {
+  id: string;
+  review: string;
+  reporter: string;
+  reason?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1967,6 +2048,22 @@ export interface PayloadLockedDocument {
         value: string | User;
       } | null)
     | ({
+        relationTo: 'commerceConversations';
+        value: string | CommerceConversation;
+      } | null)
+    | ({
+        relationTo: 'commerceMessages';
+        value: string | CommerceMessage;
+      } | null)
+    | ({
+        relationTo: 'commerceReviews';
+        value: string | CommerceReview;
+      } | null)
+    | ({
+        relationTo: 'commerceReviewReports';
+        value: string | CommerceReviewReport;
+      } | null)
+    | ({
         relationTo: 'commerceJournal';
         value: string | CommerceJournal;
       } | null)
@@ -2658,6 +2755,59 @@ export interface UsersSelect<T extends boolean = true> {
         createdAt?: T;
         expiresAt?: T;
       };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "commerceConversations_select".
+ */
+export interface CommerceConversationsSelect<T extends boolean = true> {
+  order?: T;
+  artist?: T;
+  buyer?: T;
+  readAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "commerceMessages_select".
+ */
+export interface CommerceMessagesSelect<T extends boolean = true> {
+  order?: T;
+  sender?: T;
+  senderRole?: T;
+  product?: T;
+  body?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "commerceReviews_select".
+ */
+export interface CommerceReviewsSelect<T extends boolean = true> {
+  buyer?: T;
+  order?: T;
+  product?: T;
+  artist?: T;
+  publicName?: T;
+  stars?: T;
+  body?: T;
+  hidden?: T;
+  history?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "commerceReviewReports_select".
+ */
+export interface CommerceReviewReportsSelect<T extends boolean = true> {
+  review?: T;
+  reporter?: T;
+  reason?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

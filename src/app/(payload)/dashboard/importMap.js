@@ -27,8 +27,10 @@ import { default as default_797b25f28c6227edff8335d9f2f9f569 } from '@/component
 import { default as default_7382d1aa8ab5f7fc48fa08c6814ea59b } from '@/components/CreateRedactorButton'
 import { LinkToDoc as LinkToDoc_aead06e4cbf6b2620c5c51c9ab283634 } from '@payloadcms/plugin-search/client'
 import { ReindexButton as ReindexButton_aead06e4cbf6b2620c5c51c9ab283634 } from '@payloadcms/plugin-search/client'
+import { default as default_3d64a43c644c7dc900aac6b183322b7f } from '@/components/PhysicalProductField'
 import { PriceCell as PriceCell_e27bf7b8cc50640dcdd584767b8eac3c } from '@payloadcms/plugin-ecommerce/client'
 import { PriceInput as PriceInput_b91672ccd6e8b071c11142ab941fedfb } from '@payloadcms/plugin-ecommerce/rsc'
+import { default as default_545452a0304554b20298d99869addcc7 } from '@/components/SellerProductsHub'
 import { default as default_e0e0d4d59b4e8861c8f2e94b15633d33 } from '@/components/AdminAccountAvatar'
 import { default as default_c1363893506d7ed29a71d1a4da01ddb5 } from '@/components/AdminIcon'
 import { default as default_aa0a2d19d38a4839dbd373417e210b89 } from '@/components/AdminLogo'
@@ -74,8 +76,10 @@ export const importMap = {
   "@/components/CreateRedactorButton#default": default_7382d1aa8ab5f7fc48fa08c6814ea59b,
   "@payloadcms/plugin-search/client#LinkToDoc": LinkToDoc_aead06e4cbf6b2620c5c51c9ab283634,
   "@payloadcms/plugin-search/client#ReindexButton": ReindexButton_aead06e4cbf6b2620c5c51c9ab283634,
+  "@/components/PhysicalProductField#default": default_3d64a43c644c7dc900aac6b183322b7f,
   "@payloadcms/plugin-ecommerce/client#PriceCell": PriceCell_e27bf7b8cc50640dcdd584767b8eac3c,
   "@payloadcms/plugin-ecommerce/rsc#PriceInput": PriceInput_b91672ccd6e8b071c11142ab941fedfb,
+  "@/components/SellerProductsHub#default": default_545452a0304554b20298d99869addcc7,
   "@/components/AdminAccountAvatar#default": default_e0e0d4d59b4e8861c8f2e94b15633d33,
   "@/components/AdminIcon#default": default_c1363893506d7ed29a71d1a4da01ddb5,
   "@/components/AdminLogo#default": default_aa0a2d19d38a4839dbd373417e210b89,

@@ -1,6 +1,8 @@
 'use client'
 import Link from 'next/link'
 import React, { useCallback, useEffect, useState } from 'react'
+import { OrderConversation } from './OrderConversation'
+import { ReviewModeration } from './ReviewModeration'
 
 const endpoint = '/creator-api/commerce/operations'
 const copy: Record<string, string> = {
@@ -58,19 +60,22 @@ export function CommercePanel({
 }) {
   const [data, setData] = useState<any>(null)
   const [message, setMessage] = useState('')
+  const [tab, setTab] = useState('Resumen')
+  const [page, setPage] = useState(1)
+  const [status, setStatus] = useState('')
   const [busy, setBusy] = useState(false)
   const [bankOptions, setBankOptions] = useState<{ value: string; label: string }[]>([])
   const orderID = initialOrder || ''
   const [inspectedBank, setInspectedBank] = useState<any>(null)
   const refresh = useCallback(async () => {
     const response = await fetch(
-      `${endpoint}${orderID ? `?orderID=${encodeURIComponent(orderID)}` : ''}`,
+      `${endpoint}?page=${page}&status=${encodeURIComponent(status)}${orderID ? `&orderID=${encodeURIComponent(orderID)}` : ''}`,
       { cache: 'no-store' },
     )
     const result = await response.json()
     if (response.ok) setData(result)
     else setMessage(result.message)
-  }, [orderID])
+  }, [orderID, page, status])
   const act = async (action: string, values: Record<string, unknown>) => {
     setBusy(true)
     setMessage('')
@@ -140,8 +145,65 @@ export function CommercePanel({
           </p>
         )}
       </header>
+      {mode === 'artist' && (
+        <nav aria-label="Secciones de productos" className="flex flex-wrap gap-3" role="tablist">
+          {['Resumen', 'Pedidos y envíos', 'Mensajes', 'Reclamos', 'Cuenta bancaria'].map(
+            (name) => (
+              <button
+                type="button"
+                role="tab"
+                aria-selected={tab === name}
+                key={name}
+                onClick={() => setTab(name)}
+              >
+                {name}
+              </button>
+            ),
+          )}
+        </nav>
+      )}
+      {mode !== 'buyer' && (mode === 'admin' || tab === 'Resumen') && data?.summary && (
+        <section aria-label="Resumen completo de ventas">
+          <p>
+            {
+              ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'][
+                data.payoutWeekday ?? 3
+              ]
+            }{' '}
+            a las {data.payoutHour ?? 9}:00 · America/Bogota
+          </p>
+          <p>
+            Desembolso sujeto a entrega verificada, siete días de espera, conciliación y ausencia de
+            bloqueos.
+          </p>
+          <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {Object.entries({
+              'Ventas de productos': data.summary.sales,
+              Comisiones: data.summary.commission,
+              'Procesamiento conciliado': data.summary.processorCost,
+              Devoluciones: data.summary.refunds,
+              ...Object.fromEntries(
+                Object.entries(data.summary.buckets).map(([k, v]) => [copy[k], v]),
+              ),
+            }).map(([key, value]) => (
+              <div key={key}>
+                <dt>{key}</dt>
+                <dd>{money(Number(value))}</dd>
+              </div>
+            ))}
+          </dl>
+          <p>Unidades vendidas: {data.summary.units}</p>
+          {data.summary.unreconciled > 0 && (
+            <p>
+              Costos pendientes de determinar en {data.summary.unreconciled} pedidos. El importe
+              final puede cambiar.
+            </p>
+          )}
+        </section>
+      )}
+      {mode === 'admin' && <ReviewModeration />}
       <p role="status" className="text-sm" aria-live="polite">
-        {message}
+        {message || (!data ? 'Cargando pedidos y saldos…' : '')}
       </p>
       {mode === 'buyer' && (
         <details open={!data}>
@@ -157,8 +219,8 @@ export function CommercePanel({
           />
         </details>
       )}
-      {mode === 'artist' && (
-        <details>
+      {mode === 'artist' && tab === 'Cuenta bancaria' && (
+        <details open>
           <summary>
             Cuenta bancaria · {copy[data?.bank?.state] || 'Sin registrar'}{' '}
             {data?.bank?.lastFour && `····${data.bank.lastFour}`}
@@ -280,203 +342,256 @@ export function CommercePanel({
             ))}
         </div>
       )}
+      {(mode !== 'artist' || ['Pedidos y envíos', 'Mensajes', 'Reclamos'].includes(tab)) && (
+        <div className="flex flex-wrap gap-3">
+          <label>
+            Estado del envío
+            <select
+              value={status}
+              onChange={(e) => {
+                setStatus(e.target.value)
+                setPage(1)
+              }}
+            >
+              <option value="">Todos</option>
+              {['pending_payment', 'ready_to_ship', 'shipped', 'delivered'].map((s) => (
+                <option key={s} value={s}>
+                  {copy[s]}
+                </option>
+              ))}
+            </select>
+          </label>
+          <button type="button" disabled={page === 1} onClick={() => setPage(page - 1)}>
+            Anterior
+          </button>
+          <span>Página {page}</span>
+          <button
+            type="button"
+            disabled={page * 20 >= (data?.total || 0)}
+            onClick={() => setPage(page + 1)}
+          >
+            Siguiente
+          </button>
+        </div>
+      )}
       {data?.orders?.length === 0 && <p>Todavía no hay pedidos.</p>}
-      {data?.orders?.map((order: any) => (
-        <article key={order.id} className="space-y-4 border-t border-border pt-5">
-          <h3 className="font-medium">
-            Pedido {order.id} · {money(order.total * 100)}
-          </h3>
-          <p className="text-sm">
-            {copy[order.fulfillmentStatus] || order.fulfillmentStatus} ·{' '}
-            {copy[order.status] || order.status}
-          </p>
-          {mode !== 'buyer' && (
-            <>
-              <dl className="grid grid-cols-2 gap-2 sm:grid-cols-5">
-                {Object.entries(order.finance.buckets).map(([key, value]) => (
-                  <div key={key}>
-                    <dt className="text-xs text-muted-foreground">{copy[key]}</dt>
-                    <dd>{money(Number(value))}</dd>
-                  </div>
-                ))}
-              </dl>
-              <p className="text-sm">
-                Comisión Oddsound: {money(order.commission * 100)} · Procesamiento:{' '}
-                {order.finance.reconciledAt
-                  ? money(order.processorCost * 100)
-                  : 'Pendiente de conciliación'}
-              </p>
-            </>
-          )}
-          <p className="text-xs">
-            Despacho previsto hasta: {date(order.finance.dispatchBy)} · Entrega verificada:{' '}
-            {date(order.finance.deliveredAt)}
-          </p>
-          {order.shipments.map((s: any) => (
-            <div key={s.id} className="rounded border p-3 text-sm">
-              <p>
-                {s.carrier} · Guía {s.guide} · {shipmentCopy[s.state]}
-              </p>
-              <p>
-                Última consulta: {date(s.lastCheckedAt)} ·{' '}
-                {s.verifiedAt ? 'Entrega verificada' : 'Verificación pendiente'}
-              </p>
-              {s.estimatedDeliveryAt && (
-                <p>Estimación de la transportadora: {date(s.estimatedDeliveryAt)}</p>
-              )}
-              {s.error && <p>{s.error}</p>}
-              <a className="underline" href={s.link} target="_blank" rel="noopener noreferrer">
-                Consultar transportadora
-              </a>
-              <ol>
-                {s.history?.map((e: any, i: number) => (
-                  <li key={i}>
-                    {date(e.at)} · {e.description}
-                  </li>
-                ))}
-              </ol>
-              {mode === 'admin' && !s.verifiedAt && (
-                <Form
-                  busy={busy}
-                  submit="Verificar entrega y destinatario"
-                  fields={[
-                    ['deliveredAt', 'Fecha de entrega con zona horaria', 'text'],
-                    ['evidence', 'Prueba de entrega y relación con el pedido', 'text'],
-                  ]}
-                  onSubmit={(v) => act('verifyDelivery', { shipmentID: s.id, ...v })}
-                />
-              )}
-            </div>
-          ))}
-          {mode === 'buyer' && <TrackingLookup shipments={order.shipments} />}
-          {mode === 'artist' && order.items && (
-            <ShipmentForm
-              order={order}
-              carriers={data.carriers}
-              busy={busy}
-              submit={(v) => act('shipment', { orderID: order.id, ...v })}
-            />
-          )}
-          {mode === 'admin' && order.finance.paidAt && !order.finance.reconciledAt && (
-            <Form
-              busy={busy}
-              submit="Conciliar recaudo y costo real"
-              fields={[
-                ['cost', 'Costo real de procesamiento (COP)', 'number'],
-                ['evidence', 'Referencia del recaudo disponible y extracto', 'text'],
-              ]}
-              onSubmit={(v) =>
-                act('reconcile', {
-                  orderID: order.id,
-                  cost: Math.round(Number(v.cost) * 100),
-                  evidence: v.evidence,
-                })
-              }
-            />
-          )}
-          {mode !== 'artist' && order.finance.paidAt && (
-            <Form
-              busy={busy}
-              submit="Abrir reclamo"
-              fields={[
-                ['amount', 'Importe reclamado (COP)', 'number'],
-                ['message', 'Describe el problema y los productos afectados', 'text'],
-              ]}
-              onSubmit={(v) =>
-                act('openCase', {
-                  orderID: order.id,
-                  amount: Math.round(Number(v.amount) * 100),
-                  message: v.message,
-                })
-              }
-            />
-          )}
-          {order.cases.map((c: any) => (
-            <section key={c.id} className="space-y-2 rounded border p-3">
-              <h4>
-                Reclamo · {copy[c.state]} · {money(c.amount)}
-              </h4>
-              <p className="text-xs">Respuesta del vendedor hasta: {date(c.respondBy)}</p>
-              {c.messages?.map((m: any, i: number) => (
-                <p className="text-sm" key={i}>
-                  {date(m.at)} ·{' '}
-                  {m.message.startsWith('Adjunto: ') ? (
+      {(mode !== 'artist' || ['Pedidos y envíos', 'Mensajes', 'Reclamos'].includes(tab)) &&
+        data?.orders?.map((order: any) => (
+          <article key={order.id} className="space-y-4 border-t border-border pt-5">
+            <h3 className="font-medium">
+              Pedido {order.id} · {money(order.total * 100)}
+            </h3>
+            <p>{order.artistName || 'Tienda'}</p>
+            <ul>
+              {order.items?.map((i: any) => (
+                <li key={i.product}>
+                  {i.title} × {i.quantity}
+                </li>
+              ))}
+            </ul>
+            {(mode !== 'artist' || tab === 'Pedidos y envíos') && (
+              <>
+                <p className="text-sm">
+                  {copy[order.fulfillmentStatus] || order.fulfillmentStatus} ·{' '}
+                  {copy[order.status] || order.status}
+                </p>
+                {mode !== 'buyer' && (
+                  <>
+                    <dl className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+                      {Object.entries(order.finance.buckets).map(([key, value]) => (
+                        <div key={key}>
+                          <dt className="text-xs text-muted-foreground">{copy[key]}</dt>
+                          <dd>{money(Number(value))}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                    <p className="text-sm">
+                      Comisión Oddsound: {money(order.commission * 100)} · Procesamiento:{' '}
+                      {order.finance.reconciledAt
+                        ? money(order.processorCost * 100)
+                        : 'Pendiente de conciliación'}
+                    </p>
+                  </>
+                )}
+                <p className="text-xs">
+                  Despacho previsto hasta: {date(order.finance.dispatchBy)} · Entrega verificada:{' '}
+                  {date(order.finance.deliveredAt)}
+                </p>
+                {order.shipments.map((s: any) => (
+                  <div key={s.id} className="rounded border p-3 text-sm">
+                    <p>
+                      {s.carrier} · Guía {s.guide} · {shipmentCopy[s.state]}
+                    </p>
+                    <p>
+                      Fuente: {s.source || 'Sin consulta automática'} · Última consulta:{' '}
+                      {date(s.lastCheckedAt)} ·{' '}
+                      {s.verifiedAt ? 'Entrega verificada' : 'Verificación pendiente'}
+                    </p>
+                    {s.estimatedDeliveryAt && (
+                      <p>Estimación de la transportadora: {date(s.estimatedDeliveryAt)}</p>
+                    )}
+                    {(s.error ||
+                      (s.lastCheckedAt &&
+                        Date.now() - Date.parse(s.lastCheckedAt) > 8 * 60 * 60 * 1000)) && (
+                      <p>Seguimiento desactualizado. {s.error || 'Consulta el enlace oficial.'}</p>
+                    )}
                     <a
                       className="underline"
-                      href={`${endpoint}?action=downloadAttachment&caseID=${c.id}&attachmentID=${m.message.slice(9)}`}
+                      href={s.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
                     >
-                      Descargar evidencia privada
+                      Consultar transportadora
                     </a>
-                  ) : (
-                    m.message
-                  )}
-                </p>
-              ))}
-              {c.decision && <p>Resolución: {c.decision}</p>}
-              {!['resolved', 'dismissed'].includes(c.state) && (
-                <>
-                  <Form
+                    <ol>
+                      {s.history?.map((e: any, i: number) => (
+                        <li key={i}>
+                          {date(e.at)} · {e.description}
+                        </li>
+                      ))}
+                    </ol>
+                    {mode === 'admin' && !s.verifiedAt && (
+                      <Form
+                        busy={busy}
+                        submit="Verificar entrega y destinatario"
+                        fields={[
+                          ['deliveredAt', 'Fecha de entrega con zona horaria', 'text'],
+                          ['evidence', 'Prueba de entrega y relación con el pedido', 'text'],
+                        ]}
+                        onSubmit={(v) => act('verifyDelivery', { shipmentID: s.id, ...v })}
+                      />
+                    )}
+                  </div>
+                ))}
+                {mode === 'buyer' && <TrackingLookup shipments={order.shipments} />}
+                {mode === 'artist' && order.items && (
+                  <ShipmentForm
+                    order={order}
+                    carriers={data.carriers}
                     busy={busy}
-                    submit="Enviar mensaje"
-                    fields={[['message', 'Mensaje', 'text']]}
-                    onSubmit={(v) => act('message', { caseID: c.id, ...v })}
+                    submit={(v) => act('shipment', { orderID: order.id, ...v })}
                   />
-                  <label className="block text-sm">
-                    Adjuntar evidencia privada (PNG, JPEG o PDF, máximo 2 MB)
-                    <input
-                      type="file"
-                      accept="image/png,image/jpeg,application/pdf"
-                      disabled={busy}
-                      onChange={async (e) => {
-                        const file = e.target.files?.[0]
-                        if (!file) return
-                        if (file.size > 2 * 1024 * 1024) {
-                          setMessage('El archivo excede 2 MB.')
-                          return
-                        }
-                        const bytes = new Uint8Array(await file.arrayBuffer())
-                        let raw = ''
-                        for (const byte of bytes) raw += String.fromCharCode(byte)
-                        await act('attachment', {
-                          caseID: c.id,
-                          name: file.name,
-                          mime: file.type,
-                          content: btoa(raw),
-                        })
-                      }}
-                    />
-                  </label>
-                </>
-              )}
-              {mode === 'admin' &&
-                !['resolved', 'dismissed', 'refund_pending'].includes(c.state) && (
+                )}
+                {mode === 'admin' && order.finance.paidAt && !order.finance.reconciledAt && (
                   <Form
                     busy={busy}
-                    submit="Resolver reclamo"
+                    submit="Conciliar recaudo y costo real"
                     fields={[
-                      ['refund', 'Reembolso aprobado (COP; 0 para cerrar)', 'number'],
-                      ['decision', 'Decisión y evidencia', 'text'],
-                      [
-                        'sellerFault',
-                        'Incumplimiento confirmado atribuible al vendedor',
-                        'checkbox',
-                      ],
+                      ['cost', 'Costo real de procesamiento (COP)', 'number'],
+                      ['evidence', 'Referencia del recaudo disponible y extracto', 'text'],
                     ]}
                     onSubmit={(v) =>
-                      act('decideCase', {
-                        caseID: c.id,
-                        refund: Math.round(Number(v.refund) * 100),
-                        decision: v.decision,
-                        sellerFault: v.sellerFault === 'on',
+                      act('reconcile', {
+                        orderID: order.id,
+                        cost: Math.round(Number(v.cost) * 100),
+                        evidence: v.evidence,
                       })
                     }
                   />
                 )}
-            </section>
-          ))}
-        </article>
-      ))}
-      {mode !== 'buyer' && data?.payouts?.length > 0 && (
+              </>
+            )}
+            {(mode !== 'artist' || tab === 'Mensajes') &&
+              (order.finance.paidAt || order.status === 'completed') && (
+                <OrderConversation order={order} />
+              )}
+            {(mode !== 'artist' || tab === 'Reclamos') && (
+              <>
+                {mode !== 'artist' && order.finance.paidAt && (
+                  <ClaimForm
+                    order={order}
+                    busy={busy}
+                    submit={(values) => act('openCase', { orderID: order.id, ...values })}
+                  />
+                )}
+                {order.cases.map((c: any) => (
+                  <section key={c.id} className="space-y-2 rounded border p-3">
+                    <h4>
+                      Reclamo · {copy[c.state]} · {money(c.amount)}
+                    </h4>
+                    <p className="text-xs">Respuesta del vendedor hasta: {date(c.respondBy)}</p>
+                    {c.messages?.map((m: any, i: number) => (
+                      <p className="text-sm" key={i}>
+                        {date(m.at)} ·{' '}
+                        {m.message.startsWith('Adjunto: ') ? (
+                          <a
+                            className="underline"
+                            href={`${endpoint}?action=downloadAttachment&caseID=${c.id}&attachmentID=${m.message.slice(9)}`}
+                          >
+                            Descargar evidencia privada
+                          </a>
+                        ) : (
+                          m.message
+                        )}
+                      </p>
+                    ))}
+                    {c.decision && <p>Resolución: {c.decision}</p>}
+                    {!['resolved', 'dismissed'].includes(c.state) && (
+                      <>
+                        <Form
+                          busy={busy}
+                          submit="Enviar mensaje"
+                          fields={[['message', 'Mensaje', 'text']]}
+                          onSubmit={(v) => act('message', { caseID: c.id, ...v })}
+                        />
+                        <label className="block text-sm">
+                          Adjuntar evidencia privada (PNG, JPEG o PDF, máximo 2 MB)
+                          <input
+                            type="file"
+                            accept="image/png,image/jpeg,application/pdf"
+                            disabled={busy}
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0]
+                              if (!file) return
+                              if (file.size > 2 * 1024 * 1024) {
+                                setMessage('El archivo excede 2 MB.')
+                                return
+                              }
+                              const bytes = new Uint8Array(await file.arrayBuffer())
+                              let raw = ''
+                              for (const byte of bytes) raw += String.fromCharCode(byte)
+                              await act('attachment', {
+                                caseID: c.id,
+                                name: file.name,
+                                mime: file.type,
+                                content: btoa(raw),
+                              })
+                            }}
+                          />
+                        </label>
+                      </>
+                    )}
+                    {mode === 'admin' &&
+                      !['resolved', 'dismissed', 'refund_pending'].includes(c.state) && (
+                        <Form
+                          busy={busy}
+                          submit="Resolver reclamo"
+                          fields={[
+                            ['refund', 'Reembolso aprobado (COP; 0 para cerrar)', 'number'],
+                            ['decision', 'Decisión y evidencia', 'text'],
+                            [
+                              'sellerFault',
+                              'Incumplimiento confirmado atribuible al vendedor',
+                              'checkbox',
+                            ],
+                          ]}
+                          onSubmit={(v) =>
+                            act('decideCase', {
+                              caseID: c.id,
+                              refund: Math.round(Number(v.refund) * 100),
+                              decision: v.decision,
+                              sellerFault: v.sellerFault === 'on',
+                            })
+                          }
+                        />
+                      )}
+                  </section>
+                ))}
+              </>
+            )}
+          </article>
+        ))}
+      {mode !== 'buyer' && (mode === 'admin' || tab === 'Resumen') && data?.payouts?.length > 0 && (
         <section>
           <h3>Liquidaciones</h3>
           {data.payouts.map((p: any) => (
@@ -526,6 +641,73 @@ export function CommercePanel({
         </section>
       )}
     </section>
+  )
+}
+
+function ClaimForm({
+  order,
+  busy,
+  submit,
+}: {
+  order: any
+  busy: boolean
+  submit: (values: any) => Promise<unknown>
+}) {
+  return (
+    <details>
+      <summary>Abrir un reclamo formal</summary>
+      <p>Esta acción activa la revisión y retención financiera del reclamo.</p>
+      <form
+        className="grid gap-3"
+        onSubmit={(e) => {
+          e.preventDefault()
+          const values = new FormData(e.currentTarget)
+          void submit({
+            amount: Math.round(Number(values.get('amount')) * 100),
+            message: values.get('message'),
+            allocations: order.items
+              .map((i: any) => ({
+                product: i.product,
+                quantity: Number(values.get(i.product) || 0),
+              }))
+              .filter((a: any) => a.quantity > 0),
+          })
+        }}
+      >
+        <label>
+          Importe reclamado (COP)
+          <input
+            className={inputClass}
+            name="amount"
+            type="number"
+            min="0.01"
+            step="0.01"
+            required
+          />
+        </label>
+        {order.items?.map((i: any) => (
+          <label key={i.product}>
+            {i.title} · unidades reclamadas
+            <input
+              className={inputClass}
+              type="number"
+              name={i.product}
+              min="0"
+              max={i.quantity}
+              step="1"
+              defaultValue={i.quantity}
+            />
+          </label>
+        ))}
+        <label>
+          Describe el problema y los productos afectados
+          <textarea className={inputClass} name="message" required maxLength={5000} />
+        </label>
+        <button className={buttonClass} disabled={busy}>
+          Abrir reclamo
+        </button>
+      </form>
+    </details>
   )
 }
 
@@ -628,7 +810,14 @@ function ShipmentForm({
               name={x.product}
               type="number"
               min="0"
-              max={x.quantity}
+              max={Math.max(
+                0,
+                x.quantity -
+                  (order.shipments || [])
+                    .flatMap((s: any) => s.allocations || [])
+                    .filter((a: any) => a.product === x.product)
+                    .reduce((n: number, a: any) => n + a.quantity, 0),
+              )}
               step="1"
               defaultValue="0"
             />

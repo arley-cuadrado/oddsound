@@ -36,7 +36,16 @@ export async function GET(request: Request): Promise<Response> {
   })
 
   return Response.json({
-    products,
+    products: isAdmin
+      ? products
+      : products.map(
+          ({
+            checkoutProvider: _provider,
+            externalCheckoutURL: _url,
+            externalProductReference: _reference,
+            ...product
+          }) => product,
+        ),
     scope: {
       includeDrafts: isAdmin ? includeDrafts : true,
       ownerOnly: !isAdmin,

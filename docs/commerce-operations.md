@@ -73,10 +73,20 @@ All monetary API action inputs (`cost`, `amount`, `refund`, posting `amount`) us
 
 - `node --import tsx scripts/test-commerce.mts integration`: existing integration suite with temporary replica set.
 - `node node_modules/vitest/vitest.mjs run tests/int/commerce-finance.int.spec.ts`: transaction/concurrency tests against a separate disposable MongoDB replica set.
-- `node --import tsx scripts/test-commerce.mts e2e`: buyer tracking/claim and email-token UI tests; external responses are fixtures, not live carrier tests.
+- `node --import tsx scripts/test-commerce.mts e2e`: tracking/email-token fixture tests plus a real local band/fan workflow (product editor, guide, private conversation, claim and verified review). Payment approval and delivery evidence are seeded locally; no money is moved and no live carrier is queried.
 - `node --import tsx scripts/test-commerce.mts build`: production build against an empty temporary database.
 - `pnpm exec tsc --noEmit`, `pnpm lint`, and `pnpm build`: ordinary project checks using your configured environment.
 
 Monitor worker liveness, old leases, failed tasks, overdue dispatches, escalated cases, stale balance attestations, unknown payouts/refunds and repeated connector failures. The admin UI displays failed tasks; worker errors go to structured logs. Configure deployment alerting on these signals. Persisted task leases recover interrupted work; uncertain external writes remain uncertain until queried or reconciled.
 
 Before production, take an encrypted MongoDB replica-set backup and a separate secure backup of the encryption key; restore into an isolated database, verify every journal sums to zero, recompute artist balances from postings, compare with provider statements, and replay a duplicate notification. Real provider acceptance, carrier access and backup infrastructure require account/operator validation; local tests cannot certify them.
+
+## Seller hub, messages and reviews
+
+Products retains Payload's native list/editor and adds the seller hub above the list. Artists and bands create physical products with shipping; admin-only checkout fields are protected at field and endpoint level. Existing digital products require administrative review rather than automatic conversion. New prices default to COP.
+
+Run `pnpm commerce:init` before enabling this release on an existing database. It creates compound unique indexes for reviews (buyer/order/product) and reports (review/reporter), plus the conversation message pagination index. No historical orders enter the Wompi ledger automatically. The summary aggregates all paid Wompi orders and ledger postings independently of pagination.
+
+Order conversations are separate from formal cases: a message does not hold funds. Messages poll only while the conversation is open and the document visible; read cursors mark only the loaded latest page. Guests retain per-order verified access, while reviews require a fan account and verified delivery of all purchased units of the reviewed product. Public reviews expose only display name, stars, comment and date; administration can inspect edit history, review reports and audit moderation decisions. Hidden reviews stay hidden when edited. Reviews do not create seller incidents.
+
+`SHOPPING_ENABLED=false` continues to stop public shop/cart purchases while authoring, order support and reconciliation remain available. Keep production charge/payout switches disabled until the provider and bank verification requirements above are met. Only bank accounts are supported as payout destinations in this release.

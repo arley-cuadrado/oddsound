@@ -17,6 +17,8 @@ import {
   settlePayout,
 } from '@/commerce/service'
 import { seedCarriers } from '@/commerce/tracking'
+import { publicReviews, saveReview, sendOrderMessage, verifiedReviewOrder } from '@/commerce/social'
+import { commerceSummary } from '@/commerce/summary'
 
 let replica: MongoMemoryReplSet, payload: Payload, artist: string, product: string, cart: string
 beforeAll(async () => {
@@ -51,6 +53,10 @@ beforeEach(async () => {
     'commerceIncidents',
     'commerceTasks',
     'commerceRefunds',
+    'commerceReviews',
+    'commerceReviewReports',
+    'commerceMessages',
+    'commerceConversations',
   ])
     await model(payload, name).deleteMany({})
   const profile = await model(payload, 'profiles').create({
@@ -96,6 +102,334 @@ beforeEach(async () => {
     overrideAccess: true,
   })
   await seedCarriers(payload)
+})
+
+describe('storefront reviews and private conversations', () => {
+  async function buyerOrder() {
+    const result = await paid()
+    const buyer = idOf(new (model(payload, 'orders').db.base.Types.ObjectId)())
+    await model(payload, 'orders').updateOne({ _id: result.orderID }, { $set: { customer: buyer } })
+    return { ...result, buyer }
+  }
+  it('requires a verified delivery and own purchase before reviewing', async () => {
+    const r = await buyerOrder()
+    await expect(verifiedReviewOrder(payload, r.buyer, r.orderID, product)).rejects.toThrow(
+      /verificada/,
+    )
+    await deliver(r.orderID)
+    await expect(verifiedReviewOrder(payload, 'another-buyer', r.orderID, product)).rejects.toThrow(
+      /propia/,
+    )
+    await expect(verifiedReviewOrder(payload, r.buyer, r.orderID, artist)).rejects.toThrow(/propia/)
+    await expect(
+      saveReview(
+        payload,
+        { id: r.buyer },
+        { orderID: r.orderID, product, stars: 6, body: 'Invalid' },
+      ),
+    ).rejects.toThrow(/estrellas/)
+    await saveReview(
+      payload,
+      { id: r.buyer, name: 'Fan público' },
+      { orderID: r.orderID, product, stars: 4, body: 'Buen servicio' },
+    )
+    const result = await publicReviews(payload, artist, product)
+    expect(result.rating).toEqual({ average: 4, count: 1 })
+    expect(result.reviews[0]).toMatchObject({ publicName: 'Fan público', body: 'Buen servicio' })
+    expect(result.reviews[0]).not.toHaveProperty('buyer')
+    expect(result.reviews[0]).not.toHaveProperty('order')
+  })
+  it('serializes concurrent review saves, retains history and preserves moderation on edit', async () => {
+    const r = await buyerOrder()
+    await deliver(r.orderID)
+    await Promise.all(
+      [4, 5].map((stars) =>
+        saveReview(
+          payload,
+          { id: r.buyer },
+          { orderID: r.orderID, product, stars, body: 'Servicio verificado' },
+        ),
+      ),
+    )
+    expect(await model(payload, 'commerceReviews').countDocuments()).toBe(1)
+    const review = await model(payload, 'commerceReviews').findOne().lean<any>()
+    expect(review.history).toHaveLength(1)
+    await expect(
+      model(payload, 'commerceReviews').create({
+        buyer: r.buyer,
+        order: r.orderID,
+        product,
+        artist,
+        stars: 5,
+      }),
+    ).rejects.toMatchObject({ code: 11000 })
+    await model(payload, 'commerceReviews').updateOne(
+      { _id: review._id },
+      { $set: { hidden: true } },
+    )
+    await saveReview(
+      payload,
+      { id: r.buyer },
+      { orderID: r.orderID, product, stars: 1, body: 'Edición' },
+    )
+    expect((await publicReviews(payload, artist)).rating.count).toBe(0)
+    expect(
+      (await model(payload, 'profiles').findById(artist).lean<any>()).commerce.salesBlocked,
+    ).not.toBe(true)
+  })
+  it('keeps reviews unavailable until all units of the product are delivered and verified', async () => {
+    const r = await checkout(2)
+    const order = await model(payload, 'orders').findById(r.orderID).lean<any>()
+    const buyer = idOf(new (model(payload, 'orders').db.base.Types.ObjectId)())
+    await model(payload, 'orders').updateOne({ _id: order._id }, { $set: { customer: buyer } })
+    await processPayment(payload, {
+      id: `partial-${r.orderID}`,
+      status: 'APPROVED',
+      reference: order.finance.reference,
+      currency: 'COP',
+      amount_in_cents: 20000000,
+    })
+    const one = await addShipment(payload, 'seller', r.orderID, 'coordinadora', '11111111', [
+      { product, quantity: 1 },
+    ])
+    await verifyDelivery(
+      payload,
+      'admin',
+      idOf(one._id),
+      new Date().toISOString(),
+      'First parcel evidence',
+    )
+    await expect(verifiedReviewOrder(payload, buyer, r.orderID, product)).rejects.toThrow(
+      /verificada/,
+    )
+    await expect(
+      addShipment(payload, 'seller', r.orderID, 'coordinadora', '22222222', [
+        { product, quantity: 2 },
+      ]),
+    ).rejects.toThrow()
+    const two = await addShipment(payload, 'seller', r.orderID, 'coordinadora', '33333333', [
+      { product, quantity: 1 },
+    ])
+    await verifyDelivery(
+      payload,
+      'admin',
+      idOf(two._id),
+      new Date().toISOString(),
+      'Second parcel evidence',
+    )
+    await expect(verifiedReviewOrder(payload, buyer, r.orderID, product)).resolves.toBeDefined()
+  })
+  it('restricts reports and audited review moderation to authenticated users and admins', async () => {
+    const r = await buyerOrder()
+    await deliver(r.orderID)
+    await saveReview(
+      payload,
+      { id: r.buyer },
+      { orderID: r.orderID, product, stars: 2, body: 'Opinión verificable' },
+    )
+    const review = await model(payload, 'commerceReviews').findOne().lean<any>()
+    const { handleCommerce } = await import('@/commerce/http')
+    const auth = vi
+      .spyOn(payload, 'auth')
+      .mockResolvedValue({ user: { id: r.buyer, role: 'creator', userType: 'fan' } } as any)
+    const post = (values: unknown) =>
+      handleCommerce(
+        new Request('http://localhost:3000/creator-api/commerce/operations', {
+          method: 'POST',
+          body: JSON.stringify(values),
+        }),
+      )
+    try {
+      expect(
+        (
+          await post({
+            action: 'reportReview',
+            review: idOf(review._id),
+            reason: 'Revisar contenido',
+          })
+        ).status,
+      ).toBe(200)
+      expect(
+        (
+          await post({
+            action: 'moderateReview',
+            review: idOf(review._id),
+            hidden: true,
+            reason: 'Motivo',
+          })
+        ).status,
+      ).toBe(403)
+      auth.mockResolvedValue({ user: { id: 'admin', role: 'admin' } } as any)
+      expect(
+        (
+          await post({
+            action: 'moderateReview',
+            review: idOf(review._id),
+            hidden: true,
+            reason: 'Incumple reglas de publicación',
+          })
+        ).status,
+      ).toBe(200)
+      expect((await publicReviews(payload, artist)).rating.count).toBe(0)
+      expect(
+        (
+          await post({
+            action: 'moderateReview',
+            review: idOf(review._id),
+            hidden: false,
+            reason: 'Revisión administrativa',
+          })
+        ).status,
+      ).toBe(200)
+      expect((await publicReviews(payload, artist)).rating.count).toBe(1)
+      expect(
+        await model(payload, 'commerceAudits').countDocuments({
+          action: 'review_moderated',
+          'details.review': idOf(review._id),
+        }),
+      ).toBe(2)
+    } finally {
+      auth.mockRestore()
+    }
+  })
+  it('messages preserve balances, validate products and cannot be read by outsiders', async () => {
+    const r = await buyerOrder()
+    const order = await model(payload, 'orders').findById(r.orderID).lean<any>()
+    const initial = await balance(payload, account(artist, r.orderID, 'pending'))
+    await sendOrderMessage(payload, r.buyer, order, 'buyer', '¿Cuándo despachan?', product)
+    await sendOrderMessage(payload, 'seller', order, 'seller', 'Mañana')
+    expect(await model(payload, 'commerceMessages').countDocuments()).toBe(2)
+    expect(await model(payload, 'commerceCases').countDocuments()).toBe(0)
+    expect(await balance(payload, account(artist, r.orderID, 'pending'))).toBe(initial)
+    await expect(
+      sendOrderMessage(payload, r.buyer, order, 'buyer', 'Consulta', artist),
+    ).rejects.toThrow(/ajeno/)
+    const { handleCommerce } = await import('@/commerce/http')
+    const auth = vi
+      .spyOn(payload, 'auth')
+      .mockResolvedValue({ user: { id: 'outsider', role: 'creator', userType: 'fan' } } as any)
+    try {
+      const response = await handleCommerce(
+        new Request(
+          `http://localhost:3000/creator-api/commerce/operations?action=conversation&orderID=${r.orderID}`,
+        ),
+      )
+      expect(response.status).toBe(403)
+      auth.mockResolvedValue({ user: { id: r.buyer, role: 'creator', userType: 'fan' } } as any)
+      const read = await handleCommerce(
+        new Request(
+          `http://localhost:3000/creator-api/commerce/operations?action=conversation&orderID=${r.orderID}`,
+        ),
+      )
+      const data = await read.json()
+      expect(data.unread).toBe(1)
+      const marked = await handleCommerce(
+        new Request('http://localhost:3000/creator-api/commerce/operations', {
+          method: 'POST',
+          body: JSON.stringify({
+            action: 'readConversation',
+            orderID: r.orderID,
+            cursor: data.cursor,
+          }),
+        }),
+      )
+      expect(marked.status).toBe(200)
+      const after = await handleCommerce(
+        new Request(
+          `http://localhost:3000/creator-api/commerce/operations?action=conversation&orderID=${r.orderID}`,
+        ),
+      )
+      expect((await after.json()).unread).toBe(0)
+      const unsafe = await handleCommerce(
+        new Request(
+          `http://localhost:3000/creator-api/commerce/operations?action=sendMessage&orderID=${r.orderID}`,
+        ),
+      )
+      expect(unsafe.status).toBe(405)
+    } finally {
+      auth.mockRestore()
+    }
+  })
+  it('aggregates all paid orders rather than the first page and reconciles ledger totals', async () => {
+    const r = await paid()
+    await reconcileOrder(payload, 'admin', r.orderID, 300000, 'real cost')
+    const original = await model(payload, 'orders').findById(r.orderID).lean<any>()
+    for (let n = 0; n < 25; n++)
+      await model(payload, 'orders').create({
+        artistProfile: artist,
+        paymentProvider: 'wompi',
+        finance: {
+          ...original.finance,
+          reference: `summary-${n}`,
+          processorCost: null,
+          reconciledAt: null,
+        },
+      })
+    const result = await commerceSummary(payload, { artistProfile: artist })
+    expect(result.units).toBe(26)
+    expect(result.sales).toBe(260000000)
+    expect(result.unreconciled).toBe(25)
+    expect(result.buckets.pending).toBe(8500000)
+    expect(result.commission).toBe(1200000)
+    expect(result.processorCost).toBe(300000)
+    expect((await commerceSummary(payload, { customerEmail: 'other@example.test' })).units).toBe(0)
+  })
+  it('protects technical product fields and physical shipping rules through Payload access', async () => {
+    const id = idOf(new (model(payload, 'orders').db.base.Types.ObjectId)())
+    const user = {
+      id,
+      email: 'seller@example.test',
+      role: 'creator',
+      userType: 'band',
+      profile: artist,
+      collection: 'users',
+    } as any
+    const saved = await payload.create({
+      collection: 'products',
+      user,
+      overrideAccess: false,
+      draft: true,
+      data: {
+        title: 'Camiseta',
+        slug: `shirt-${id}`,
+        inventory: 3,
+        priceInCOP: 45000,
+        checkoutProvider: 'other',
+        externalCheckoutURL: 'https://example.test/secret',
+        externalProductReference: 'private',
+      },
+    })
+    expect(saved.productType).toBe('physical')
+    expect(saved.requiresShipping).toBe(true)
+    expect(saved.priceInCOPEnabled).toBe(true)
+    expect(saved.priceInCOP).toBe(45000)
+    expect(saved.checkoutProvider).toBeUndefined()
+    expect(saved.externalCheckoutURL).toBeUndefined()
+    const stored = await model(payload, 'products').findById(saved.id).lean<any>()
+    expect(stored.checkoutProvider).toBe('wompi')
+    expect(stored.externalProductReference).toBeUndefined()
+    await expect(
+      payload.update({
+        collection: 'products',
+        id: saved.id,
+        user,
+        overrideAccess: false,
+        data: { productType: 'digital' },
+      }),
+    ).rejects.toThrow(/físicos/)
+    await expect(
+      payload.update({
+        collection: 'products',
+        id: saved.id,
+        user,
+        overrideAccess: false,
+        data: { requiresShipping: false },
+      }),
+    ).rejects.toThrow(/requieren envío/)
+    await expect(
+      payload.find({ collection: 'commerceMessages', user, overrideAccess: false }),
+    ).rejects.toThrow()
+  })
 })
 async function checkout(quantity = 1) {
   return createCheckout(payload, {

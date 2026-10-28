@@ -3,6 +3,10 @@ import { getPayload } from 'payload'
 import { createHash } from 'node:crypto'
 import { isAdminUser } from '@/utilities/isAdminUser'
 import { resolveUserProfileID } from '@/utilities/commerceProducts'
+import { findCreatorProfileByOwner } from '@/utilities/creatorProfiles'
+import { isMusicalCreatorUser } from '@/utilities/isEditorialUser'
+import { handleSocial } from './social'
+import { commerceSummary } from './summary'
 import { encryptSecret, decryptSecret } from '@/utilities/secrets'
 import { getServerSideURL } from '@/utilities/getURL'
 import { CommerceError, CARRIERS, integer, nextCycle, trackingLink } from './domain'
@@ -49,9 +53,27 @@ export async function handleCommerce(request: Request, forcedAction?: string): P
         throw new CommerceError('Petición inválida.', 400)
     }
     const action = forcedAction || body.action || url.searchParams.get('action') || 'overview'
+    const readActions = [
+      'overview',
+      'banks',
+      'conversation',
+      'reviews',
+      'reviewModeration',
+      'downloadAttachment',
+    ]
+    if (
+      request.method === 'GET'
+        ? !readActions.includes(action)
+        : request.method !== 'POST' || readActions.includes(action)
+    )
+      throw new CommerceError('Método no permitido para esta acción.', 405)
     const { user } = await payload.auth({ headers: request.headers })
     const admin = isAdminUser(user)
-    const artist = user ? resolveUserProfileID(user) : null
+    const artist =
+      user && isMusicalCreatorUser(user)
+        ? resolveUserProfileID(user) ||
+          (await findCreatorProfileByOwner({ ownerID: user.id, payload }))
+        : null
     const orderID = String(body.orderID || url.searchParams.get('orderID') || '')
     const caseID = String(body.caseID || url.searchParams.get('caseID') || '')
     const actor = user?.id || 'guest'
@@ -59,6 +81,7 @@ export async function handleCommerce(request: Request, forcedAction?: string): P
       if (!admin) throw new CommerceError('Solo administración.', 403)
     }
     const orderAccess = async (id: string, sellerOnly = false) => {
+      if (!/^[a-f0-9]{24}$/i.test(id)) throw new CommerceError('Pedido inválido.', 400)
       const order = await model(payload, 'orders').findById(id).lean<any>()
       if (!order) throw new CommerceError('Pedido no encontrado.', 404)
       const seller = Boolean(artist && idOf(order.artistProfile) === artist)
@@ -84,6 +107,8 @@ export async function handleCommerce(request: Request, forcedAction?: string): P
         throw new CommerceError('No tienes acceso a este pedido.', 403)
       return { order, seller, buyer: buyer || guest }
     }
+    const social = await handleSocial(payload, action, body, url, user, admin, orderAccess)
+    if (social) return social
     if (action === 'guestRequest') {
       if (!/^[a-f0-9]{24}$/i.test(orderID))
         return reply({ message: 'Si los datos coinciden, recibirás un enlace por correo.' })
@@ -148,10 +173,15 @@ export async function handleCommerce(request: Request, forcedAction?: string): P
           : artist
             ? { artistProfile: artist }
             : { customer: user!.id }
+      const page = Math.max(1, Math.min(100000, Number(url.searchParams.get('page')) || 1)) | 0
+      const status = url.searchParams.get('status')
+      const filtered = { ...q, ...(status ? { fulfillmentStatus: status } : {}) }
+      const summary = user && (admin || artist) ? await commerceSummary(payload, q) : null
       const orders = await model(payload, 'orders')
-        .find(q)
+        .find(filtered)
         .sort({ createdAt: -1 })
-        .limit(100)
+        .skip((page - 1) * 20)
+        .limit(20)
         .lean<any>()
       const carrierCatalogue = await model(payload, 'commerceCarriers').find().lean<any[]>()
       const rows = []
@@ -160,6 +190,15 @@ export async function handleCommerce(request: Request, forcedAction?: string): P
           aid = idOf(o.artistProfile)
         const shipments = await model(payload, 'commerceShipments').find({ order: oid }).lean<any>()
         const cases = await model(payload, 'commerceCases').find({ order: oid }).lean<any>()
+        const participant = user?.id || `guest:${oid}`
+        const conversation = await model(payload, 'commerceConversations')
+          .findOne({ order: oid })
+          .lean<any>()
+        const unreadMessages = await model(payload, 'commerceMessages').countDocuments({
+          order: oid,
+          sender: { $ne: participant },
+          createdAt: { $gt: conversation?.readAt?.[participant] || new Date(0) },
+        })
         const buckets = Object.fromEntries(
           await Promise.all(
             ['pending', 'held', 'available', 'in_transit', 'paid'].map(async (b) => [
@@ -170,7 +209,11 @@ export async function handleCommerce(request: Request, forcedAction?: string): P
         )
         rows.push({
           id: oid,
+          unreadMessages,
           artist: aid,
+          artistName:
+            (await model(payload, 'profiles').findById(aid).select('displayName').lean<any>())
+              ?.displayName || 'Tienda',
           status: o.status,
           paymentProvider: o.paymentProvider,
           fulfillmentStatus: o.fulfillmentStatus,
@@ -185,7 +228,7 @@ export async function handleCommerce(request: Request, forcedAction?: string): P
             reconciledAt: o.finance?.reconciledAt,
             blocked: o.finance?.blocked,
           },
-          items: o.finance?.items?.map((x: any) => ({
+          items: (o.finance?.items || o.items)?.map((x: any) => ({
             product: idOf(x.product),
             quantity: x.quantity,
             title: x.title,
@@ -199,6 +242,8 @@ export async function handleCommerce(request: Request, forcedAction?: string): P
             lastCheckedAt: x.lastCheckedAt,
             estimatedDeliveryAt: x.estimatedDeliveryAt,
             verifiedAt: x.verifiedAt,
+            allocations: x.allocations,
+            source: x.source,
             error: x.error,
             link: String(
               carrierCatalogue.find((c: any) => c.code === x.carrier)?.officialURL ||
@@ -227,6 +272,11 @@ export async function handleCommerce(request: Request, forcedAction?: string): P
               .lean<any>()
           : []
       return reply({
+        summary,
+        page,
+        total: await model(payload, 'orders').countDocuments(filtered),
+        payoutWeekday: Number(s.payoutWeekday ?? 3),
+        payoutHour: s.payoutHour ?? 9,
         orders: rows,
         carriers: carrierCatalogue.length
           ? carrierCatalogue.map((c: any) => ({ code: c.code, name: c.name }))

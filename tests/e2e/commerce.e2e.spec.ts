@@ -51,6 +51,7 @@ test('buyer can see tracking, validate their guide and open a claim', async ({ p
   await page.getByLabel('Consultar una guía de este pedido').fill('12345678')
   await expect(page.getByText(/Última actualización/)).toBeVisible()
   await page.screenshot({ path: 'test-results/commerce-buyer.png', fullPage: true })
+  await page.getByText('Abrir un reclamo formal', { exact: true }).click()
   await page.getByLabel('Importe reclamado (COP)').fill('100000')
   await page
     .getByLabel('Describe el problema y los productos afectados')
