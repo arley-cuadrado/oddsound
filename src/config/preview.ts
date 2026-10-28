@@ -4,6 +4,32 @@ export function isPreviewEnvironment(env: PreviewEnvironment = process.env) {
   return env.VERCEL_ENV === 'preview'
 }
 
+/** Atlas templates omit the database. Preview must select its explicit namespace, never a driver default. */
+export function resolveDatabaseURL(env: PreviewEnvironment = process.env) {
+  const connection = env.DATABASE_URL || ''
+  if (!isPreviewEnvironment(env)) return connection
+  let resolved = connection
+  const expected = env.PREVIEW_DATABASE_NAME
+  if (
+    expected &&
+    /^oddsound_preview(?:_[a-z0-9]+)*$/.test(expected) &&
+    connection === connection.trim() &&
+    /^mongodb(?:\+srv)?:\/\//.test(connection)
+  ) {
+    try {
+      const url = new URL(connection)
+      if (!url.pathname || url.pathname === '/') {
+        url.pathname = `/${expected}`
+        resolved = url.toString()
+      }
+    } catch {
+      // Validation below supplies a safe error without echoing the connection.
+    }
+  }
+  assertPreviewDatabase({ ...env, DATABASE_URL: resolved })
+  return resolved
+}
+
 /** Fail before Payload opens a connection. Database permissions remain the authoritative boundary. */
 export function assertPreviewDatabase(env: PreviewEnvironment = process.env) {
   if (!isPreviewEnvironment(env)) return

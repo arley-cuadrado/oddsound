@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { assertPreviewDatabase } from '@/config/preview'
+import { assertPreviewDatabase, resolveDatabaseURL } from '@/config/preview'
 import { payoutsAPI, wompiAPI, wompiEnvironment } from '@/commerce/wompi'
 import { collectTrustedServerURLs } from '@/utilities/getURL'
 
@@ -19,6 +19,38 @@ describe('Preview isolation boundaries', () => {
         DATABASE_URL: 'mongodb://localhost/oddsound',
       }),
     ).not.toThrow()
+  })
+  it('selects the explicit Preview database for Atlas templates while preserving credentials and parameters', () => {
+    const env = {
+      ...preview,
+      DATABASE_URL:
+        'mongodb+srv://demo:fake%40pass@cluster.example.test/?retryWrites=true&authSource=admin',
+    }
+    const resolved = new URL(resolveDatabaseURL(env))
+    expect(resolved.pathname).toBe('/oddsound_preview_tests')
+    expect(resolved.username).toBe('demo')
+    expect(resolved.password).toBe('fake%40pass')
+    expect(resolved.searchParams.get('authSource')).toBe('admin')
+    expect(resolved.searchParams.get('retryWrites')).toBe('true')
+    expect(env.DATABASE_URL).toContain('/?')
+    expect(resolveDatabaseURL({ VERCEL_ENV: 'production', DATABASE_URL: env.DATABASE_URL })).toBe(
+      env.DATABASE_URL,
+    )
+  })
+  it('never rewrites an explicitly different database or accepts a missing isolation declaration', () => {
+    expect(() =>
+      resolveDatabaseURL({ ...preview, DATABASE_URL: 'mongodb://localhost/oddsound' }),
+    ).toThrow(/no puede conectar/)
+    expect(() =>
+      resolveDatabaseURL({
+        ...preview,
+        DATABASE_URL: 'mongodb://localhost/',
+        PREVIEW_DATABASE_NAME: undefined,
+      }),
+    ).toThrow(/PREVIEW_DATABASE_NAME/)
+    expect(() =>
+      resolveDatabaseURL({ ...preview, DATABASE_URL: 'mongodb://localhost/?dbName=oddsound' }),
+    ).toThrow(/parámetros/)
   })
   it('rejects missing guards, the production namespace and a different authenticated user', () => {
     expect(() => assertPreviewDatabase({ ...preview, PREVIEW_DATABASE_NAME: undefined })).toThrow(

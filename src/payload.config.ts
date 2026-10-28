@@ -1,5 +1,5 @@
 import { mongooseAdapter } from '@payloadcms/db-mongodb'
-import { assertPreviewDatabase, isPreviewEnvironment } from '@/config/preview'
+import { resolveDatabaseURL, isPreviewEnvironment } from '@/config/preview'
 import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
 import { ecommercePlugin } from '@payloadcms/plugin-ecommerce'
 import { isShoppingEnabled } from '@/config/shopping'
@@ -46,7 +46,7 @@ import { collectTrustedServerURLs, getServerSideURL } from './utilities/getURL'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
-assertPreviewDatabase()
+const databaseURL = resolveDatabaseURL()
 const isPreview = isPreviewEnvironment()
 const hasSMTPConfig = !isPreview && Boolean(process.env.SMTP_HOST && process.env.SMTP_PASS)
 const storageToken = isPreview
@@ -124,7 +124,7 @@ export default buildConfig({
   // This config helps us configure global or default features that the other editors can inherit
   editor: defaultLexical,
   db: mongooseAdapter({
-    url: process.env.DATABASE_URL || '',
+    url: databaseURL,
     connectOptions: {
       maxPoolSize: Number(process.env.MONGODB_MAX_POOL_SIZE || 5),
       minPoolSize: 0,

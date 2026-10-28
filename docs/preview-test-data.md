@@ -23,6 +23,10 @@ efectivos del nuevo usuario antes de considerar completado el aislamiento.
 - `PREVIEW_DATABASE_NAME=oddsound_preview_shop_operations`: obligatorio. La
   aplicación falla antes de conectar si la URI apunta a otra base o falta esta
   declaración. Otras ramas Preview también necesitan su configuración explícita.
+  Si la plantilla de Atlas no incluye nombre de base, Preview lo completa con
+  esta variable antes de validar y conectar. Una base explícita distinta se
+  rechaza; no se utiliza la base predeterminada del driver. Production conserva
+  su URI sin modificaciones.
 - `PAYLOAD_SECRET` y `MARKETPLACE_TOKEN_ENCRYPTION_KEY`: valores exclusivos de
   Preview, distintos de producción.
 - `NEXT_PUBLIC_SERVER_URL`: alias Preview de esta rama.
