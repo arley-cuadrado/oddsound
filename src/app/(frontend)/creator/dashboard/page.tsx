@@ -4,18 +4,14 @@ import { getPayload } from 'payload'
 import { redirect } from 'next/navigation'
 
 import { CommerceOverview } from './CommerceOverview'
-import { MercadoPagoConnectionCard } from './MercadoPagoConnectionCard'
-import { OrdersTable } from './OrdersTable'
+import { CommercePanel } from '@/components/CommercePanel'
+
 import { ShippingSettingsCard } from './ShippingSettingsCard'
-import { listArtistOrders } from '@/utilities/commerceOrders'
-import { getMerchOnboarding } from '@/utilities/merchOnboarding'
+
 import { listCommerceProducts, resolveUserProfileID } from '@/utilities/commerceProducts'
 import { getMeUser } from '@/utilities/getMeUser'
 import { isFanUser } from '@/utilities/isEditorialUser'
-import {
-  findCreatorProfileByID,
-  sanitizeMercadoPagoConnection,
-} from '@/utilities/mercadoPagoOAuth'
+import { findCreatorProfileByID } from '@/utilities/mercadoPagoOAuth'
 
 export default async function CreatorDashboardPage() {
   const { user } = await getMeUser({
@@ -40,13 +36,7 @@ export default async function CreatorDashboardPage() {
     payload,
     profile: profileID,
   })
-  const orders = profileID
-    ? await listArtistOrders({ payload, profileID: String(profileID) })
-    : []
-  const merch = getMerchOnboarding({
-    hasPublishedProduct: products.some((product) => product.status === 'published'),
-    profile,
-  })
+
   const publicProfileSlug =
     (typeof user.profile === 'object' && user.profile && 'slug' in user.profile
       ? user.profile.slug
@@ -88,18 +78,12 @@ export default async function CreatorDashboardPage() {
           </div>
         </header>
 
-        <MercadoPagoConnectionCard
-          connection={sanitizeMercadoPagoConnection(profile)}
-          merch={merch}
-          profileSlug={publicProfileSlug}
-        />
+        <CommercePanel mode="artist" />
 
         <ShippingSettingsCard
           initialNotes={profile?.commerce?.shippingNotes || ''}
           initialRate={profile?.commerce?.shippingFlatRateCOP || 0}
         />
-
-        <OrdersTable orders={orders} />
 
         <CommerceOverview products={products} />
       </div>

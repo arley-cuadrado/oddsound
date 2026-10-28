@@ -21,6 +21,7 @@ export function extendEcommerceOrdersCollection({ defaultCollection }: OverrideA
 
   return {
     ...defaultCollection,
+    access: { ...defaultCollection.access, create: () => false, update: () => false, delete: () => false },
     admin: {
       ...(defaultCollection.admin || {}),
       defaultColumns: ['customerEmail', 'status', 'amount', 'updatedAt'],
@@ -29,6 +30,7 @@ export function extendEcommerceOrdersCollection({ defaultCollection }: OverrideA
     },
     fields: [
       ...defaultFields,
+      { name: 'finance', type: 'json', access: { create: () => false, update: () => false, read: ({ req }) => req.user?.role === 'admin' } },
       {
         name: 'consumerProfile',
         type: 'relationship',
@@ -68,7 +70,7 @@ export function extendEcommerceOrdersCollection({ defaultCollection }: OverrideA
         name: 'paymentProvider',
         type: 'select',
         defaultValue: 'mercadopago',
-        options: [{ label: 'Mercado Pago', value: 'mercadopago' }],
+        options: [{ label: 'Mercado Pago (histórico)', value: 'mercadopago' }, { label: 'Wompi', value: 'wompi' }],
       },
       {
         name: 'settlementCurrencyCode',
@@ -148,6 +150,7 @@ export function extendEcommerceTransactionsCollection({ defaultCollection }: Ove
 
   return {
     ...defaultCollection,
+    access: { ...defaultCollection.access, create: () => false, update: () => false, delete: () => false },
     admin: {
       ...(defaultCollection.admin || {}),
       defaultColumns: ['customerEmail', 'status', 'amount', 'updatedAt'],
@@ -156,6 +159,7 @@ export function extendEcommerceTransactionsCollection({ defaultCollection }: Ove
     },
     fields: [
       ...defaultFields,
+      { name: 'finance', type: 'json', access: { create: () => false, update: () => false, read: ({ req }) => req.user?.role === 'admin' } },
       {
         name: 'consumerProfile',
         type: 'relationship',
@@ -184,7 +188,7 @@ export function extendEcommerceTransactionsCollection({ defaultCollection }: Ove
         name: 'paymentProvider',
         type: 'select',
         defaultValue: 'mercadopago',
-        options: [{ label: 'Mercado Pago', value: 'mercadopago' }],
+        options: [{ label: 'Mercado Pago (histórico)', value: 'mercadopago' }, { label: 'Wompi', value: 'wompi' }],
       },
       {
         name: 'settlementCurrencyCode',

@@ -7,7 +7,7 @@ function buildProfile(overrides: Partial<Profile> & { id: string }): Profile {
   return {
     createdAt: '2026-01-01T00:00:00.000Z',
     displayName: `Artista ${overrides.id}`,
-    mercadoPagoConnection: { status: 'connected' },
+    commerce: { bankVerified: true },
     owner: 'user-1',
     slug: `artista-${overrides.id}`,
     updatedAt: '2026-01-01T00:00:00.000Z',
@@ -65,12 +65,12 @@ describe('groupCartItemsByArtist', () => {
     expect(summary.groups[1]?.items).toHaveLength(1)
   })
 
-  it('blocks an artist without a Mercado Pago connection and sorts them last', () => {
+  it('blocks an artist without a verified bank account and sorts them last', () => {
     const ready = buildProfile({ displayName: 'Zulema', id: 'p1' })
     const notReady = buildProfile({
       displayName: 'Alba',
       id: 'p2',
-      mercadoPagoConnection: { status: 'not_connected' },
+      commerce: { bankVerified: false },
     })
 
     const summary = groupCartItemsByArtist(

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { CommercePanel } from '@/components/CommercePanel'
 import config from '@payload-config'
 import { getPayload } from 'payload'
 import Link from 'next/link'
@@ -92,6 +93,7 @@ export default async function FanAccountPage() {
             </p>
           </header>
 
+          <CommercePanel mode="buyer" />
           <section className="space-y-6">
             <div className="space-y-2">
               <h2 className="text-xl font-medium text-foreground">Mis comentarios</h2>

@@ -1,8 +1,8 @@
 import type { Profile } from '@/payload-types'
 
-import { type ConnectionHealth, describeConnectionHealth } from './mercadoPagoTokens'
+import type { ConnectionHealth } from './mercadoPagoTokens'
 
-export const MERCADO_PAGO_CONNECT_PATH = '/creator-api/payments/connect/start'
+export const MERCADO_PAGO_CONNECT_PATH = '/creator/dashboard#commerce-operations'
 
 export type MerchOnboardingStepKey = 'connect' | 'product' | 'shipping'
 
@@ -39,28 +39,27 @@ export function getMerchOnboarding({
   hasPublishedProduct: boolean
   profile: null | Profile | undefined
 }): MerchOnboarding {
-  const connection = profile?.mercadoPagoConnection
-  const health = describeConnectionHealth(profile)
-  const needsReconnect = health.state === 'action_required' || health.state === 'expired'
-  const connected = connection?.status === 'connected' && !needsReconnect
+  const connected = Boolean(profile?.commerce?.bankVerified && !profile?.commerce?.salesBlocked)
+  const needsReconnect = false
+  const health: ConnectionHealth = {
+    state: connected ? 'connected' : 'not_connected',
+    daysRemaining: null,
+    lifetimeRatio: connected ? 1 : 0,
+  }
   const shippingRate = profile?.commerce?.shippingFlatRateCOP
 
   const steps: MerchOnboardingStep[] = [
     {
       action: connected ? null : MERCADO_PAGO_CONNECT_PATH,
-      actionLabel: needsReconnect
-        ? 'Reconectar Mercado Pago'
-        : connection?.status === 'connecting'
-          ? 'Continuar la conexión'
-          : 'Conectar Mercado Pago',
-      detail: connected
-        ? connection?.sellerEmail || 'Cuenta vinculada'
-        : needsReconnect
-          ? 'Tu autorización dejó de funcionar.'
-          : 'Autorizas en Mercado Pago.',
+      actionLabel: 'Registrar o verificar cuenta bancaria',
+      detail: profile?.commerce?.salesBlocked
+        ? 'Nuevas ventas bloqueadas; revisa tus reclamos.'
+        : connected
+          ? 'Cuenta bancaria verificada'
+          : 'Registra y verifica tu cuenta bancaria.',
       done: connected,
       key: 'connect',
-      title: 'Conecta tu cuenta',
+      title: 'Verifica tu cuenta bancaria',
     },
     {
       action: '/dashboard/collections/profiles',

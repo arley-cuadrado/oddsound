@@ -3,6 +3,7 @@ import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
 import { ecommercePlugin } from '@payloadcms/plugin-ecommerce'
 import { isShoppingEnabled } from '@/config/shopping'
 import sharp from 'sharp'
+import { commerceCollections, CommerceSettings } from './commerce/collections'
 import path from 'path'
 import { buildConfig, PayloadRequest } from 'payload'
 import { fileURLToPath } from 'url'
@@ -72,6 +73,7 @@ export default buildConfig({
       afterLogin: ['@/components/CreatorRegisterLink'],
       afterNavLinks: [
         '@/components/AdminUploadSizeGuard',
+        '@/components/CommerceAdminLink',
         '@/components/CreatorCollectionFilter',
         '@/components/CreatorNavLabelOverrides',
         '@/components/EditorsNavLink',
@@ -157,9 +159,10 @@ export default buildConfig({
     ConsumerProfiles,
     Comments,
     Users,
+    ...commerceCollections,
   ],
   cors: trustedServerURLs,
-  globals: [Header, Footer],
+  globals: [Header, Footer, CommerceSettings],
   i18n: {
     fallbackLanguage: 'es',
     supportedLanguages: {
@@ -220,8 +223,7 @@ export default buildConfig({
   jobs: {
     access: {
       run: ({ req }: { req: PayloadRequest }): boolean => {
-        // Allow logged in users to execute this endpoint (default)
-        if (req.user) return true
+        // Financial tasks are system-only, including for authenticated users.
 
         const secret = process.env.CRON_SECRET
         if (!secret) return false
