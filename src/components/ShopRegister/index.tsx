@@ -133,7 +133,10 @@ export default function ShopRegister(props: AdminViewServerProps) {
       req={req}
       user={req.user || undefined}
       viewType="shop-register"
-      visibleEntities={{ collections: visibleEntities.collections, globals: visibleEntities.globals }}
+      visibleEntities={{
+        collections: visibleEntities.collections,
+        globals: visibleEntities.globals,
+      }}
     >
       <SetStepNav nav={[{ label: 'Shop Register' }]} />
       <main className="shop-register gutter--left gutter--right">
@@ -142,23 +145,31 @@ export default function ShopRegister(props: AdminViewServerProps) {
           <p>Store records organized in one place.</p>
           <Link href="/creator/commerce-admin">Manage settlements, shipping and claims →</Link>
         </header>
-        {groups.map((group) => (
+        {groups.map((group, groupIndex) => (
           <section key={group.title} aria-label={group.title} className="shop-register__section">
             <h2>{group.title}</h2>
-            <div className="shop-register__grid">
+            <ol
+              className="shop-register__list"
+              start={
+                1 +
+                groups.slice(0, groupIndex).reduce((total, item) => total + item.records.length, 0)
+              }
+            >
               {group.records.map((record) => (
-                <Link
-                  className="shop-register__card"
-                  href={`${adminURL}/collections/${record.slug}`}
-                  key={record.slug}
-                >
-                  <h3>
-                    {record.label} <span aria-hidden="true">↗</span>
-                  </h3>
-                  <p>{record.description}</p>
-                </Link>
+                <li key={record.slug}>
+                  <Link
+                    className="shop-register__row"
+                    href={`${adminURL}/collections/${record.slug}`}
+                  >
+                    <span className="shop-register__name">{record.label}</span>
+                    <span className="shop-register__description">{record.description}</span>
+                    <span className="shop-register__arrow" aria-hidden="true">
+                      →
+                    </span>
+                  </Link>
+                </li>
               ))}
-            </div>
+            </ol>
           </section>
         ))}
       </main>
