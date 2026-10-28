@@ -247,7 +247,7 @@ const BeforeDashboard = async () => {
         <section className={`${baseClass}__section`} aria-labelledby="before-dashboard-commerce">
           <div className={`${baseClass}__header`}>
             <div>
-              <h4 id="before-dashboard-commerce">Commerce oficial</h4>
+              <h4 id="before-dashboard-commerce">Mi tienda</h4>
               <p>
                 Acceso directo al catalogo que ya corre con Payload ecommerce dentro del dashboard
                 individual.
@@ -267,6 +267,9 @@ const BeforeDashboard = async () => {
           </ul>
 
           <div className={`${baseClass}__links`}>
+            <Link className={`${baseClass}__link`} href="/dashboard/collections/products/create">
+              Crear producto
+            </Link>
             <Link className={`${baseClass}__link`} href="/creator/dashboard">
               Abrir mi panel de artista
             </Link>
