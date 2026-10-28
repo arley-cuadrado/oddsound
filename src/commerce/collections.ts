@@ -27,7 +27,7 @@ const state = (options: string[]): Field => ({
 function internal(slug: string, fields: Field[], immutable = false): CollectionConfig {
   return {
     slug,
-    admin: { group: 'Operación de comercio', hidden: ({ user }) => !isAdminUser(user) },
+    admin: { group: 'Shop Register', hidden: true },
     access: { read: admin, create: () => false, update: () => false, delete: () => false },
     fields,
     ...(immutable

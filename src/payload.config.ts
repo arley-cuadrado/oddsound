@@ -76,6 +76,14 @@ export default buildConfig({
       },
     },
     components: {
+      views: {
+        shopRegister: {
+          Component: '@/components/ShopRegister',
+          path: '/shop-register',
+          exact: true,
+          meta: { title: 'Shop Register' },
+        },
+      },
       afterLogin: ['@/components/CreatorRegisterLink'],
       afterNavLinks: [
         '@/components/AdminUploadSizeGuard',

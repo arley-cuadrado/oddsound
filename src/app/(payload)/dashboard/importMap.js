@@ -43,6 +43,7 @@ import { default as default_26ca2df84690f50f2026b222b1679ddd } from '@/component
 import { default as default_15d097b404945aa79b02516efaab6869 } from '@/components/EmailPreviewNavLink'
 import { default as default_fe2fdadd74b93fff7bcfd59d92220a93 } from '@/components/ScheduledPublishesNavLink'
 import { default as default_8a7ab0eb7ab5c511aba12e68480bfe5e } from '@/components/BeforeLogin'
+import { default as default_4d8e6416dffab66cafb44a1d6c7025cd } from '@/components/ShopRegister'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 
 /** @type import('payload').ImportMap */
@@ -92,5 +93,6 @@ export const importMap = {
   "@/components/EmailPreviewNavLink#default": default_15d097b404945aa79b02516efaab6869,
   "@/components/ScheduledPublishesNavLink#default": default_fe2fdadd74b93fff7bcfd59d92220a93,
   "@/components/BeforeLogin#default": default_8a7ab0eb7ab5c511aba12e68480bfe5e,
+  "@/components/ShopRegister#default": default_4d8e6416dffab66cafb44a1d6c7025cd,
   "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1
 }
