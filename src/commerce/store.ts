@@ -80,6 +80,8 @@ export async function journal(
     evidence?: unknown
   },
 ) {
+  if (!entry.reference.trim() || entry.reference.length > 240 || !entry.kind.trim())
+    throw new CommerceError('Referencia contable inválida.', 400)
   validatePostings(entry.postings)
   const existing = await model(payload, 'commerceJournal')
     .findOne({ reference: entry.reference })

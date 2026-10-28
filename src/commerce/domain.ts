@@ -22,10 +22,18 @@ export function integer(value: unknown, min = 0): number {
 
 export type Posting = { account: string; amount: number }
 export function validatePostings(postings: Posting[]) {
-  if (postings.length < 2) throw new CommerceError('El asiento requiere contrapartida.')
+  if (!Array.isArray(postings) || postings.length < 2)
+    throw new CommerceError('El asiento requiere contrapartida.')
   let sum = 0
   for (const p of postings) {
-    if (!p.account || !Number.isSafeInteger(p.amount) || !p.amount)
+    if (
+      !p ||
+      typeof p.account !== 'string' ||
+      !p.account.trim() ||
+      p.account.length > 240 ||
+      !Number.isSafeInteger(p.amount) ||
+      !p.amount
+    )
       throw new CommerceError('Asiento inválido.')
     sum += p.amount
     if (!Number.isSafeInteger(sum)) throw new CommerceError('Desbordamiento contable.')

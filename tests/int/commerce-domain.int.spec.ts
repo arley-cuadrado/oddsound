@@ -26,6 +26,12 @@ describe('commerce financial boundaries', () => {
         { account: 'b', amount: 99 },
       ]),
     ).toThrow()
+    expect(() =>
+      validatePostings([
+        { account: 42, amount: -100 },
+        { account: 'cash', amount: 100 },
+      ] as never),
+    ).toThrow()
     expect(() => validatePostings(transfer('cash', 'payable', 100))).not.toThrow()
   })
   it('uses the Bogotá calendar across year and weekly boundaries', () => {
