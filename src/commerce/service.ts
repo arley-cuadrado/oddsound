@@ -44,6 +44,11 @@ export async function financeTransaction<T>(
 }
 
 export async function chargeSettings(payload: Payload) {
+  if (process.env.VERCEL_ENV === 'preview' && process.env.PREVIEW_ALLOW_SANDBOX_CHECKOUT !== 'true')
+    throw new CommerceError(
+      'Preview usa pedidos ficticios. El checkout Sandbox no está habilitado.',
+      503,
+    )
   const s = await settings(payload)
   if (
     !s.chargesEnabled ||

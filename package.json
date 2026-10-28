@@ -30,6 +30,7 @@
     "commerce:worker": "tsx scripts/commerce-worker.mts",
     "commerce:worker:once": "tsx scripts/commerce-worker.mts --once",
     "commerce:init": "tsx scripts/commerce-init.mts",
+    "seed:preview": "tsx scripts/seed-preview.mts",
     "test:commerce": "tsx scripts/test-commerce.mts integration"
   },
   "dependencies": {

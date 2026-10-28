@@ -1,10 +1,15 @@
 import { createHash, timingSafeEqual } from 'node:crypto'
 import { CommerceError, integer } from './domain'
+import { isPreviewEnvironment } from '@/config/preview'
 
 export function wompiEnvironment() {
+  if (isPreviewEnvironment() && process.env.WOMPI_ENVIRONMENT === 'production')
+    throw new CommerceError('Preview solo admite Wompi Sandbox.', 503)
   return process.env.WOMPI_ENVIRONMENT === 'production' ? 'production' : 'sandbox'
 }
 export function wompiAPI() {
+  if (isPreviewEnvironment() && /^(?:prv|priv)_prod_/.test(process.env.WOMPI_PRIVATE_KEY || ''))
+    throw new CommerceError('Las credenciales productivas no se usan en Preview.', 503)
   return wompiEnvironment() === 'production'
     ? 'https://production.wompi.co/v1'
     : 'https://sandbox.wompi.co/v1'
@@ -123,6 +128,8 @@ export async function wompiRefund(transactionID: string, amount: number, referen
 
 /** Host is configured by deployment, never by a browser request. */
 export async function payoutsAPI(path: string, body?: unknown, reference?: string) {
+  if (isPreviewEnvironment())
+    throw new CommerceError('Las dispersiones bancarias están deshabilitadas en Preview.', 503)
   const base = process.env.WOMPI_PAYOUTS_BASE_URL
   if (!base || !process.env.WOMPI_PAYOUTS_API_KEY || !process.env.WOMPI_PAYOUTS_PRINCIPAL_ID)
     throw new CommerceError('Dispersión no configurada.', 503)

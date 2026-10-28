@@ -1,4 +1,5 @@
 import { mongooseAdapter } from '@payloadcms/db-mongodb'
+import { assertPreviewDatabase, isPreviewEnvironment } from '@/config/preview'
 import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
 import { ecommercePlugin } from '@payloadcms/plugin-ecommerce'
 import { isShoppingEnabled } from '@/config/shopping'
@@ -45,8 +46,13 @@ import { collectTrustedServerURLs, getServerSideURL } from './utilities/getURL'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
-const hasSMTPConfig = Boolean(process.env.SMTP_HOST && process.env.SMTP_PASS)
-const hasBlobToken = Boolean(process.env.BLOB_READ_WRITE_TOKEN)
+assertPreviewDatabase()
+const isPreview = isPreviewEnvironment()
+const hasSMTPConfig = !isPreview && Boolean(process.env.SMTP_HOST && process.env.SMTP_PASS)
+const storageToken = isPreview
+  ? process.env.PREVIEW_BLOB_READ_WRITE_TOKEN
+  : process.env.BLOB_READ_WRITE_TOKEN
+const hasBlobToken = Boolean(storageToken)
 const shouldVerifySMTPTransport =
   hasSMTPConfig && process.env.NODE_ENV === 'production' && process.env.VERCEL_ENV === 'production'
 const trustedServerURLs = collectTrustedServerURLs()
@@ -210,7 +216,7 @@ export default buildConfig({
             collections: {
               media: true,
             },
-            token: process.env.BLOB_READ_WRITE_TOKEN || '',
+            token: storageToken || '',
           }),
         ]
       : []),

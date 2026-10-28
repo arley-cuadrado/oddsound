@@ -1,4 +1,8 @@
-import type { CollectionAfterReadHook, CollectionBeforeValidateHook, CollectionConfig } from 'payload'
+import type {
+  CollectionAfterReadHook,
+  CollectionBeforeValidateHook,
+  CollectionConfig,
+} from 'payload'
 import { ValidationError } from 'payload'
 
 import {
@@ -87,18 +91,20 @@ const normalizeLegacyMediaURLs: CollectionAfterReadHook = ({ doc }) => {
     nextDoc.url = rewriteLegacyMediaURL(nextDoc.url)
   }
 
-  if (typeof nextDoc.thumbnailURL === 'string' && nextDoc.thumbnailURL.includes(LEGACY_MEDIA_API_SEGMENT)) {
+  if (
+    typeof nextDoc.thumbnailURL === 'string' &&
+    nextDoc.thumbnailURL.includes(LEGACY_MEDIA_API_SEGMENT)
+  ) {
     nextDoc.thumbnailURL = rewriteLegacyMediaURL(nextDoc.thumbnailURL)
   }
 
   if (nextDoc.sizes && typeof nextDoc.sizes === 'object') {
     const sizes = nextDoc.sizes as Record<
       string,
-      | null
-      | {
-          filename?: null | string
-          url?: null | string
-        }
+      null | {
+        filename?: null | string
+        url?: null | string
+      }
     >
 
     nextDoc.sizes = Object.fromEntries(
@@ -305,7 +311,22 @@ export const Media: CollectionConfig = {
     ],
   },
   hooks: {
-    afterRead: [normalizeLegacyMediaURLs],
+    afterRead: [
+      normalizeLegacyMediaURLs,
+      ({ doc }) => {
+        if (
+          process.env.VERCEL_ENV !== 'preview' ||
+          !/^preview-demo-[a-z0-9-]+\.webp$/.test(doc.filename || '')
+        )
+          return doc
+        return {
+          ...doc,
+          url: `/preview-demo/${doc.filename}`,
+          thumbnailURL: `/preview-demo/${doc.filename}`,
+          sizes: {},
+        }
+      },
+    ],
     beforeValidate: [validateRequiredMediaFile],
     beforeChange: [assignOwnership],
   },

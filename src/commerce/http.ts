@@ -8,7 +8,7 @@ import { isMusicalCreatorUser } from '@/utilities/isEditorialUser'
 import { handleSocial } from './social'
 import { commerceSummary } from './summary'
 import { encryptSecret, decryptSecret } from '@/utilities/secrets'
-import { getServerSideURL } from '@/utilities/getURL'
+import { collectTrustedServerURLs } from '@/utilities/getURL'
 import { CommerceError, CARRIERS, integer, nextCycle, trackingLink } from './domain'
 import { account, audit, balance, idOf, insert, model, settings } from './store'
 import {
@@ -40,7 +40,7 @@ export async function handleCommerce(request: Request, forcedAction?: string): P
     let body: any = {}
     if (request.method !== 'GET') {
       const origin = request.headers.get('origin')
-      if (origin && origin !== new URL(getServerSideURL()).origin)
+      if (origin && !collectTrustedServerURLs().includes(origin))
         throw new CommerceError('Origen inválido.', 403)
       const raw = await request.text()
       if (raw.length > 3000000) throw new CommerceError('Archivo o petición demasiado grande.', 413)
@@ -324,6 +324,10 @@ export async function handleCommerce(request: Request, forcedAction?: string): P
     }
     if (action === 'banks') {
       if (!artist && !admin) throw new CommerceError('Necesitas un perfil de artista.', 403)
+      if (process.env.VERCEL_ENV === 'preview')
+        return reply({
+          banks: [{ id: 'preview-demo', name: 'Banco de pruebas (sin transferencias)' }],
+        })
       const { payoutsAPI } = await import('./wompi')
       const result = await payoutsAPI('/banks')
       const rows = Array.isArray(result.data) ? result.data : result.banks
