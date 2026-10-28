@@ -43,6 +43,40 @@ describe('Preview isolation boundaries', () => {
     expect(wompiAPI).toThrow(/productivas/)
     await expect(payoutsAPI('/payments', { amount: 1 })).rejects.toThrow(/deshabilitadas/)
   })
+  it('diagnoses missing values, empty database paths and pasted assignments without exposing credentials', () => {
+    expect(() => assertPreviewDatabase({ ...preview, DATABASE_URL: undefined })).toThrow(
+      /Falta DATABASE_URL/,
+    )
+    expect(() =>
+      assertPreviewDatabase({
+        ...preview,
+        DATABASE_URL: 'mongodb+srv://demo:fake@cluster.example.test/',
+      }),
+    ).toThrow(/no incluye nombre de base/)
+    for (const connection of [
+      ' DATABASE_URL=mongodb://demo:fake@localhost/test',
+      'mongodb://demo:fake@localhost/test ',
+    ])
+      expect(() => assertPreviewDatabase({ ...preview, DATABASE_URL: connection })).toThrow(
+        /sin espacios/,
+      )
+    expect(() =>
+      assertPreviewDatabase({ ...preview, DATABASE_URL: 'mongodb://localhost/oddsound' }),
+    ).toThrow(/La URI selecciona oddsound/)
+  })
+  it('does not echo unknown database paths, usernames, passwords or hosts in diagnostics', () => {
+    const sensitive = ['private-user', 'private-password', 'private-host', 'private-path']
+    try {
+      assertPreviewDatabase({
+        ...preview,
+        DATABASE_URL: `mongodb://${sensitive[0]}:${sensitive[1]}@${sensitive[2]}/${sensitive[3]}`,
+      })
+      throw new Error('Expected rejection')
+    } catch (error) {
+      expect(String(error)).toContain('PREVIEW_DATABASE_NAME=oddsound_preview_tests')
+      for (const value of sensitive) expect(String(error)).not.toContain(value)
+    }
+  })
   it('does not trust the production origin as a Preview fallback', () => {
     vi.stubEnv('VERCEL_ENV', 'preview')
     vi.stubEnv('NEXT_PUBLIC_SERVER_URL', 'https://preview.example.test')
