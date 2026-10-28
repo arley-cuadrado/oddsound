@@ -27,7 +27,8 @@ const state = (options: string[]): Field => ({
 function internal(slug: string, fields: Field[], immutable = false): CollectionConfig {
   return {
     slug,
-    admin: { group: 'Shop Register', hidden: true },
+    // group:false removes sidebar/home entries while keeping native record routes available.
+    admin: { group: false, hidden: ({ user }) => !isAdminUser(user) },
     access: { read: admin, create: () => false, update: () => false, delete: () => false },
     fields,
     ...(immutable
