@@ -1,7 +1,7 @@
 import type { Payload } from 'payload'
 import type { User } from '@/payload-types'
 import { randomUUID } from 'node:crypto'
-import { assertPreviewDatabase, isPreviewEnvironment } from '@/config/preview'
+import { resolveDatabaseURL, isPreviewEnvironment } from '@/config/preview'
 import { model, idOf, atomic, insert, journal, account } from '@/commerce/store'
 import { transfer } from '@/commerce/domain'
 import { encryptSecret } from '@/utilities/secrets'
@@ -15,7 +15,7 @@ const slugs = ['horizonte-demo', 'luna-demo']
 
 /** Synthetic data only. No exports from production, provider calls, or externally runnable tasks. */
 export async function seedPreview(payload: Payload, password: string) {
-  assertPreviewDatabase()
+  resolveDatabaseURL()
   if (!isPreviewEnvironment() || password.length < 20)
     throw new Error('Seed exclusivo de Preview con credencial de prueba segura.')
   const users: User[] = []

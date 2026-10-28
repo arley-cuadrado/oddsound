@@ -1,6 +1,6 @@
 import 'dotenv/config'
-import { assertPreviewDatabase } from '../src/config/preview'
-assertPreviewDatabase()
+import { resolveDatabaseURL } from '../src/config/preview'
+resolveDatabaseURL()
 if (process.env.VERCEL_ENV !== 'preview') throw new Error('Este seed solo se ejecuta en Preview.')
 const password = process.env.PREVIEW_DEMO_PASSWORD || ''
 if (password.length < 20)
