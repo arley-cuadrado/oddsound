@@ -35,6 +35,12 @@ efectivos del nuevo usuario antes de considerar completado el aislamiento.
   las imágenes incluidas funcionan, pero las subidas nuevas en Vercel requieren
   completar esta configuración.
 
+La rama `codex/shop-operations` tiene configurado un secreto sensible exclusivo
+para el almacén público `oddsound-preview-shop-operations`
+(`store_qeHEwoZGepXpzxBZ`, región `iad1`). No se conecta el almacén a Production ni
+se distribuye su token a otras ramas. Las imágenes subidas aquí son públicas;
+utilizar únicamente imágenes de prueba, nunca documentos privados.
+
 Preview deshabilita SMTP y todas las llamadas a la API de dispersiones bancarias.
 El catálogo de bancos es ficticio. El acceso a Wompi productivo también se rechaza.
 Los conectores de transportadoras permanecen deshabilitados.
