@@ -1,7 +1,6 @@
 import type { CollectionConfig } from 'payload'
 import { slugField } from 'payload'
 
-import { authenticated } from '@/access/authenticated'
 import { hasFreshAdminAccess } from '@/access/hasFreshAdminAccess'
 import { assignOwnership } from '@/hooks/assignOwnership'
 import { isAdminUser } from '@/utilities/isAdminUser'
@@ -29,7 +28,7 @@ function validateExternalCheckoutURL(
 }
 
 const canManageOwnedProducts: CollectionConfig['access'] = {
-  admin: authenticated,
+  admin: ({ req: { user } }) => isAdminUser(user) || isMusicalCreatorUser(user),
   create: ({ req: { user } }) => isAdminUser(user) || isMusicalCreatorUser(user),
   delete: async ({ req }) => {
     const user = req.user
@@ -69,6 +68,7 @@ const canManageOwnedProducts: CollectionConfig['access'] = {
 
     if (!user) return false
     if (await hasFreshAdminAccess(req as any)) return true
+    if (!isMusicalCreatorUser(user)) return false
 
     return {
       owner: {
@@ -78,7 +78,9 @@ const canManageOwnedProducts: CollectionConfig['access'] = {
   },
 }
 
-export function extendEcommerceProductsCollection({ defaultCollection }: OverrideArgs): CollectionConfig {
+export function extendEcommerceProductsCollection({
+  defaultCollection,
+}: OverrideArgs): CollectionConfig {
   const defaultVersions =
     defaultCollection.versions && typeof defaultCollection.versions === 'object'
       ? defaultCollection.versions
@@ -93,9 +95,14 @@ export function extendEcommerceProductsCollection({ defaultCollection }: Overrid
     access: canManageOwnedProducts,
     admin: {
       ...(defaultCollection.admin || {}),
-      defaultColumns: ['title', 'priceInUSD', 'inventory', 'updatedAt'],
-      hidden: ({ user }) => !isAdminUser(user),
+      defaultColumns: ['title', 'priceInCOP', 'inventory', 'updatedAt'],
+      group: 'Tienda',
+      hidden: ({ user }) => !isAdminUser(user) && !isMusicalCreatorUser(user),
       useAsTitle: 'title',
+    },
+    labels: {
+      singular: 'Producto',
+      plural: 'Productos',
     },
     fields: [
       {
@@ -129,7 +136,7 @@ export function extendEcommerceProductsCollection({ defaultCollection }: Overrid
       {
         name: 'title',
         type: 'text',
-        label: 'Title',
+        label: 'Título',
         required: true,
       },
       {
@@ -184,7 +191,8 @@ export function extendEcommerceProductsCollection({ defaultCollection }: Overrid
         type: 'array',
         label: 'Galeria',
         admin: {
-          description: 'La primera imagen puede reutilizarse luego en la vitrina publica del producto.',
+          description:
+            'La primera imagen puede reutilizarse luego en la vitrina publica del producto.',
           initCollapsed: true,
         },
         fields: [
@@ -237,7 +245,8 @@ export function extendEcommerceProductsCollection({ defaultCollection }: Overrid
         type: 'text',
         label: 'URL de compra externa',
         admin: {
-          description: 'Prepara productos con checkout externo mientras definimos la integracion final de pagos.',
+          description:
+            'Prepara productos con checkout externo mientras definimos la integracion final de pagos.',
         },
         validate: validateExternalCheckoutURL,
       },
@@ -246,7 +255,8 @@ export function extendEcommerceProductsCollection({ defaultCollection }: Overrid
         type: 'text',
         label: 'Referencia externa',
         admin: {
-          description: 'Guarda el ID del producto o precio en la plataforma externa para futuras automatizaciones.',
+          description:
+            'Guarda el ID del producto o precio en la plataforma externa para futuras automatizaciones.',
         },
       },
       {
