@@ -154,7 +154,7 @@ export function assertGroupIsPurchasable({
   profile: Profile
   profileID: string
 }): void {
-  if (profile.mercadoPagoConnection?.status !== 'connected') {
+  if (!profile.commerce?.bankVerified || profile.commerce?.salesBlocked) {
     throw new CheckoutError(
       'artist_not_ready',
       `${profile.displayName || 'Este artista'} todavía no puede recibir pagos.`,

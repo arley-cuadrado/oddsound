@@ -49,7 +49,7 @@ export const CartClient: React.FC = () => {
   const [notice, setNotice] = useState<null | string>(null)
   const returnHandled = useRef(false)
 
-  const requiresShipping = summary.groups.some((group) => group.totals.shippingCOP > 0)
+  const requiresShipping = summary.groups.some((group) => group.requiresShipping !== false)
 
   const setGroupState = useCallback((profileID: string, state: GroupPaymentState) => {
     setGroupStates((current) => ({ ...current, [profileID]: state }))
@@ -179,7 +179,7 @@ export const CartClient: React.FC = () => {
 
   async function handlePay(group: ArtistCartGroup) {
     const missing = getMissingContactFields(contact, {
-      requiresShipping: group.totals.shippingCOP > 0,
+      requiresShipping: group.requiresShipping !== false,
     })
 
     if (missing.length > 0) {

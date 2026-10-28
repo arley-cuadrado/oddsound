@@ -81,6 +81,20 @@ export interface Config {
     consumerProfiles: ConsumerProfile;
     comments: Comment;
     users: User;
+    commerceJournal: CommerceJournal;
+    commerceLocks: CommerceLock;
+    commerceEvents: CommerceEvent;
+    commercePayouts: CommercePayout;
+    commerceBanks: CommerceBank;
+    commerceShipments: CommerceShipment;
+    commerceCases: CommerceCase;
+    commerceRefunds: CommerceRefund;
+    commerceIncidents: CommerceIncident;
+    commerceAudits: CommerceAudit;
+    commerceAttachments: CommerceAttachment;
+    commerceGuestAccess: CommerceGuestAccess;
+    commerceTasks: CommerceTask;
+    commerceCarriers: CommerceCarrier;
     redirects: Redirect;
     forms: Form;
     'form-submissions': FormSubmission;
@@ -111,6 +125,20 @@ export interface Config {
     consumerProfiles: ConsumerProfilesSelect<false> | ConsumerProfilesSelect<true>;
     comments: CommentsSelect<false> | CommentsSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
+    commerceJournal: CommerceJournalSelect<false> | CommerceJournalSelect<true>;
+    commerceLocks: CommerceLocksSelect<false> | CommerceLocksSelect<true>;
+    commerceEvents: CommerceEventsSelect<false> | CommerceEventsSelect<true>;
+    commercePayouts: CommercePayoutsSelect<false> | CommercePayoutsSelect<true>;
+    commerceBanks: CommerceBanksSelect<false> | CommerceBanksSelect<true>;
+    commerceShipments: CommerceShipmentsSelect<false> | CommerceShipmentsSelect<true>;
+    commerceCases: CommerceCasesSelect<false> | CommerceCasesSelect<true>;
+    commerceRefunds: CommerceRefundsSelect<false> | CommerceRefundsSelect<true>;
+    commerceIncidents: CommerceIncidentsSelect<false> | CommerceIncidentsSelect<true>;
+    commerceAudits: CommerceAuditsSelect<false> | CommerceAuditsSelect<true>;
+    commerceAttachments: CommerceAttachmentsSelect<false> | CommerceAttachmentsSelect<true>;
+    commerceGuestAccess: CommerceGuestAccessSelect<false> | CommerceGuestAccessSelect<true>;
+    commerceTasks: CommerceTasksSelect<false> | CommerceTasksSelect<true>;
+    commerceCarriers: CommerceCarriersSelect<false> | CommerceCarriersSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
@@ -133,11 +161,13 @@ export interface Config {
   globals: {
     header: Header;
     footer: Footer;
+    commerceSettings: CommerceSetting;
     'payload-jobs-stats': PayloadJobsStat;
   };
   globalsSelect: {
     header: HeaderSelect<false> | HeaderSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
+    commerceSettings: CommerceSettingsSelect<false> | CommerceSettingsSelect<true>;
     'payload-jobs-stats': PayloadJobsStatsSelect<false> | PayloadJobsStatsSelect<true>;
   };
   locale: null;
@@ -417,6 +447,8 @@ export interface Profile {
     lastError?: string | null;
   };
   commerce?: {
+    bankVerified?: boolean | null;
+    salesBlocked?: boolean | null;
     /**
      * Una por pedido, no por producto. 0 = envío gratis.
      */
@@ -1140,6 +1172,362 @@ export interface Comment {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "commerceJournal".
+ */
+export interface CommerceJournal {
+  id: string;
+  reference: string;
+  artist?: string | null;
+  order?: string | null;
+  kind: string;
+  postings?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  evidence?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "commerceLocks".
+ */
+export interface CommerceLock {
+  id: string;
+  key: string;
+  revision?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "commerceEvents".
+ */
+export interface CommerceEvent {
+  id: string;
+  reference: string;
+  channel?: string | null;
+  state: 'pending' | 'processed' | 'failed';
+  body?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  error?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "commercePayouts".
+ */
+export interface CommercePayout {
+  id: string;
+  reference: string;
+  artist?: string | null;
+  cycle?: string | null;
+  amount?: number | null;
+  feeReserve?: number | null;
+  actualFee?: number | null;
+  orders?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  bankSnapshot?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  providerID?: string | null;
+  cashReconciledAt?: string | null;
+  providerTransactionID?: string | null;
+  providerState?: string | null;
+  state: 'reserved' | 'submitting' | 'unknown' | 'pending_approval' | 'pending' | 'paid' | 'failed' | 'cancelled';
+  error?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "commerceBanks".
+ */
+export interface CommerceBank {
+  id: string;
+  artist: string;
+  encryptedDetails?: string | null;
+  lastFour?: string | null;
+  revision?: string | null;
+  state: 'unverified' | 'verified';
+  verifiedBy?: string | null;
+  verificationEvidence?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "commerceShipments".
+ */
+export interface CommerceShipment {
+  id: string;
+  reference: string;
+  order?: string | null;
+  artist?: string | null;
+  carrier?: string | null;
+  guide?: string | null;
+  allocations?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  state: 'registered' | 'in_transit' | 'exception' | 'delivered' | 'returned';
+  deliveredAt?: string | null;
+  verifiedAt?: string | null;
+  verifiedBy?: string | null;
+  verificationEvidence?: string | null;
+  lastCheckedAt?: string | null;
+  nextCheckAt?: string | null;
+  failures?: number | null;
+  error?: string | null;
+  source?: string | null;
+  estimatedDeliveryAt?: string | null;
+  history?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "commerceCases".
+ */
+export interface CommerceCase {
+  id: string;
+  reference: string;
+  order?: string | null;
+  artist?: string | null;
+  buyer?: string | null;
+  amount?: number | null;
+  allocations?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  state: 'open' | 'awaiting_seller' | 'escalated' | 'refund_pending' | 'resolved' | 'dismissed';
+  messages?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  respondBy?: string | null;
+  decision?: string | null;
+  decidedBy?: string | null;
+  sellerFault?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "commerceRefunds".
+ */
+export interface CommerceRefund {
+  id: string;
+  reference: string;
+  order?: string | null;
+  caseID?: string | null;
+  artist?: string | null;
+  amount?: number | null;
+  state: 'reserved' | 'submitting' | 'unknown' | 'pending' | 'manual_required' | 'completed' | 'failed';
+  method?: string | null;
+  providerID?: string | null;
+  request?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  evidence?: string | null;
+  error?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "commerceIncidents".
+ */
+export interface CommerceIncident {
+  id: string;
+  reference: string;
+  order?: string | null;
+  artist?: string | null;
+  caseID?: string | null;
+  reason?: string | null;
+  decidedBy?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "commerceAudits".
+ */
+export interface CommerceAudit {
+  id: string;
+  reference: string;
+  actor?: string | null;
+  action?: string | null;
+  details?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "commerceAttachments".
+ */
+export interface CommerceAttachment {
+  id: string;
+  caseID?: string | null;
+  name?: string | null;
+  mime?: string | null;
+  encryptedContent?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "commerceGuestAccess".
+ */
+export interface CommerceGuestAccess {
+  id: string;
+  order?: string | null;
+  tokenHash?: string | null;
+  expiresAt?: string | null;
+  lastRequestedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "commerceTasks".
+ */
+export interface CommerceTask {
+  id: string;
+  reference: string;
+  kind?: string | null;
+  data?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  dueAt?: string | null;
+  leaseUntil?: string | null;
+  leaseToken?: string | null;
+  attempts?: number | null;
+  state: 'pending' | 'running' | 'completed' | 'failed';
+  error?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "commerceCarriers".
+ */
+export interface CommerceCarrier {
+  id: string;
+  code: string;
+  name?: string | null;
+  officialURL?: string | null;
+  apiEnabled?: boolean | null;
+  scrapingEnabled?: boolean | null;
+  assessment?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  apiConfig?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  scrapingConfig?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects".
  */
 export interface Redirect {
@@ -1327,11 +1715,20 @@ export interface Order {
   status?: OrderStatus;
   amount?: number | null;
   currency?: 'COP' | null;
+  finance?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   consumerProfile?: (string | null) | ConsumerProfile;
   artistProfile?: (string | null) | Profile;
   release?: (string | null) | Page;
   cart?: (string | null) | Cart;
-  paymentProvider?: 'mercadopago' | null;
+  paymentProvider?: ('mercadopago' | 'wompi') | null;
   settlementCurrencyCode?: 'COP' | null;
   subtotalCOP?: number | null;
   shippingAmountCOP?: number | null;
@@ -1383,10 +1780,19 @@ export interface Transaction {
   cart?: (string | null) | Cart;
   amount?: number | null;
   currency?: 'COP' | null;
+  finance?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   consumerProfile?: (string | null) | ConsumerProfile;
   artistProfile?: (string | null) | Profile;
   release?: (string | null) | Page;
-  paymentProvider?: 'mercadopago' | null;
+  paymentProvider?: ('mercadopago' | 'wompi') | null;
   settlementCurrencyCode?: 'COP' | null;
   providerEventType?: string | null;
   providerEventId?: string | null;
@@ -1559,6 +1965,62 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'users';
         value: string | User;
+      } | null)
+    | ({
+        relationTo: 'commerceJournal';
+        value: string | CommerceJournal;
+      } | null)
+    | ({
+        relationTo: 'commerceLocks';
+        value: string | CommerceLock;
+      } | null)
+    | ({
+        relationTo: 'commerceEvents';
+        value: string | CommerceEvent;
+      } | null)
+    | ({
+        relationTo: 'commercePayouts';
+        value: string | CommercePayout;
+      } | null)
+    | ({
+        relationTo: 'commerceBanks';
+        value: string | CommerceBank;
+      } | null)
+    | ({
+        relationTo: 'commerceShipments';
+        value: string | CommerceShipment;
+      } | null)
+    | ({
+        relationTo: 'commerceCases';
+        value: string | CommerceCase;
+      } | null)
+    | ({
+        relationTo: 'commerceRefunds';
+        value: string | CommerceRefund;
+      } | null)
+    | ({
+        relationTo: 'commerceIncidents';
+        value: string | CommerceIncident;
+      } | null)
+    | ({
+        relationTo: 'commerceAudits';
+        value: string | CommerceAudit;
+      } | null)
+    | ({
+        relationTo: 'commerceAttachments';
+        value: string | CommerceAttachment;
+      } | null)
+    | ({
+        relationTo: 'commerceGuestAccess';
+        value: string | CommerceGuestAccess;
+      } | null)
+    | ({
+        relationTo: 'commerceTasks';
+        value: string | CommerceTask;
+      } | null)
+    | ({
+        relationTo: 'commerceCarriers';
+        value: string | CommerceCarrier;
       } | null)
     | ({
         relationTo: 'redirects';
@@ -2078,6 +2540,8 @@ export interface ProfilesSelect<T extends boolean = true> {
   commerce?:
     | T
     | {
+        bankVerified?: T;
+        salesBlocked?: T;
         shippingFlatRateCOP?: T;
         shippingNotes?: T;
       };
@@ -2194,6 +2658,228 @@ export interface UsersSelect<T extends boolean = true> {
         createdAt?: T;
         expiresAt?: T;
       };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "commerceJournal_select".
+ */
+export interface CommerceJournalSelect<T extends boolean = true> {
+  reference?: T;
+  artist?: T;
+  order?: T;
+  kind?: T;
+  postings?: T;
+  evidence?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "commerceLocks_select".
+ */
+export interface CommerceLocksSelect<T extends boolean = true> {
+  key?: T;
+  revision?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "commerceEvents_select".
+ */
+export interface CommerceEventsSelect<T extends boolean = true> {
+  reference?: T;
+  channel?: T;
+  state?: T;
+  body?: T;
+  error?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "commercePayouts_select".
+ */
+export interface CommercePayoutsSelect<T extends boolean = true> {
+  reference?: T;
+  artist?: T;
+  cycle?: T;
+  amount?: T;
+  feeReserve?: T;
+  actualFee?: T;
+  orders?: T;
+  bankSnapshot?: T;
+  providerID?: T;
+  cashReconciledAt?: T;
+  providerTransactionID?: T;
+  providerState?: T;
+  state?: T;
+  error?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "commerceBanks_select".
+ */
+export interface CommerceBanksSelect<T extends boolean = true> {
+  artist?: T;
+  encryptedDetails?: T;
+  lastFour?: T;
+  revision?: T;
+  state?: T;
+  verifiedBy?: T;
+  verificationEvidence?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "commerceShipments_select".
+ */
+export interface CommerceShipmentsSelect<T extends boolean = true> {
+  reference?: T;
+  order?: T;
+  artist?: T;
+  carrier?: T;
+  guide?: T;
+  allocations?: T;
+  state?: T;
+  deliveredAt?: T;
+  verifiedAt?: T;
+  verifiedBy?: T;
+  verificationEvidence?: T;
+  lastCheckedAt?: T;
+  nextCheckAt?: T;
+  failures?: T;
+  error?: T;
+  source?: T;
+  estimatedDeliveryAt?: T;
+  history?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "commerceCases_select".
+ */
+export interface CommerceCasesSelect<T extends boolean = true> {
+  reference?: T;
+  order?: T;
+  artist?: T;
+  buyer?: T;
+  amount?: T;
+  allocations?: T;
+  state?: T;
+  messages?: T;
+  respondBy?: T;
+  decision?: T;
+  decidedBy?: T;
+  sellerFault?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "commerceRefunds_select".
+ */
+export interface CommerceRefundsSelect<T extends boolean = true> {
+  reference?: T;
+  order?: T;
+  caseID?: T;
+  artist?: T;
+  amount?: T;
+  state?: T;
+  method?: T;
+  providerID?: T;
+  request?: T;
+  evidence?: T;
+  error?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "commerceIncidents_select".
+ */
+export interface CommerceIncidentsSelect<T extends boolean = true> {
+  reference?: T;
+  order?: T;
+  artist?: T;
+  caseID?: T;
+  reason?: T;
+  decidedBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "commerceAudits_select".
+ */
+export interface CommerceAuditsSelect<T extends boolean = true> {
+  reference?: T;
+  actor?: T;
+  action?: T;
+  details?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "commerceAttachments_select".
+ */
+export interface CommerceAttachmentsSelect<T extends boolean = true> {
+  caseID?: T;
+  name?: T;
+  mime?: T;
+  encryptedContent?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "commerceGuestAccess_select".
+ */
+export interface CommerceGuestAccessSelect<T extends boolean = true> {
+  order?: T;
+  tokenHash?: T;
+  expiresAt?: T;
+  lastRequestedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "commerceTasks_select".
+ */
+export interface CommerceTasksSelect<T extends boolean = true> {
+  reference?: T;
+  kind?: T;
+  data?: T;
+  dueAt?: T;
+  leaseUntil?: T;
+  leaseToken?: T;
+  attempts?: T;
+  state?: T;
+  error?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "commerceCarriers_select".
+ */
+export interface CommerceCarriersSelect<T extends boolean = true> {
+  code?: T;
+  name?: T;
+  officialURL?: T;
+  apiEnabled?: T;
+  scrapingEnabled?: T;
+  assessment?: T;
+  apiConfig?: T;
+  scrapingConfig?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2495,6 +3181,7 @@ export interface OrdersSelect<T extends boolean = true> {
   status?: T;
   amount?: T;
   currency?: T;
+  finance?: T;
   consumerProfile?: T;
   artistProfile?: T;
   release?: T;
@@ -2550,6 +3237,7 @@ export interface TransactionsSelect<T extends boolean = true> {
   cart?: T;
   amount?: T;
   currency?: T;
+  finance?: T;
   consumerProfile?: T;
   artistProfile?: T;
   release?: T;
@@ -2698,6 +3386,40 @@ export interface Footer {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "commerceSettings".
+ */
+export interface CommerceSetting {
+  id: string;
+  chargesEnabled?: boolean | null;
+  payoutsEnabled?: boolean | null;
+  productionApproved?: boolean | null;
+  commissionConfirmed?: boolean | null;
+  commissionPercent: number;
+  payoutWeekday?: ('0' | '1' | '2' | '3' | '4' | '5' | '6') | null;
+  payoutHour?: number | null;
+  automaticPayoutsApproved?: boolean | null;
+  refundsEnabled?: boolean | null;
+  reconciliationBlocked?: boolean | null;
+  ownRefundFundsInCents?: number | null;
+  ownPayoutFundsInCents?: number | null;
+  payoutFeeReserveInCents?: number | null;
+  observedAvailableInCents?: number | null;
+  balanceEvidence?: string | null;
+  balanceObservedAt?: string | null;
+  holidays?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-jobs-stats".
  */
 export interface PayloadJobsStat {
@@ -2756,6 +3478,32 @@ export interface FooterSelect<T extends boolean = true> {
             };
         id?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "commerceSettings_select".
+ */
+export interface CommerceSettingsSelect<T extends boolean = true> {
+  chargesEnabled?: T;
+  payoutsEnabled?: T;
+  productionApproved?: T;
+  commissionConfirmed?: T;
+  commissionPercent?: T;
+  payoutWeekday?: T;
+  payoutHour?: T;
+  automaticPayoutsApproved?: T;
+  refundsEnabled?: T;
+  reconciliationBlocked?: T;
+  ownRefundFundsInCents?: T;
+  ownPayoutFundsInCents?: T;
+  payoutFeeReserveInCents?: T;
+  observedAvailableInCents?: T;
+  balanceEvidence?: T;
+  balanceObservedAt?: T;
+  holidays?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

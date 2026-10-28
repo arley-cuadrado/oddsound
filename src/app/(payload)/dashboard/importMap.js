@@ -34,6 +34,7 @@ import { default as default_c1363893506d7ed29a71d1a4da01ddb5 } from '@/component
 import { default as default_aa0a2d19d38a4839dbd373417e210b89 } from '@/components/AdminLogo'
 import { default as default_7b7a6a06e1a175e83c8563e02e5ba6a3 } from '@/components/CreatorRegisterLink'
 import { default as default_9c009db9885926d75c09ee7dab45fb48 } from '@/components/AdminUploadSizeGuard'
+import { default as default_331b18ad577f6792e33a460accd679ba } from '@/components/CommerceAdminLink'
 import { default as default_8723cecdd7713b01fe53fa7b7ecdc194 } from '@/components/CreatorCollectionFilter'
 import { default as default_2f5cca6fa9964ae988e12553dd3f3260 } from '@/components/CreatorNavLabelOverrides'
 import { default as default_26ca2df84690f50f2026b222b1679ddd } from '@/components/EditorsNavLink'
@@ -80,6 +81,7 @@ export const importMap = {
   "@/components/AdminLogo#default": default_aa0a2d19d38a4839dbd373417e210b89,
   "@/components/CreatorRegisterLink#default": default_7b7a6a06e1a175e83c8563e02e5ba6a3,
   "@/components/AdminUploadSizeGuard#default": default_9c009db9885926d75c09ee7dab45fb48,
+  "@/components/CommerceAdminLink#default": default_331b18ad577f6792e33a460accd679ba,
   "@/components/CreatorCollectionFilter#default": default_8723cecdd7713b01fe53fa7b7ecdc194,
   "@/components/CreatorNavLabelOverrides#default": default_2f5cca6fa9964ae988e12553dd3f3260,
   "@/components/EditorsNavLink#default": default_26ca2df84690f50f2026b222b1679ddd,

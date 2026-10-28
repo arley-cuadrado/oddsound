@@ -29,6 +29,7 @@ export type ArtistCartGroup = {
   /** Artist photo, falling back to the first product image. Drives the header
    *  of each group card and the stacked cluster on the cart badge. */
   avatarURL: null | string
+  requiresShipping?: boolean
   blockedReason: CartGroupBlockedReason | null
   canCheckout: boolean
   imageURL: null | string
@@ -86,7 +87,7 @@ function resolveReleaseTitle(product: Product): null | string {
 }
 
 export function isProfileReadyForPayments(profile: null | Profile): boolean {
-  return profile?.mercadoPagoConnection?.status === 'connected'
+  return Boolean(profile?.commerce?.bankVerified && !profile?.commerce?.salesBlocked)
 }
 
 export function getShippingFlatRateCOP(profile: null | Profile): number {
@@ -174,6 +175,7 @@ export function groupCartItemsByArtist(
     const imageURL = entry.items.find((item) => item.imageURL)?.imageURL || null
 
     return {
+      requiresShipping: entry.needsShipping,
       avatarURL:
         getMediaResourceURL(isRecord(entry.profile?.avatar) ? (entry.profile?.avatar as Media) : null) ||
         imageURL,

@@ -738,6 +738,8 @@ export const Profiles: CollectionConfig = {
         condition: (_data, _siblingData, { user }) => isAdminUser(user),
       },
       fields: [
+        { name: 'bankVerified', type: 'checkbox', defaultValue: false, access: { create: () => false, update: () => false } },
+        { name: 'salesBlocked', type: 'checkbox', defaultValue: false, access: { create: () => false, update: () => false } },
         {
           name: 'shippingFlatRateCOP',
           type: 'number',
