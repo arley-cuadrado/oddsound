@@ -25,21 +25,26 @@ import { default as default_5a1b1f13e85b8d73ce4959149203fa8a } from '@/component
 import { default as default_204b6f4e4c5b58e4efd2fcb913ae77b8 } from '@/components/UsersAccountTypeField'
 import { default as default_797b25f28c6227edff8335d9f2f9f569 } from '@/components/UsersListSelectionGuard'
 import { default as default_7382d1aa8ab5f7fc48fa08c6814ea59b } from '@/components/CreateRedactorButton'
+import { default as default_818eeb8fd30f3194d82154dfc7afd728 } from '@/components/ShopRegister/RecordFilters'
 import { LinkToDoc as LinkToDoc_aead06e4cbf6b2620c5c51c9ab283634 } from '@payloadcms/plugin-search/client'
 import { ReindexButton as ReindexButton_aead06e4cbf6b2620c5c51c9ab283634 } from '@payloadcms/plugin-search/client'
+import { default as default_3d64a43c644c7dc900aac6b183322b7f } from '@/components/PhysicalProductField'
 import { PriceCell as PriceCell_e27bf7b8cc50640dcdd584767b8eac3c } from '@payloadcms/plugin-ecommerce/client'
 import { PriceInput as PriceInput_b91672ccd6e8b071c11142ab941fedfb } from '@payloadcms/plugin-ecommerce/rsc'
+import { default as default_545452a0304554b20298d99869addcc7 } from '@/components/SellerProductsHub'
 import { default as default_e0e0d4d59b4e8861c8f2e94b15633d33 } from '@/components/AdminAccountAvatar'
 import { default as default_c1363893506d7ed29a71d1a4da01ddb5 } from '@/components/AdminIcon'
 import { default as default_aa0a2d19d38a4839dbd373417e210b89 } from '@/components/AdminLogo'
 import { default as default_7b7a6a06e1a175e83c8563e02e5ba6a3 } from '@/components/CreatorRegisterLink'
 import { default as default_9c009db9885926d75c09ee7dab45fb48 } from '@/components/AdminUploadSizeGuard'
+import { default as default_331b18ad577f6792e33a460accd679ba } from '@/components/CommerceAdminLink'
 import { default as default_8723cecdd7713b01fe53fa7b7ecdc194 } from '@/components/CreatorCollectionFilter'
 import { default as default_2f5cca6fa9964ae988e12553dd3f3260 } from '@/components/CreatorNavLabelOverrides'
 import { default as default_26ca2df84690f50f2026b222b1679ddd } from '@/components/EditorsNavLink'
 import { default as default_15d097b404945aa79b02516efaab6869 } from '@/components/EmailPreviewNavLink'
 import { default as default_fe2fdadd74b93fff7bcfd59d92220a93 } from '@/components/ScheduledPublishesNavLink'
 import { default as default_8a7ab0eb7ab5c511aba12e68480bfe5e } from '@/components/BeforeLogin'
+import { default as default_4d8e6416dffab66cafb44a1d6c7025cd } from '@/components/ShopRegister'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 
 /** @type import('payload').ImportMap */
@@ -71,20 +76,25 @@ export const importMap = {
   "@/components/UsersAccountTypeField#default": default_204b6f4e4c5b58e4efd2fcb913ae77b8,
   "@/components/UsersListSelectionGuard#default": default_797b25f28c6227edff8335d9f2f9f569,
   "@/components/CreateRedactorButton#default": default_7382d1aa8ab5f7fc48fa08c6814ea59b,
+  "@/components/ShopRegister/RecordFilters#default": default_818eeb8fd30f3194d82154dfc7afd728,
   "@payloadcms/plugin-search/client#LinkToDoc": LinkToDoc_aead06e4cbf6b2620c5c51c9ab283634,
   "@payloadcms/plugin-search/client#ReindexButton": ReindexButton_aead06e4cbf6b2620c5c51c9ab283634,
+  "@/components/PhysicalProductField#default": default_3d64a43c644c7dc900aac6b183322b7f,
   "@payloadcms/plugin-ecommerce/client#PriceCell": PriceCell_e27bf7b8cc50640dcdd584767b8eac3c,
   "@payloadcms/plugin-ecommerce/rsc#PriceInput": PriceInput_b91672ccd6e8b071c11142ab941fedfb,
+  "@/components/SellerProductsHub#default": default_545452a0304554b20298d99869addcc7,
   "@/components/AdminAccountAvatar#default": default_e0e0d4d59b4e8861c8f2e94b15633d33,
   "@/components/AdminIcon#default": default_c1363893506d7ed29a71d1a4da01ddb5,
   "@/components/AdminLogo#default": default_aa0a2d19d38a4839dbd373417e210b89,
   "@/components/CreatorRegisterLink#default": default_7b7a6a06e1a175e83c8563e02e5ba6a3,
   "@/components/AdminUploadSizeGuard#default": default_9c009db9885926d75c09ee7dab45fb48,
+  "@/components/CommerceAdminLink#default": default_331b18ad577f6792e33a460accd679ba,
   "@/components/CreatorCollectionFilter#default": default_8723cecdd7713b01fe53fa7b7ecdc194,
   "@/components/CreatorNavLabelOverrides#default": default_2f5cca6fa9964ae988e12553dd3f3260,
   "@/components/EditorsNavLink#default": default_26ca2df84690f50f2026b222b1679ddd,
   "@/components/EmailPreviewNavLink#default": default_15d097b404945aa79b02516efaab6869,
   "@/components/ScheduledPublishesNavLink#default": default_fe2fdadd74b93fff7bcfd59d92220a93,
   "@/components/BeforeLogin#default": default_8a7ab0eb7ab5c511aba12e68480bfe5e,
+  "@/components/ShopRegister#default": default_4d8e6416dffab66cafb44a1d6c7025cd,
   "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1
 }

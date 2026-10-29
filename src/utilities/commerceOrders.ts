@@ -60,7 +60,7 @@ export async function listArtistOrders({
     itemCount: (order.items || []).reduce((sum, item) => sum + (item.quantity || 0), 0),
     netCOP: Math.max(
       0,
-      (order.artistNetAmountCOP || 0) - (order.processorFeeAmountCOP || 0),
+      (order.artistNetAmountCOP || 0) - (order.paymentProvider === 'wompi' ? 0 : (order.processorFeeAmountCOP || 0)),
     ),
     platformFeeCOP: order.platformFeeAmountCOP || 0,
     processorFeeCOP: order.processorFeeAmountCOP || 0,

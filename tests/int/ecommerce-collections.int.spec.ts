@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 import {
   extendEcommerceCartsCollection,
@@ -16,7 +16,9 @@ const creatorUser = {
   role: 'creator' as const,
 }
 
-function getHiddenHandler(collection: { admin?: { hidden?: boolean | ((args: { user: unknown }) => boolean) } }) {
+function getHiddenHandler(collection: {
+  admin?: { hidden?: boolean | ((args: { user: unknown }) => boolean) }
+}) {
   if (typeof collection.admin?.hidden !== 'function') {
     throw new Error('Expected collection admin.hidden to be a function.')
   }
@@ -40,7 +42,14 @@ describe('official ecommerce collection overrides', () => {
 
     const fieldNames = collection.fields?.map((field: any) => field.name).filter(Boolean)
 
-    expect(collection.admin?.defaultColumns).toEqual(['title', 'priceInUSD', 'inventory', 'updatedAt'])
+    expect(collection.admin?.defaultColumns).toEqual([
+      'title',
+      'priceInCOP',
+      'inventory',
+      'updatedAt',
+    ])
+    expect(collection.admin?.group).toBe('Tienda')
+    expect(collection.labels).toEqual({ singular: 'Producto', plural: 'Productos' })
     expect(collection.admin?.useAsTitle).toBe('title')
     expect(fieldNames).toEqual(
       expect.arrayContaining([
@@ -73,6 +82,37 @@ describe('official ecommerce collection overrides', () => {
     expect(hidden({ user: creatorUser })).toBe(true)
   })
 
+  it.each([
+    ['admin', { id: 'admin-1', role: 'admin' }, true],
+    ['artist', { id: 'artist-1', role: 'creator', userType: 'artist' }, true],
+    ['band', { id: 'band-1', role: 'creator', userType: 'band' }, true],
+    ['legacy band', { id: 'band-2', role: 'creator', accountType: 'band' }, true],
+    ['editor', { id: 'editor-1', role: 'creator', userType: 'editor' }, false],
+    ['fan', { id: 'fan-1', role: 'creator', userType: 'fan' }, false],
+    ['guest', null, false],
+  ])('allows %s to manage the shop only when eligible', async (_label, user, allowed) => {
+    const collection = extendEcommerceProductsCollection({
+      defaultCollection: { slug: 'products', fields: [] },
+    })
+    const hidden = getHiddenHandler(collection as any)
+    const req = { user, payload: { findByID: vi.fn().mockResolvedValue(user) } }
+    const args = { req } as never
+
+    expect(hidden({ user })).toBe(!allowed)
+    expect(await collection.access!.admin!(args)).toBe(allowed)
+    expect(await collection.access!.create!(args)).toBe(allowed)
+    for (const operation of ['update', 'delete'] as const) {
+      expect(await collection.access![operation]!(args)).toEqual(
+        !allowed ? false : user?.role === 'admin' ? true : { owner: { equals: user?.id } },
+      )
+    }
+    if (user) {
+      expect(await collection.access!.read!(args)).toEqual(
+        !allowed ? false : user.role === 'admin' ? true : { owner: { equals: user.id } },
+      )
+    }
+  })
+
   it('keeps carts focused on authenticated operator visibility', () => {
     const collection = extendEcommerceCartsCollection({
       defaultCollection: {
@@ -80,7 +120,12 @@ describe('official ecommerce collection overrides', () => {
       } as never,
     })
 
-    expect(collection.admin?.defaultColumns).toEqual(['customer', 'status', 'subtotal', 'updatedAt'])
+    expect(collection.admin?.defaultColumns).toEqual([
+      'customer',
+      'status',
+      'subtotal',
+      'updatedAt',
+    ])
     expect(collection.admin?.useAsTitle).toBe('customer')
     const hidden = getHiddenHandler(collection as any)
     expect(hidden({ user: adminUser })).toBe(false)
@@ -102,7 +147,12 @@ describe('official ecommerce collection overrides', () => {
 
     expect(orders.admin?.defaultColumns).toEqual(['customerEmail', 'status', 'amount', 'updatedAt'])
     expect(orders.admin?.useAsTitle).toBe('customerEmail')
-    expect(transactions.admin?.defaultColumns).toEqual(['customerEmail', 'status', 'amount', 'updatedAt'])
+    expect(transactions.admin?.defaultColumns).toEqual([
+      'customerEmail',
+      'status',
+      'amount',
+      'updatedAt',
+    ])
     expect(transactions.admin?.useAsTitle).toBe('customerEmail')
     const ordersHidden = getHiddenHandler(orders as any)
     const transactionsHidden = getHiddenHandler(transactions as any)
@@ -112,18 +162,34 @@ describe('official ecommerce collection overrides', () => {
     expect(transactionsHidden({ user: creatorUser })).toBe(true)
 
     const orderFieldNames = orders.fields?.map((field: any) => field.name).filter(Boolean)
-    const transactionFieldNames = transactions.fields?.map((field: any) => field.name).filter(Boolean)
+    const transactionFieldNames = transactions.fields
+      ?.map((field: any) => field.name)
+      .filter(Boolean)
 
     expect(orderFieldNames).toEqual(
-      expect.arrayContaining(['artistProfile', 'consumerProfile', 'release', 'paymentProviderOrderId', 'trackingNumber']),
+      expect.arrayContaining([
+        'artistProfile',
+        'consumerProfile',
+        'release',
+        'paymentProviderOrderId',
+        'trackingNumber',
+      ]),
     )
     expect(transactionFieldNames).toEqual(
-      expect.arrayContaining(['artistProfile', 'consumerProfile', 'release', 'providerEventId', 'paymentProviderPaymentId']),
+      expect.arrayContaining([
+        'artistProfile',
+        'consumerProfile',
+        'release',
+        'providerEventId',
+        'paymentProviderPaymentId',
+      ]),
     )
   })
 
   it('exposes joined shop products from releases without duplicating relationships', () => {
-    const shopProductsField = Pages.fields.find((field: any) => field.name === 'shopProducts') as any
+    const shopProductsField = Pages.fields.find(
+      (field: any) => field.name === 'shopProducts',
+    ) as any
 
     expect(shopProductsField).toMatchObject({
       collection: 'products',
@@ -132,6 +198,11 @@ describe('official ecommerce collection overrides', () => {
       on: 'release',
       type: 'join',
     })
-    expect(shopProductsField.admin?.defaultColumns).toEqual(['title', 'priceInUSD', '_status', 'updatedAt'])
+    expect(shopProductsField.admin?.defaultColumns).toEqual([
+      'title',
+      'priceInUSD',
+      '_status',
+      'updatedAt',
+    ])
   })
 })

@@ -20,7 +20,7 @@ function getServerURLCandidates() {
     process.env.NEXT_PUBLIC_SERVER_URL,
     process.env.VERCEL_URL,
     process.env.VERCEL_BRANCH_URL,
-    process.env.VERCEL_PROJECT_PRODUCTION_URL,
+    process.env.VERCEL_ENV === 'preview' ? undefined : process.env.VERCEL_PROJECT_PRODUCTION_URL,
     'http://localhost:3000',
   ]
 }

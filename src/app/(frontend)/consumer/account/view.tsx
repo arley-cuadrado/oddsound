@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { CommercePanel } from '@/components/CommercePanel'
 import config from '@payload-config'
 import { getPayload } from 'payload'
 import Link from 'next/link'
@@ -14,7 +15,7 @@ import { resolveUserConsumerProfileID } from '@/utilities/userRelations'
 
 export const metadata: Metadata = {
   title: `${SITE_NAME} Fan Account`,
-  description: 'Consulta tus comentarios dentro de Oddsound.',
+  description: 'Consulta tus compras, envíos, mensajes y comentarios dentro de Oddsound.',
   alternates: {
     canonical: '/fan/account',
   },
@@ -88,10 +89,11 @@ export default async function FanAccountPage() {
               Hola{user.name ? `, ${user.name}` : ''}.
             </h1>
             <p className="max-w-[44rem] text-[13px] leading-6 text-foreground/75">
-              Aquí puedes ver tus comentarios.
+              Consulta tus compras y envíos, habla con las tiendas y revisa tus comentarios.
             </p>
           </header>
 
+          <CommercePanel mode="buyer" />
           <section className="space-y-6">
             <div className="space-y-2">
               <h2 className="text-xl font-medium text-foreground">Mis comentarios</h2>

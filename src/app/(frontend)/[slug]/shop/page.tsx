@@ -1,4 +1,6 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
+import { publicReviews } from '@/commerce/social'
 
 import configPromise from '@payload-config'
 import type { Media } from '@/payload-types'
@@ -38,7 +40,7 @@ async function queryShopByProfileSlug(slug: string) {
   const payload = await getPayload({ config: configPromise })
   const profile = await findPublicProfileBySlug({ payload, slug })
 
-  if (!profile?.id) {
+  if (!profile?.id || profile.commerce?.salesBlocked) {
     return { products: [], profile: null }
   }
 
@@ -92,6 +94,9 @@ export default async function ArtistShopPage({ params: paramsPromise }: Args) {
     notFound()
   }
 
+  const payload = await getPayload({ config: configPromise })
+  const { rating } = await publicReviews(payload, profile.id)
+
   const shopGridClassName =
     products.length === 1
       ? 'grid gap-5'
@@ -110,6 +115,11 @@ export default async function ArtistShopPage({ params: paramsPromise }: Args) {
             <h1 className="text-3xl font-medium tracking-tight text-foreground md:text-5xl">
               {profile.displayName || 'Artista'}
             </h1>
+            <p>
+              {rating.count
+                ? `★ ${rating.average!.toFixed(1)} de 5 · ${rating.count} ${rating.count === 1 ? 'reseña' : 'reseñas'}`
+                : 'Sin calificaciones'}
+            </p>
             <p className="max-w-[44rem] text-[13px] leading-6 text-foreground/75">
               Productos oficiales conectados al ecommerce de Payload y visibles desde el perfil
               publico del artista.
@@ -159,7 +169,9 @@ export default async function ArtistShopPage({ params: paramsPromise }: Args) {
                 <div className="space-y-4 p-5">
                   <div className="space-y-2">
                     <h2 className="text-lg font-medium text-foreground">
-                      {product.title || 'Producto sin titulo'}
+                      <Link href={`/${profile.slug}/shop/${product.slug}`}>
+                        {product.title || 'Producto sin titulo'}
+                      </Link>
                     </h2>
                     {product.description ? (
                       <p className="text-[13px] leading-6 text-foreground/72 dark:text-white/72">

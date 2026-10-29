@@ -1,0 +1,72 @@
+.seller-products-hub section {
+  border: 1px solid var(--theme-elevation-150);
+  border-radius: 8px;
+  padding: 16px;
+  margin-block: 12px;
+}
+.seller-products-hub nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.seller-products-hub button {
+  padding: 8px 12px;
+  border: 1px solid var(--theme-elevation-200);
+  border-radius: 4px;
+  background: var(--theme-elevation-50);
+  color: var(--theme-text);
+  cursor: pointer;
+}
+.seller-products-hub button[aria-selected='true'] {
+  background: var(--theme-text);
+  color: var(--theme-bg);
+}
+.seller-products-hub button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.seller-products-hub dl {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+}
+.seller-products-hub dd {
+  margin: 0;
+  font-weight: 600;
+}
+.seller-products-hub form {
+  display: grid;
+  gap: 12px;
+  padding-block: 12px;
+}
+.seller-products-hub label {
+  display: block;
+}
+.seller-products-hub input,
+.seller-products-hub select,
+.seller-products-hub textarea {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--theme-elevation-200);
+  border-radius: 4px;
+  background: var(--theme-input-bg);
+  color: var(--theme-text);
+}
+.seller-products-hub article {
+  margin-block: 20px;
+  border-top: 1px solid var(--theme-elevation-150);
+  padding-top: 12px;
+}
+.seller-products-hub details {
+  margin-block: 12px;
+}
+.seller-products-hub summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+.seller-products-hub :is(input, select, textarea, button):focus-visible {
+  outline: 2px solid var(--theme-text);
+  outline-offset: 2px;
+}

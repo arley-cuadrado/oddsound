@@ -1,4 +1,6 @@
 import config from '@payload-config'
+import { financeTransaction } from '@/commerce/service'
+import { model, touchOrder, idOf } from '@/commerce/store'
 import { headers as nextHeaders } from 'next/headers'
 import { getPayload } from 'payload'
 
@@ -53,6 +55,50 @@ export async function POST(request: Request) {
       return Response.json({ orderStatus: status, settled: false })
     }
 
+    if (order.paymentProvider === 'wompi') {
+      await financeTransaction(payload, async (session) => {
+        const latestOrder = await model(payload, 'orders')
+          .findById(orderID)
+          .session(session)
+          .lean<any>()
+        if (latestOrder.finance.cartSettledAt) return
+        const latestCart = await model(payload, 'carts')
+          .findById(cartID)
+          .session(session)
+          .lean<any>()
+        const allowed =
+          (user?.id && idOf(latestCart.customer) === user.id) ||
+          (cartSecret && latestCart.secret === cartSecret)
+        if (!allowed) throw new CheckoutError('forbidden_cart', 'Este carrito no es tuyo.', 403)
+        const purchased = new Map<string, number>(
+          latestOrder.items.map((line: any) => [idOf(line.product), line.quantity]),
+        )
+        const items = latestCart.items.flatMap((line: any) => {
+          const quantity = Math.max(0, line.quantity - (purchased.get(idOf(line.product)) || 0))
+          return quantity ? [{ ...line, quantity }] : []
+        })
+        await model(payload, 'carts').updateOne(
+          { _id: cartID },
+          {
+            $set: {
+              items,
+              ...(items.length
+                ? {}
+                : { purchasedAt: new Date().toISOString(), status: 'purchased' }),
+            },
+          },
+          { session },
+        )
+        await touchOrder(
+          payload,
+          orderID,
+          { 'finance.cartSettledAt': new Date().toISOString() },
+          session,
+        )
+      })
+      return Response.json({ orderStatus: status, settled: true })
+    }
+
     const artistProfileID =
       typeof order.artistProfile === 'string'
         ? order.artistProfile
@@ -81,7 +127,9 @@ export async function POST(request: Request) {
         })),
         // The other artists in this cart still have to be paid, so the cart
         // stays active until the last group clears.
-        ...(remaining.length === 0 ? { purchasedAt: new Date().toISOString(), status: 'purchased' as const } : {}),
+        ...(remaining.length === 0
+          ? { purchasedAt: new Date().toISOString(), status: 'purchased' as const }
+          : {}),
       } satisfies Partial<Cart>,
       depth: 0,
       overrideAccess: true,
@@ -99,6 +147,9 @@ export async function POST(request: Request) {
       }`,
     )
 
-    return Response.json({ code: 'settle_failed', message: 'No pudimos actualizar el carrito.' }, { status: 502 })
+    return Response.json(
+      { code: 'settle_failed', message: 'No pudimos actualizar el carrito.' },
+      { status: 502 },
+    )
   }
 }

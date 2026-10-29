@@ -8,7 +8,7 @@ import { getMeUser } from '@/utilities/getMeUser'
 import { listCommerceProducts, resolveUserProfileID } from '@/utilities/commerceProducts'
 import { canAccessPayloadDashboard, isMusicalCreatorUser } from '@/utilities/isEditorialUser'
 import { getMerchOnboarding } from '@/utilities/merchOnboarding'
-import { getPlatformFeePercent } from '@/utilities/money'
+import { settings as commerceSettings } from '@/commerce/store'
 
 type ScheduledJobInput = {
   doc?: {
@@ -55,10 +55,15 @@ const BeforeDashboard = async () => {
   const commerceProfile =
     profileID && (userRole === 'admin' || isMusicalCreator)
       ? ((await payload
-          .findByID({ collection: 'profiles', id: String(profileID), depth: 0, overrideAccess: true })
+          .findByID({
+            collection: 'profiles',
+            id: String(profileID),
+            depth: 0,
+            overrideAccess: true,
+          })
           .catch(() => null)) as null | Profile)
       : null
-  const platformFeePercent = getPlatformFeePercent()
+  const platformFeePercent = (await commerceSettings(payload)).commissionPercent ?? 12
   const merch = getMerchOnboarding({
     hasPublishedProduct: commerceProducts.some((product) => product.status === 'published'),
     profile: commerceProfile,
@@ -135,7 +140,7 @@ const BeforeDashboard = async () => {
           <div className={`${baseClass}__header`}>
             <div>
               <h4 id="before-dashboard-payments">
-                Cobros con Mercado Pago{' '}
+                Cobros y liquidaciones{' '}
                 <span
                   className={`${baseClass}__badge ${baseClass}__badge--${
                     merch.ready ? 'ready' : merch.needsReconnect ? 'alert' : 'pending'
@@ -148,7 +153,10 @@ const BeforeDashboard = async () => {
                       : 'Pendiente'}
                 </span>
               </h4>
-              <p>Cobras directo a tu cuenta. oddsound se queda el {platformFeePercent}%.</p>
+              <p>
+                Comisión Oddsound: {platformFeePercent}% sobre productos. El procesamiento se
+                descuenta por separado. Consulta tus saldos y la próxima liquidación semanal.
+              </p>
             </div>
           </div>
 
@@ -163,12 +171,6 @@ const BeforeDashboard = async () => {
             ))}
           </ul>
 
-          {merch.health.state === 'connected' || merch.health.state === 'expiring' ? (
-            <p className={`${baseClass}__empty`}>
-              Autorización vigente por {merch.health.daysRemaining} días más. Se renueva sola.
-            </p>
-          ) : null}
-
           <div className={`${baseClass}__links`}>
             {merch.nextStep?.action ? (
               <Link
@@ -176,11 +178,6 @@ const BeforeDashboard = async () => {
                 href={merch.nextStep.action}
               >
                 {merch.nextStep.actionLabel}
-              </Link>
-            ) : null}
-            {merch.steps[0]?.done ? (
-              <Link className={`${baseClass}__link`} href="/creator-api/payments/connect/start">
-                Reconectar Mercado Pago
               </Link>
             ) : null}
             <Link className={`${baseClass}__link`} href="/creator/dashboard">
@@ -250,7 +247,7 @@ const BeforeDashboard = async () => {
         <section className={`${baseClass}__section`} aria-labelledby="before-dashboard-commerce">
           <div className={`${baseClass}__header`}>
             <div>
-              <h4 id="before-dashboard-commerce">Commerce oficial</h4>
+              <h4 id="before-dashboard-commerce">Mi tienda</h4>
               <p>
                 Acceso directo al catalogo que ya corre con Payload ecommerce dentro del dashboard
                 individual.
@@ -270,6 +267,9 @@ const BeforeDashboard = async () => {
           </ul>
 
           <div className={`${baseClass}__links`}>
+            <Link className={`${baseClass}__link`} href="/dashboard/collections/products/create">
+              Crear producto
+            </Link>
             <Link className={`${baseClass}__link`} href="/creator/dashboard">
               Abrir mi panel de artista
             </Link>

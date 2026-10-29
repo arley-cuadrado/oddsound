@@ -1,8 +1,10 @@
 import { mongooseAdapter } from '@payloadcms/db-mongodb'
+import { resolveDatabaseURL, isPreviewEnvironment } from '@/config/preview'
 import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
 import { ecommercePlugin } from '@payloadcms/plugin-ecommerce'
 import { isShoppingEnabled } from '@/config/shopping'
 import sharp from 'sharp'
+import { commerceCollections, CommerceSettings } from './commerce/collections'
 import path from 'path'
 import { buildConfig, PayloadRequest } from 'payload'
 import { fileURLToPath } from 'url'
@@ -44,8 +46,13 @@ import { collectTrustedServerURLs, getServerSideURL } from './utilities/getURL'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
-const hasSMTPConfig = Boolean(process.env.SMTP_HOST && process.env.SMTP_PASS)
-const hasBlobToken = Boolean(process.env.BLOB_READ_WRITE_TOKEN)
+const databaseURL = resolveDatabaseURL()
+const isPreview = isPreviewEnvironment()
+const hasSMTPConfig = !isPreview && Boolean(process.env.SMTP_HOST && process.env.SMTP_PASS)
+const storageToken = isPreview
+  ? process.env.PREVIEW_BLOB_READ_WRITE_TOKEN
+  : process.env.BLOB_READ_WRITE_TOKEN
+const hasBlobToken = Boolean(storageToken)
 const shouldVerifySMTPTransport =
   hasSMTPConfig && process.env.NODE_ENV === 'production' && process.env.VERCEL_ENV === 'production'
 const trustedServerURLs = collectTrustedServerURLs()
@@ -69,9 +76,18 @@ export default buildConfig({
       },
     },
     components: {
+      views: {
+        shopRegister: {
+          Component: '@/components/ShopRegister',
+          path: '/shop-register',
+          exact: true,
+          meta: { title: 'Shop Register' },
+        },
+      },
       afterLogin: ['@/components/CreatorRegisterLink'],
       afterNavLinks: [
         '@/components/AdminUploadSizeGuard',
+        '@/components/CommerceAdminLink',
         '@/components/CreatorCollectionFilter',
         '@/components/CreatorNavLabelOverrides',
         '@/components/EditorsNavLink',
@@ -116,7 +132,7 @@ export default buildConfig({
   // This config helps us configure global or default features that the other editors can inherit
   editor: defaultLexical,
   db: mongooseAdapter({
-    url: process.env.DATABASE_URL || '',
+    url: databaseURL,
     connectOptions: {
       maxPoolSize: Number(process.env.MONGODB_MAX_POOL_SIZE || 5),
       minPoolSize: 0,
@@ -157,9 +173,10 @@ export default buildConfig({
     ConsumerProfiles,
     Comments,
     Users,
+    ...commerceCollections,
   ],
   cors: trustedServerURLs,
-  globals: [Header, Footer],
+  globals: [Header, Footer, CommerceSettings],
   i18n: {
     fallbackLanguage: 'es',
     supportedLanguages: {
@@ -207,7 +224,7 @@ export default buildConfig({
             collections: {
               media: true,
             },
-            token: process.env.BLOB_READ_WRITE_TOKEN || '',
+            token: storageToken || '',
           }),
         ]
       : []),
@@ -220,8 +237,7 @@ export default buildConfig({
   jobs: {
     access: {
       run: ({ req }: { req: PayloadRequest }): boolean => {
-        // Allow logged in users to execute this endpoint (default)
-        if (req.user) return true
+        // Financial tasks are system-only, including for authenticated users.
 
         const secret = process.env.CRON_SECRET
         if (!secret) return false

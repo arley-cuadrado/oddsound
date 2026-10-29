@@ -37,9 +37,14 @@ export function CommerceOverview({ products }: CommerceOverviewProps) {
           </p>
         </div>
 
-        <Link className={secondaryButton} href="/dashboard/collections/products">
-          Gestionar productos
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          <Link className={secondaryButton} href="/dashboard/collections/products/create">
+            Crear producto
+          </Link>
+          <Link className={secondaryButton} href="/dashboard/collections/products">
+            Gestionar productos
+          </Link>
+        </div>
       </div>
 
       {products.length === 0 ? (
