@@ -2,6 +2,8 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { MongoMemoryReplSet } from 'mongodb-memory-server'
 import type { Payload } from 'payload'
+import { mergeListSearchAndWhere } from 'payload/shared'
+import { registerDateWhere } from '@/commerce/registerFilters'
 import { model, idOf, balance, account } from '@/commerce/store'
 import {
   createCheckout,
@@ -57,6 +59,7 @@ beforeEach(async () => {
     'commerceReviewReports',
     'commerceMessages',
     'commerceConversations',
+    'commerceAttachments',
   ])
     await model(payload, name).deleteMany({})
   const profile = await model(payload, 'profiles').create({
@@ -102,6 +105,54 @@ beforeEach(async () => {
     overrideAccess: true,
   })
   await seedCarriers(payload)
+})
+
+describe('Shop Register server pagination', () => {
+  it('combines native text search, calendar bounds and stable pages of 15 records', async () => {
+    const attachments = model(payload, 'commerceAttachments')
+    const day = new Date('2026-10-29T05:00:00.000Z')
+    await attachments.collection.insertMany([
+      ...Array.from({ length: 20 }, (_, i) => ({
+        name: `Factura demo ${i}`,
+        createdAt: day,
+        updatedAt: day,
+      })),
+      { name: 'Factura anterior', createdAt: new Date(day.getTime() - 1), updatedAt: day },
+      {
+        name: 'Factura siguiente',
+        createdAt: new Date('2026-10-30T05:00:00.000Z'),
+        updatedAt: day,
+      },
+      { name: 'Otro archivo', createdAt: day, updatedAt: day },
+    ])
+    const config = payload.collections.commerceAttachments.config
+    const where = mergeListSearchAndWhere({
+      collectionConfig: config,
+      search: 'Factura',
+      where:
+        registerDateWhere({ field: 'createdAt', period: 'day', value: '2026-10-29', end: '' }) ||
+        {},
+    })
+    const user = { id: artist, role: 'admin', collection: 'users' as const }
+    const options = {
+      collection: 'commerceAttachments' as const,
+      where,
+      limit: config.admin.pagination!.defaultLimit,
+      depth: 0,
+      overrideAccess: false,
+      user,
+    }
+    const first = await payload.find({ ...options, page: 1 })
+    const second = await payload.find({ ...options, page: 2 })
+    expect(first.totalDocs).toBe(20)
+    expect(first.totalPages).toBe(2)
+    expect(first.docs).toHaveLength(15)
+    expect(second.docs).toHaveLength(5)
+    expect(new Set([...first.docs, ...second.docs].map((d) => d.id)).size).toBe(20)
+    expect(first.docs.every((d) => d.name?.startsWith('Factura demo'))).toBe(true)
+    const repeated = await payload.find({ ...options, page: 1 })
+    expect(repeated.docs.map((d) => d.id)).toEqual(first.docs.map((d) => d.id))
+  })
 })
 
 describe('storefront reviews and private conversations', () => {

@@ -1,5 +1,6 @@
 import type { CollectionConfig, Field, GlobalConfig } from 'payload'
 import { isAdminUser } from '@/utilities/isAdminUser'
+import { registerPageSizes, registerSearchFields } from './registerFilters'
 
 const admin = ({ req }: { req: { user?: unknown } }) => isAdminUser(req.user as never)
 const text = (name: string, extra: Record<string, unknown> = {}): Field =>
@@ -28,7 +29,21 @@ function internal(slug: string, fields: Field[], immutable = false): CollectionC
   return {
     slug,
     // group:false removes sidebar/home entries while keeping native record routes available.
-    admin: { group: false, hidden: ({ user }) => !isAdminUser(user) },
+    admin: {
+      group: false,
+      hidden: ({ user }) => !isAdminUser(user),
+      pagination: { defaultLimit: 15, limits: registerPageSizes },
+      listSearchableFields: registerSearchFields[slug],
+      useAsTitle: registerSearchFields[slug]?.[0],
+      defaultColumns: [
+        registerSearchFields[slug]?.[0] || 'id',
+        ...(fields.some((field) => 'name' in field && field.name === 'state') ? ['state'] : []),
+        'createdAt',
+        'updatedAt',
+      ],
+      components: { beforeListTable: ['@/components/ShopRegister/RecordFilters'] },
+    },
+    defaultSort: '-createdAt,-id',
     access: { read: admin, create: () => false, update: () => false, delete: () => false },
     fields,
     ...(immutable

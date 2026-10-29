@@ -23,6 +23,7 @@ const args =
         'test',
         'tests/e2e/commerce.e2e.spec.ts',
         'tests/e2e/shop-operations.e2e.spec.ts',
+        ...process.argv.slice(3),
       ]
     : mode === 'build'
       ? ['node_modules/next/dist/bin/next', 'build']

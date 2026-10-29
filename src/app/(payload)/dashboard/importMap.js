@@ -25,6 +25,7 @@ import { default as default_5a1b1f13e85b8d73ce4959149203fa8a } from '@/component
 import { default as default_204b6f4e4c5b58e4efd2fcb913ae77b8 } from '@/components/UsersAccountTypeField'
 import { default as default_797b25f28c6227edff8335d9f2f9f569 } from '@/components/UsersListSelectionGuard'
 import { default as default_7382d1aa8ab5f7fc48fa08c6814ea59b } from '@/components/CreateRedactorButton'
+import { default as default_818eeb8fd30f3194d82154dfc7afd728 } from '@/components/ShopRegister/RecordFilters'
 import { LinkToDoc as LinkToDoc_aead06e4cbf6b2620c5c51c9ab283634 } from '@payloadcms/plugin-search/client'
 import { ReindexButton as ReindexButton_aead06e4cbf6b2620c5c51c9ab283634 } from '@payloadcms/plugin-search/client'
 import { default as default_3d64a43c644c7dc900aac6b183322b7f } from '@/components/PhysicalProductField'
@@ -75,6 +76,7 @@ export const importMap = {
   "@/components/UsersAccountTypeField#default": default_204b6f4e4c5b58e4efd2fcb913ae77b8,
   "@/components/UsersListSelectionGuard#default": default_797b25f28c6227edff8335d9f2f9f569,
   "@/components/CreateRedactorButton#default": default_7382d1aa8ab5f7fc48fa08c6814ea59b,
+  "@/components/ShopRegister/RecordFilters#default": default_818eeb8fd30f3194d82154dfc7afd728,
   "@payloadcms/plugin-search/client#LinkToDoc": LinkToDoc_aead06e4cbf6b2620c5c51c9ab283634,
   "@payloadcms/plugin-search/client#ReindexButton": ReindexButton_aead06e4cbf6b2620c5c51c9ab283634,
   "@/components/PhysicalProductField#default": default_3d64a43c644c7dc900aac6b183322b7f,

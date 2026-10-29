@@ -209,3 +209,58 @@ test('band creates a physical product; buyer tracks, messages, claims and review
     await context.close()
   }
 })
+
+test('admin filters Shop Register records by text and date and changes page size', async ({
+  page,
+}) => {
+  test.setTimeout(180000)
+  page.setDefaultTimeout(15000)
+  const admin = await payload.create({
+    collection: 'users',
+    data: {
+      _verified: true,
+      role: 'admin',
+      userType: 'creator',
+      name: 'Register admin',
+      username: `register-admin-${Date.now()}`,
+      email: `register-${Date.now()}@example.test`,
+      password,
+    },
+  })
+  // Establish the isolated fixture directly: public signup hooks deliberately prevent admin elevation.
+  await model(payload, 'users').updateOne({ _id: admin.id }, { $set: { role: 'admin' } })
+  const day = new Date('2026-10-29T05:00:00.000Z')
+  await model(payload, 'commerceAttachments').collection.insertMany([
+    ...Array.from({ length: 20 }, (_, i) => ({
+      name: `Registro prueba ${i}`,
+      createdAt: day,
+      updatedAt: day,
+    })),
+    { name: 'Registro anterior', createdAt: new Date('2026-10-28T05:00:00.000Z'), updatedAt: day },
+  ])
+  const login = await page.request.post('http://localhost:3000/api/users/login', {
+    data: { email: admin.email, password },
+  })
+  expect(login.ok()).toBe(true)
+  await page.goto('http://localhost:3000/dashboard/collections/commerceAttachments')
+  const controls = page.getByRole('region', { name: 'Filtros de registros' })
+  await expect(controls).toBeVisible()
+  await expect(controls.getByLabel('Registros por página')).toHaveValue('15')
+  await controls.getByRole('combobox', { name: 'Periodo', exact: true }).selectOption('day')
+  await controls.getByLabel('Seleccionar fecha').fill('2026-10-29')
+  await controls.getByRole('button', { name: 'Aplicar fecha' }).click()
+  await expect(page.locator('tbody tr')).toHaveCount(15)
+  await expect(page.getByText('Registro anterior', { exact: true })).not.toBeVisible()
+  await page.locator('.paginator').getByRole('button', { name: '2', exact: true }).click()
+  await expect(page.locator('tbody tr')).toHaveCount(5)
+  await expect(controls.getByRole('combobox', { name: 'Periodo', exact: true })).toHaveValue('day')
+  await controls.getByLabel('Registros por página').selectOption('30')
+  await expect(page.locator('tbody tr')).toHaveCount(20)
+  await page.locator('#search-filter-input').fill('Registro prueba 19')
+  await expect(page.locator('tbody tr')).toHaveCount(1)
+  await expect(page.getByText('Registro prueba 19', { exact: true })).toBeVisible()
+  await controls.getByRole('button', { name: 'Limpiar fecha' }).click()
+  await expect(page.locator('tbody tr')).toHaveCount(1)
+  await expect(page.locator('#search-filter-input')).toHaveValue('Registro prueba 19')
+  await page.screenshot({ path: 'test-results/shop-register-filters.png', fullPage: true })
+})

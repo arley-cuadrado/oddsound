@@ -90,3 +90,9 @@ Run `pnpm commerce:init` before enabling this release on an existing database. I
 Order conversations are separate from formal cases: a message does not hold funds. Messages poll only while the conversation is open and the document visible; read cursors mark only the loaded latest page. Guests retain per-order verified access, while reviews require a fan account and verified delivery of all purchased units of the reviewed product. Public reviews expose only display name, stars, comment and date; administration can inspect edit history, review reports and audit moderation decisions. Hidden reviews stay hidden when edited. Reviews do not create seller incidents.
 
 `SHOPPING_ENABLED=false` continues to stop public shop/cart purchases while authoring, order support and reconciliation remain available. Keep production charge/payout switches disabled until the provider and bank verification requirements above are met. Only bank accounts are supported as payout destinations in this release.
+
+## Shop Register lists
+
+The 18 administrator-only lists in `/dashboard/shop-register` use native Payload server pagination: 15 records by default, with 15/30/50/100 choices. Payload saves each administrator's page-size preference per collection; an existing saved size is retained and remains selectable. Newest records appear first, with ID as a stable tie-breaker.
+
+Each list's native search covers the available names, file names, references or text fields appropriate to that record type. It does not search encrypted bank details, access-token hashes or lock leases. The additional date controls filter creation or last-update dates by day, month, year or inclusive date range in Colombia (UTC−05:00). Applying or clearing a date filter resets the page while preserving text search and unrelated advanced filters. Pagination and browser navigation retain applied filters. Filtering does not change records or their access, edit or delete permissions.

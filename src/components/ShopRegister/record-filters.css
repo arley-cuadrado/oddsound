@@ -1,0 +1,41 @@
+.register-filters {
+  margin: 1rem 0 1.5rem;
+}
+.register-filters__form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+.register-filters__form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+}
+.register-filters__form input,
+.register-filters__form select,
+.register-filters__form button {
+  min-height: 2.5rem;
+  padding: 0.5rem 0.7rem;
+  border: 1px solid var(--theme-elevation-250);
+  border-radius: 0.25rem;
+  background: var(--theme-input-bg);
+  color: var(--theme-text);
+  font: inherit;
+}
+.register-filters__form button {
+  cursor: pointer;
+  background: var(--theme-elevation-100);
+}
+.register-filters__form button:hover {
+  background: var(--theme-elevation-200);
+}
+.register-filters > p {
+  color: var(--theme-elevation-600);
+  font-size: 0.85rem;
+}
+.register-filters [role='alert'] {
+  color: var(--theme-error-600);
+}
